@@ -1,0 +1,563 @@
+<%- include('../partials/layout-start', { title: __('myChildren'), activePage: 'children' }) %>
+
+    <div class="page-container-clean">
+        <div class="page-header-clean">
+            <h2>
+                <%= __('myChildren') %>
+                    <i class="fas fa-child" style="color: #3b82f6;"></i>
+            </h2>
+            <button onclick="openAddChildModal()" class="btn-add-child-modern">
+                <i class="fas fa-plus-circle"></i>
+                <span>إضافة طفل</span>
+            </button>
+        </div>
+
+        <div class="children-grid-centered">
+            <% if (children && children.length> 0) { %>
+                <% children.forEach(function(child) { %>
+                    <a href="/specialist/child/<%= child._id %>/analytics" class="child-card-centered">
+                        <!-- Avatar -->
+                        <div class="avatar-large-blue">
+                            <i class="fas fa-child"></i>
+                        </div>
+
+                        <!-- Name -->
+                        <h3 class="child-name-clean">
+                            <%= child.name %>
+                        </h3>
+
+                        <!-- Details Row: Age -->
+                        <div class="detail-row-clean">
+                            <span>
+                                <%= child.age %>
+                                    <%= __('years') %>
+                            </span>
+                            <i class="fas fa-birthday-cake icon-secondary"></i>
+                        </div>
+
+                        <!-- Details Row: Parent -->
+
+                        <!-- Details Row: Parent -->
+                        <div class="detail-row-clean" style="flex-direction: column; gap: 0.2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b;">
+                                <i class="fas fa-user-tie icon-primary"></i>
+                                <span style="font-size: 0.9rem;">ولي الأمر:</span>
+                            </div>
+                            <div style="font-weight: 600; color: #334155;">
+                                <%= child.parent ? child.parent.name : 'غير محدد' %>
+                            </div>
+                            <% if (child.parent && child.parent.staffId) { %>
+                                <span class="badge-pill-custom"
+                                    style="background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; padding: 2px 8px; font-size: 0.75rem; border-radius: 6px;">
+                                    <%= child.parent.staffId %>
+                                </span>
+                                <% } %>
+                        </div>
+
+
+                        <!-- Difficulty Badge -->
+                        <div class="badge-container-clean">
+                            <span
+                                class="badge-pill-custom <%= child.difficultyLevel === 'beginner' ? 'badge-beginner' : child.difficultyLevel === 'intermediate' ? 'badge-intermediate' : 'badge-advanced' %>">
+                                <%= child.difficultyLevel==='beginner' ? 'مبتدئ' :
+                                    child.difficultyLevel==='intermediate' ? 'متوسط' : 'متقدم' %>
+                            </span>
+                        </div>
+                    </a>
+                    <% }); %>
+                        <% } else { %>
+                            <div class="empty-state-clean">
+                                <i class="fas fa-child"></i>
+                                <h3>
+                                    <%= __('noChildren') %>
+                                </h3>
+                                <p>
+                                    <%= __('childrenWillAppear') %>
+                                </p>
+                            </div>
+                            <% } %>
+        </div>
+    </div>
+
+    <!-- Add Child Modal -->
+    <div id="addChildModal" class="modal-overlay-clean" style="display: none;">
+        <div class="modal-card-clean">
+            <div class="modal-header-clean">
+                <h3>
+                    <%= __('addChild') %>
+                </h3>
+                <button onclick="closeAddChildModal()" class="close-btn-clean"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="addChildForm" onsubmit="submitAddChild(event)">
+                <div class="form-group-clean">
+                    <label>
+                        <i class="fas fa-user-friends" style="margin-left: 0.5rem; color: #3b82f6;"></i>
+                        اختر ولي الأمر
+                    </label>
+                    <select id="parentSelect" name="parentId" class="input-modern" required>
+                        <option value="">جاري التحميل...</option>
+                    </select>
+                </div>
+
+                <div class="form-group-clean">
+                    <label>
+                        <%= __('childName') %>
+                    </label>
+                    <input type="text" name="name" class="input-clean" required>
+                </div>
+
+                <div class="row-clean">
+                    <div class="form-group-clean half">
+                        <label>
+                            <%= __('age') %>
+                        </label>
+                        <input type="number" name="age" class="input-clean" min="4" max="15" required>
+                    </div>
+                    <div class="form-group-clean half">
+                        <label>
+                            <%= __('gender') %>
+                        </label>
+                        <select name="gender" class="input-clean" required>
+                            <option value="male">
+                                <%= __('male') %>
+                            </option>
+                            <option value="female">
+                                <%= __('female') %>
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group-clean">
+                    <label>
+                        <%= __('difficultyLevel') %>
+                    </label>
+                    <select name="difficultyLevel" class="input-clean">
+                        <option value="beginner">
+                            <%= __('beginner') %>
+                        </option>
+                        <option value="intermediate">
+                            <%= __('intermediate') %>
+                        </option>
+                        <option value="advanced">
+                            <%= __('advanced') %>
+                        </option>
+                    </select>
+                </div>
+
+                <div class="modal-footer-clean">
+                    <button type="button" onclick="closeAddChildModal()" class="btn-secondary-clean">
+                        <%= __('cancel') %>
+                    </button>
+                    <button type="submit" class="btn-primary-clean">
+                        <%= __('save') %>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddChildModal() {
+            document.getElementById('addChildModal').style.display = 'flex';
+            fetchParents();
+        }
+
+        function closeAddChildModal() {
+            document.getElementById('addChildModal').style.display = 'none';
+        }
+
+        async function fetchParents() {
+            try {
+                console.log('🔍 Fetching parents...');
+                const response = await fetch('/specialist/api/parents', {
+                    credentials: 'include'
+                });
+
+                console.log('📡 Response status:', response.status);
+                const data = await response.json();
+                console.log('📊 Parents data:', data);
+
+                const select = document.getElementById('parentSelect');
+
+                if (!data.success) {
+                    console.error('❌ API returned success=false:', data.message);
+                    select.innerHTML = '<option value="">خطأ في تحميل الآباء</option>';
+                    return;
+                }
+
+                if (data.parents && data.parents.length > 0) {
+                    select.innerHTML = '<option value="">اختر ولي الأمر</option>';
+                    data.parents.forEach(parent => {
+                        const option = document.createElement('option');
+                        option.value = parent._id;
+                        option.textContent = `${parent.name} (${parent.email})`;
+                        select.appendChild(option);
+                    });
+                    console.log(`✅ Loaded ${data.parents.length} parents`);
+                } else {
+                    console.warn('⚠️ No linked parents found');
+                    select.innerHTML = '<option value="">لا يوجد آباء مرتبطون</option>';
+                }
+            } catch (error) {
+                console.error('❌ Error fetching parents:', error);
+                const select = document.getElementById('parentSelect');
+                select.innerHTML = '<option value="">خطأ في الاتصال بالخادم</option>';
+            }
+        }
+
+        async function submitAddChild(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/specialist/api/create-child', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('<%= __("childCreatedSuccess") %>');
+                    location.reload();
+                } else {
+                    alert(result.message || '<%= __("errorCreatingChild") %>');
+                }
+            } catch (error) {
+                console.error('Error creating child:', error);
+                alert('<%= __("errorCreatingChild") %>');
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('addChildModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+    <style>
+        /* Modal Styles */
+        .modal-overlay-clean {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-card-clean {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header-clean {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header-clean h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .close-btn-clean {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .form-group-clean {
+            margin-bottom: 1.5rem;
+            text-align: right;
+            /* RTL Form */
+        }
+
+        .form-group-clean label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .input-clean,
+        .input-modern {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #0f172a;
+            background: #f8fafc;
+            transition: all 0.2s;
+            direction: rtl;
+        }
+
+        .input-clean:focus,
+        .input-modern:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .row-clean {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .half {
+            flex: 1;
+        }
+
+        .modal-footer-clean {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Modern Add Child Button */
+        .btn-add-child-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-child-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-add-child-modern {
+            background: linear-gradient(135deg, #00c2fa 0%, #005fea 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.75rem;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 95, 234, 0.3);
+            font-size: 1rem;
+        }
+
+        .btn-add-child-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 95, 234, 0.4);
+        }
+
+        .btn-add-child-modern i {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary-clean {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary-clean:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary-clean {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Existing styles ... */
+        /* Clean Centered Card Design (Adapted to Modern White Card) */
+        .page-container-clean {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header-clean {
+            margin-bottom: 3rem;
+            text-align: right;
+        }
+
+        .page-header-clean h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .children-grid-centered {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 3rem;
+            padding: 1rem 0;
+        }
+
+        .child-card-centered {
+            background: #ffffff;
+            border-radius: 28px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 3rem 2rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .child-card-centered:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: #3b82f6;
+        }
+
+        .avatar-large-blue {
+            width: 150px;
+            height: 150px;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            border: 4px solid #3b82f6;
+            color: #3b82f6;
+            transition: transform 0.4s ease;
+        }
+
+        .child-card-centered:hover .avatar-large-blue {
+            transform: scale(1.05);
+            background: #eff6ff;
+        }
+
+        .avatar-large-blue i {
+            font-size: 4rem;
+        }
+
+        .child-name-clean {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0 0 1rem 0;
+        }
+
+        .detail-row-clean {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .icon-primary,
+        .icon-secondary {
+            color: #3b82f6;
+        }
+
+        .badge-container-clean {
+            margin-top: 2rem;
+        }
+
+        .badge-pill-custom {
+            padding: 0.6rem 2rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            display: inline-block;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Specific Badge Colors */
+        .badge-beginner {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-intermediate {
+            background: #fef9c3;
+            color: #854d0e;
+            border: 1px solid #fde047;
+        }
+
+        .badge-advanced {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .empty-state-clean {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem;
+            color: #94a3b8;
+        }
+
+        .empty-state-clean i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+
+    <%- include('../partials/layout-end') %>

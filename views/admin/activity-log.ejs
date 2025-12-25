@@ -1,0 +1,108 @@
+<%- include('../partials/layout-start', { title: title, activePage: 'activity' }) %>
+
+    <div class="page-header">
+        <h2><i class="fas fa-history"></i>
+            <%= title %>
+        </h2>
+    </div>
+
+    <div class="data-section">
+        <div class="table-container">
+            <div class="timeline">
+                <% if (logs && logs.length > 0) { %>
+                    <% logs.forEach(function(log) { 
+                        // Determine type for styling
+                        let type = 'info';
+                        let icon = 'fa-info';
+                        const action = log.action.toLowerCase();
+                        
+                        if (action.includes('login') || action.includes('sign in')) { type = 'login'; icon = 'fa-sign-in-alt'; }
+                        else if (action.includes('logout') || action.includes('sign out')) { type = 'logout'; icon = 'fa-sign-out-alt'; }
+                        else if (action.includes('create') || action.includes('add')) { type = 'create'; icon = 'fa-plus'; }
+                        else if (action.includes('delete') || action.includes('remove')) { type = 'delete'; icon = 'fa-trash'; }
+                        else if (action.includes('update') || action.includes('edit')) { type = 'update'; icon = 'fa-pen'; }
+                    %>
+                    <div class="timeline-item">
+                        <div class="timeline-marker <%= type %>">
+                            <i class="fas <%= icon %>"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <div class="timeline-user">
+                                    <div class="timeline-user-avatar">
+                                        <%= log.user ? log.user.name.charAt(0).toUpperCase() : '?' %>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--gray-800);">
+                                            <%= log.user ? log.user.name : __('unknown') %>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                            <%= log.user ? __(log.user.role) : '-' %>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="timeline-meta">
+                                    <span dir="ltr" style="font-weight: 500;">
+                                        <%= new Date(log.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                    </span>
+                                    <span style="font-size: 0.75rem;">
+                                        <%= new Date(log.createdAt).toLocaleDateString() %>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="timeline-body">
+                                <span class="badge badge-<%= type === 'login' ? 'success' : (type === 'delete' ? 'danger' : 'secondary') %>" style="margin-bottom: 0.5rem; display: inline-block;">
+                                    <%= log.action %>
+                                </span>
+                                <div style="color: var(--gray-600);">
+                                    <%= log.details %>
+                                </div>
+                                <% if (log.ipAddress) { %>
+                                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--gray-400);">
+                                        <i class="fas fa-globe"></i> IP: <%= log.ipAddress %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <p><%= __('noData') %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <% if (pages> 1) { %>
+            <div class="pagination">
+                <% if (currentPage> 1) { %>
+                    <a href="?page=<%= currentPage - 1 %>" class="btn btn-outline btn-sm">&laquo; <%= __('prev') %></a>
+                    <% } %>
+
+                        <span class="current-page">
+                            <%= __('pageOf').replace('{current}', currentPage).replace('{total}', pages) %>
+                        </span>
+
+                        <% if (currentPage < pages) { %>
+                            <a href="?page=<%= currentPage + 1 %>" class="btn btn-outline btn-sm">
+                                <%= __('next') %> &raquo;
+                            </a>
+                            <% } %>
+            </div>
+            <% } %>
+    </div>
+
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+
+    <%- include('../partials/layout-end') %>

@@ -1,0 +1,387 @@
+<%- include('../partials/layout-start', { title: __('dashboard'), activePage: 'dashboard' }) %>
+
+    <div class="page-container-clean">
+        <!-- Stats Cards Grid -->
+        <div class="stats-grid-clean">
+            <!-- Parents Card -->
+            <div class="stat-card-clean">
+                <div class="stat-content-clean">
+                    <h2>
+                        <%= stats.parents %>
+                    </h2>
+                    <p>
+                        <%= __('parents') %>
+                    </p>
+                </div>
+                <div class="stat-icon-clean icon-green">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+
+            <!-- Children Card -->
+            <div class="stat-card-clean">
+                <div class="stat-content-clean">
+                    <h2>
+                        <%= stats.children %>
+                    </h2>
+                    <p>
+                        <%= __('children') %>
+                    </p>
+                </div>
+                <div class="stat-icon-clean icon-blue">
+                    <i class="fas fa-child"></i>
+                </div>
+            </div>
+
+            <!-- Pending Requests Card -->
+            <div class="stat-card-clean">
+                <div class="stat-content-clean">
+                    <h2>
+                        <%= stats.pendingRequests %>
+                    </h2>
+                    <p>
+                        <%= __('pendingRequests') %>
+                    </p>
+                </div>
+                <div class="stat-icon-clean icon-orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-clean">
+            <div class="section-header-clean">
+                <h3>
+                    <%= __('quickActions') %>
+                        <i class="fas fa-bolt" style="color: #f59e0b;"></i>
+                </h3>
+            </div>
+            <div class="actions-grid-clean">
+                <a href="/specialist/parents" class="action-card-clean">
+                    <i class="fas fa-users"></i>
+                    <span>
+                        <%= __('viewParents') %>
+                    </span>
+                </a>
+                <a href="/specialist/children" class="action-card-clean">
+                    <i class="fas fa-child"></i>
+                    <span>
+                        <%= __('viewChildren') %>
+                    </span>
+                </a>
+                <a href="/specialist/requests" class="action-card-clean">
+                    <i class="fas fa-link"></i>
+                    <span>
+                        <%= __('linkRequests') %>
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Children Table -->
+        <div class="section-clean">
+            <div class="section-header-clean">
+                <h3>
+                    <%= __('recentChildren') %>
+                        <i class="fas fa-child" style="color: #0f172a;"></i>
+                </h3>
+                <a href="/specialist/children" class="view-all-link">
+                    <%= __('viewAll') %>
+                </a>
+            </div>
+
+            <div class="table-container-clean">
+                <table class="clean-table">
+                    <thead>
+                        <tr>
+                            <th class="text-right">
+                                <%= __('name') %>
+                            </th>
+                            <th>
+                                <%= __('age') %>
+                            </th>
+                            <th>
+                                <%= __('parent') %>
+                            </th>
+                            <th>
+                                <%= __('level') %>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (recentChildren && recentChildren.length> 0) { %>
+                            <% recentChildren.forEach(function(child) { %>
+                                <tr>
+                                    <td>
+                                        <div class="child-cell">
+                                            <div class="avatar-square-blue">
+                                                <i class="fas fa-child"></i>
+                                            </div>
+                                            <span class="child-name-text">
+                                                <%= child.name %>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <%= child.age %>
+                                            <%= __('years') %>
+                                    </td>
+                                    <td>
+                                        <%= child.parent ? child.parent.name : '-' %>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge-pill-table <%= child.difficultyLevel === 'beginner' ? 'badge-beginner' : child.difficultyLevel === 'intermediate' ? 'badge-intermediate' : 'badge-advanced' %>">
+                                            <%= child.difficultyLevel==='beginner' ? __('beginner') :
+                                                child.difficultyLevel==='intermediate' ? __('intermediate') :
+                                                __('advanced') %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="4" class="empty-table">
+                                                <%= __('noData') %>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Dashboard Specific Styles */
+        .page-container-clean {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Stats Grid */
+        .stats-grid-clean {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card-clean {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f8fafc;
+        }
+
+        .stat-content-clean h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .stat-content-clean p {
+            color: #64748b;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .stat-icon-clean {
+            font-size: 1.5rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-green {
+            color: #10b981;
+        }
+
+        .icon-blue {
+            color: #3b82f6;
+        }
+
+        .icon-orange {
+            color: #f59e0b;
+        }
+
+        /* Sections */
+        .section-clean {
+            margin-bottom: 2rem;
+        }
+
+        .section-header-clean {
+            display: flex;
+            justify-content: flex-end;
+            /* RTL: Header aligns right, but items inside logic may vary */
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        /* Re-align header content for RTL properly if needed. 
+   Assuming Layout is RTL. flex-end pushes to LEFT. flex-start pushes to RIGHT.
+   Usually we want header on the Right in RTL. So justify-content: space-between or flex-start (if direction is rtl).
+   Let's assume generic flex behavior and adjust icons.
+*/
+        .section-header-clean h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-all-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: auto;
+            /* Push to the other side */
+        }
+
+        /* Actions Grid */
+        .actions-grid-clean {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .action-card-clean {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #475569;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        .action-card-clean:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .action-card-clean i {
+            font-size: 1.5rem;
+            color: #3b82f6;
+        }
+
+        /* Table */
+        .table-container-clean {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+        }
+
+        .clean-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .clean-table th {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: right;
+        }
+
+        .clean-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            text-align: right;
+        }
+
+        .clean-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .child-cell {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            /* RTL Align */
+            gap: 1rem;
+            flex-direction: row-reverse;
+            /* Avatar on Right in RTL context? No, usually Name then Avatar if Avatar is decoration. Or Avatar then Name. 
+    Screenshot shows: Avatar (Blue Square) on the Right (First col in RTL).
+    So flex-direction regular (row), but order matters in HTML.
+    HTML: Avatar then Name.
+    If RTL: Avatar is Right, Name is Left of it. This is correct.
+    */
+            justify-content: flex-start;
+            /* Reset */
+        }
+
+        .avatar-square-blue {
+            width: 36px;
+            height: 36px;
+            background: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .badge-pill-table {
+            padding: 0.25rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-beginner {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-intermediate {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge-advanced {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty-table {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+
+            .stats-grid-clean,
+            .actions-grid-clean {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <%- include('../partials/layout-end') %>

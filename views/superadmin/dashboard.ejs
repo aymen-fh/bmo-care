@@ -1,0 +1,151 @@
+<%- include('../partials/layout-start', { title: __('dashboard'), activePage: 'dashboard' }) %>
+
+    <div class="dashboard">
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>
+                        <%= (typeof stats !=='undefined' && stats.centers) ? stats.centers : 0 %>
+                    </h3>
+                    <p>
+                        <%= __('totalCenters') %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>
+                        <%= (typeof stats !=='undefined' && stats.admins) ? stats.admins : 0 %>
+                    </h3>
+                    <p>
+                        <%= __('totalAdmins') %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>
+                        <%= (typeof stats !=='undefined' && stats.specialists) ? stats.specialists : 0 %>
+                    </h3>
+                    <p>
+                        <%= __('totalSpecialists') %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>
+                        <%= (typeof stats !=='undefined' && stats.parents) ? stats.parents : 0 %>
+                    </h3>
+                    <p>
+                        <%= __('totalParents') %>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="quick-actions">
+            <h2><i class="fas fa-bolt"></i>
+                <%= __('quickActions') %>
+            </h2>
+            <div class="actions-grid">
+                <a href="/superadmin/centers/create" class="action-card">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>
+                        <%= __('createCenter') %>
+                    </span>
+                </a>
+                <a href="/superadmin/admins/create" class="action-card">
+                    <i class="fas fa-user-plus"></i>
+                    <span>
+                        <%= __('createAdmin') %>
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i>
+                    <%= __('recentCenters') %>
+                </h2>
+                <a href="/superadmin/centers" class="btn btn-link">
+                    <%= __('viewAll') %>
+                </a>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <%= __('centerName') %>
+                            </th>
+                            <th>
+                                <%= __('admin') %>
+                            </th>
+                            <th>
+                                <%= __('centerPhone') %>
+                            </th>
+                            <th>
+                                <%= __('status') %>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (typeof recentCenters !=='undefined' && recentCenters && recentCenters.length> 0) { %>
+                            <% recentCenters.forEach(function (center) { %>
+                                <tr>
+                                    <td>
+                                        <div class="cell-with-icon">
+                                            <div class="avatar-circle">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <span>
+                                                <%= center.name %>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <%= center.admin ? center.admin.name : __('notAssigned') %>
+                                    </td>
+                                    <td>
+                                        <%= center.phone || '-' %>
+                                    </td>
+                                    <td>
+                                        <span class="badge <%= center.isActive ? 'badge-success' : 'badge-danger' %>">
+                                            <%= center.isActive ? __('active') : __('inactive') %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">
+                                                <%= __('noData') %>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/layout-end') %>

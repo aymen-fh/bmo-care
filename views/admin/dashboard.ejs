@@ -1,0 +1,160 @@
+<%- include('../partials/layout-start', { title: __('dashboard'), activePage: 'dashboard' }) %>
+
+    <div class="dashboard">
+        <!-- Center Info -->
+        <% if (center) { %>
+            <div class="center-info-card">
+                <div class="center-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="center-details">
+                    <h2>
+                        <%= center.name %>
+                    </h2>
+                    <% if (center.nameEn) { %>
+                        <p class="center-name-en">
+                            <%= center.nameEn %>
+                        </p>
+                        <% } %>
+                            <% if (center.address) { %>
+                                <p class="center-address"><i class="fas fa-map-marker-alt"></i>
+                                    <%= center.address %>
+                                </p>
+                                <% } %>
+                </div>
+            </div>
+            <% } else { %>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <%= __('noCenterAssigned') %>
+                </div>
+                <% } %>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card stat-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>
+                                    <%= stats.specialists || 0 %>
+                                </h3>
+                                <p>
+                                    <%= __('specialists') %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>
+                                    <%= stats.parents || 0 %>
+                                </h3>
+                                <p>
+                                    <%= __('parents') %>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-child"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>
+                                    <%= stats.children || 0 %>
+                                </h3>
+                                <p>
+                                    <%= __('children') %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h2><i class="fas fa-bolt"></i>
+                            <%= __('quickActions') %>
+                        </h2>
+                        <div class="actions-grid">
+                            <a href="/admin/specialists/create" class="action-card">
+                                <i class="fas fa-user-plus"></i>
+                                <span>
+                                    <%= __('createSpecialist') %>
+                                </span>
+                            </a>
+                            <a href="/admin/specialists" class="action-card">
+                                <i class="fas fa-user-md"></i>
+                                <span>
+                                    <%= __('specialists') %>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Recent Specialists -->
+                    <div class="data-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-user-md"></i>
+                                <%= __('adminRecentSpecialists') %>
+                            </h2>
+                            <a href="/admin/specialists" class="btn btn-link">
+                                <%= __('viewAll') %>
+                            </a>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <%= __('name') %>
+                                        </th>
+                                        <th>
+                                            <%= __('specialization') %>
+                                        </th>
+                                        <th>
+                                            <%= __('email') %>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (recentSpecialists && recentSpecialists.length> 0) { %>
+                                        <% recentSpecialists.forEach(function(specialist) { %>
+                                            <tr>
+                                                <td>
+                                                    <div class="cell-with-icon">
+                                                        <div class="avatar-circle">
+                                                            <i class="fas fa-user-md"></i>
+                                                        </div>
+                                                        <span>
+                                                            <%= specialist.name %>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <%= specialist.specialization || '-' %>
+                                                </td>
+                                                <td>
+                                                    <%= specialist.email %>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="3" class="text-center text-muted">
+                                                            <%= __('noData') %>
+                                                        </td>
+                                                    </tr>
+                                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+    </div>
+
+    <%- include('../partials/layout-end') %>

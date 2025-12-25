@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="<%= currentLang %>" dir="<%= isRTL ? 'rtl' : 'ltr' %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> | <%= __('appName') %>
+    </title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Socket.IO - Must be loaded before page scripts -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+
+<body class="<%= isRTL ? 'rtl' : 'ltr' %>" data-user-id="<%= typeof user !== 'undefined' && user ? user._id : '' %>">
+    <div class="app-container">
+        <%- include('./sidebar') %>
+
+            <main class="main-content">
+                <%- include('./header') %>
+
+                    <div class="content-wrapper">
+                        <% if (typeof success_msg !=='undefined' && success_msg.length> 0) { %>
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i>
+                                <%= success_msg %>
+                            </div>
+                            <% } %>
+
+                                <% if (typeof error_msg !=='undefined' && error_msg.length> 0) { %>
+                                    <div class="alert alert-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <%= error_msg %>
+                                    </div>
+                                    <% } %>
+
+                                        <% if (typeof error !=='undefined' && error.length> 0) { %>
+                                            <div class="alert alert-error">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                <%= error %>
+                                            </div>
+                                            <% } %>

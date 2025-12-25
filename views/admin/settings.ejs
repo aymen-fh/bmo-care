@@ -1,0 +1,101 @@
+<%- include('../partials/layout-start', { title: title, activePage: 'settings' }) %>
+
+    <div class="page-header">
+        <h2><i class="fas fa-cog"></i>
+            <%= __('settings') || 'Settings' %>
+        </h2>
+        <div class="text-muted">
+            <%= __('settingsDesc') || 'Manage application configuration' %>
+        </div>
+    </div>
+
+    <div class="settings-container glass p-4">
+        <form action="/settings" method="POST">
+            <div class="form-section mb-4">
+                <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-globe"></i>
+                    <%= __('general') %>
+                </h3>
+
+                <div class="form-group mb-3">
+                    <label>
+                        <%= __('appName') %>
+                    </label>
+                    <input type="text" name="appName" class="form-control" value="<%= settings.appName %>" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>
+                        <%= __('themeColor') %>
+                    </label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="color" name="themeColor" value="<%= settings.themeColor %>"
+                            style="height: 40px; width: 60px;">
+                        <span class="text-muted">
+                            <%= settings.themeColor %>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section mb-4">
+                <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-envelope"></i>
+                    <%= __('contact') %>
+                </h3>
+                <div class="form-group mb-3">
+                    <label>
+                        <%= __('supportEmail') %>
+                    </label>
+                    <input type="email" name="appEmail" class="form-control" value="<%= settings.appEmail %>">
+                </div>
+            </div>
+
+            <div class="form-section mb-4">
+                <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-shield-alt"></i>
+                    <%= __('securitySystem') %>
+                </h3>
+
+                <div class="form-group mb-3">
+                    <label>
+                        <%= __('maxUploadSize') %>
+                    </label>
+                    <input type="number" name="maxUploadSize" class="form-control"
+                        value="<%= settings.maxUploadSize %>">
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="maintenanceMode"
+                            <%=settings.maintenanceMode ? 'checked' : '' %>>
+                        <%= __('maintenanceMode') %>
+                    </label>
+                    <small class="d-block text-muted">
+                        <%= __('maintenanceModeDesc') %>
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-actions mt-4 text-end">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i>
+                    <%= __('saveChanges') %>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <style>
+        .glass {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-switch {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    </style>
+
+    <%- include('../partials/layout-end') %>

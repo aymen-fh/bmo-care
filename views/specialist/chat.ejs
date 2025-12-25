@@ -1,0 +1,683 @@
+<%- include('../partials/layout-start', { title: 'الدردشة' , activePage: 'chat' }) %>
+
+    <div class="content-wrapper chat-wrapper">
+        <div class="chat-container">
+            <!-- Conversations List -->
+            <div class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <h2>
+                        <i class="fa-solid fa-comments"></i>
+                        المحادثات
+                    </h2>
+                </div>
+
+                <div class="chat-search">
+                    <input type="text" id="searchConversations" placeholder="ابحث عن محادثة...">
+                    <i class="fa-solid fa-search"></i>
+                </div>
+
+                <div class="conversations-list" id="conversationsList">
+                    <div class="empty-conversations">
+                        <i class="fa-solid fa-inbox"></i>
+                        <p>لا توجد محادثات بعد</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-main">
+                <div class="chat-empty-state" id="chatEmptyState">
+                    <i class="fa-solid fa-comments"></i>
+                    <h3>اختر محادثة للبدء</h3>
+                    <p>حدد محادثة من القائمة أو ابدأ محادثة جديدة</p>
+                </div>
+
+                <!-- Active Chat -->
+                <div class="chat-active" id="chatActive" style="display: none;">
+                    <!-- Chat Header -->
+                    <div class="chat-header">
+                        <div class="chat-header-user">
+                            <div class="chat-user-avatar" id="chatUserAvatar">
+                                <span>A</span>
+                            </div>
+                            <div class="chat-user-info">
+                                <h3 id="chatUserName">اسم المستخدم</h3>
+                                <p class="chat-user-status">
+                                    <span class="status-indicator"></span>
+                                    <span id="chatUserStatus">غير متصل</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="chat-header-actions">
+                            <button class="chat-action-btn" title="مسح المحادثة">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be inserted here -->
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span>يكتب...</span>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="chat-input-area">
+                        <form id="messageForm">
+                            <input type="hidden" id="selectedUserId" value="">
+                            <input type="hidden" id="editingMessageId" value="">
+
+                            <textarea id="messageInput" placeholder="اكتب رسالتك..." rows="1"></textarea>
+
+                            <button type="submit" class="send-btn" id="sendBtn">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io({
+            auth: {
+                userId: '<%= user._id %>'
+            }
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to chat server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from chat server');
+        });
+
+        // State
+        let currentChatUserId = null;
+        let conversations = [];
+        let typingTimeout;
+
+        // Load conversations on page load
+        loadConversations();
+
+        // Listen for new messages
+        socket.on('new_message', (message) => {
+            if (message.sender._id === currentChatUserId || message.receiver._id === currentChatUserId) {
+                appendMessage(message);
+                markMessagesAsSeen(currentChatUserId);
+            }
+            loadConversations(); // Refresh conversation list
+        });
+
+        // Listen for message edits
+        socket.on('message_edited', (message) => {
+            updateMessage(message);
+        });
+
+        // Listen for message deletions
+        socket.on('message_deleted', (data) => {
+            removeMessage(data.messageId);
+        });
+
+        // Listen for typing indicator
+        socket.on('user_typing', (data) => {
+            if (data.userId === currentChatUserId) {
+                showTypingIndicator(data.isTyping);
+            }
+        });
+
+        // Load conversations and all linked parents
+        async function loadConversations() {
+            try {
+                // 1. Fetch active conversations
+                const convResponse = await fetch('/chat/conversations');
+                const convData = await convResponse.json();
+                let activeConversations = [];
+                if (convData.success) {
+                    activeConversations = convData.conversations;
+                }
+
+                // 2. Fetch all linked parents
+                const parentsResponse = await fetch('/specialist/api/parents');
+                const parentsData = await parentsResponse.json();
+                let allParents = [];
+                if (parentsData.success) {
+                    allParents = parentsData.parents;
+                }
+
+                // Add logging and safer merge
+                console.log('Active Conversations:', activeConversations);
+                console.log('All Parents:', allParents);
+
+                // 3. Merge lists
+                const conversationMap = new Map();
+
+                // Add active
+                activeConversations.forEach(conv => {
+                    if (conv.user && conv.user._id) {
+                        conversationMap.set(conv.user._id.toString(), conv);
+                    }
+                });
+
+                // Add parents
+                allParents.forEach(parent => {
+                    if (parent && parent._id && !conversationMap.has(parent._id.toString())) {
+                        conversationMap.set(parent._id.toString(), {
+                            user: parent,
+                            lastMessage: null,
+                            unreadCount: 0
+                        });
+                    }
+                });
+
+                console.log('Merged size:', conversationMap.size);
+
+                // Convert map back to array and sort
+                // Active conversations (with lastMessage) come first, sorted by date
+                // Then empty contacts, sorted by name
+                conversations = Array.from(conversationMap.values()).sort((a, b) => {
+                    if (a.lastMessage && b.lastMessage) {
+                        return new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt);
+                    }
+                    if (a.lastMessage) return -1;
+                    if (b.lastMessage) return 1;
+                    return a.user.name.localeCompare(b.user.name);
+                });
+
+                renderConversations(conversations);
+
+            } catch (error) {
+                console.error('Error loading conversations/parents:', error);
+                // alert('Error loading chat data: ' + error.message); // Temporary debug
+            }
+        }
+
+        // Render conversations list
+        function renderConversations(conversations) {
+            const list = document.getElementById('conversationsList');
+
+            if (conversations.length === 0) {
+                list.innerHTML = `
+                  <div class="empty-conversations">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>لا يوجد أولياء أمور مرتبطين بعد</p>
+                  </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = conversations.map(conv => {
+                const hasMessage = !!conv.lastMessage;
+                const timeDisplay = hasMessage ? formatTime(conv.lastMessage.createdAt) : '';
+                const previewText = hasMessage
+                    ? (conv.lastMessage.message.substring(0, 30) + (conv.lastMessage.message.length > 30 ? '...' : ''))
+                    : '<span style="color: var(--primary); font-size: 0.85rem; font-style: italic;">بدء محادثة جديدة</span>';
+
+                return `
+                <div class="conversation-item ${conv.unreadCount > 0 ? 'unread' : ''}" 
+                     data-user-id="${conv.user._id}"
+                     onclick="openChat('${conv.user._id}', '${conv.user.name}', '${conv.user.profilePhoto || ''}')">
+                  <div class="conversation-avatar">
+                    ${conv.user.profilePhoto ?
+                        `<img src="${conv.user.profilePhoto}" alt="${conv.user.name}">` :
+                        `<span>${conv.user.name.charAt(0).toUpperCase()}</span>`
+                    }
+                  </div>
+                  
+                  <div class="conversation-info">
+                    <div class="conversation-header">
+                      <h4>${conv.user.name}</h4>
+                      <span class="conversation-time">${timeDisplay}</span>
+                    </div>
+                    <div class="conversation-preview">
+                      <p>${previewText}</p>
+                      ${conv.unreadCount > 0 ? `<span class="unread-badge">${conv.unreadCount}</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+        }
+
+        // Open chat with user
+        async function openChat(userId, userName, userPhoto) {
+            currentChatUserId = userId;
+            document.getElementById('selectedUserId').value = userId;
+
+            // Update UI
+            document.getElementById('chatEmptyState').style.display = 'none';
+            document.getElementById('chatActive').style.display = 'flex';
+
+            // Update header
+            document.getElementById('chatUserName').textContent = userName;
+            const avatarEl = document.getElementById('chatUserAvatar');
+            if (userPhoto) {
+                avatarEl.innerHTML = `<img src="${userPhoto}" alt="${userName}">`;
+            } else {
+                avatarEl.innerHTML = `<span>${userName.charAt(0).toUpperCase()}</span>`;
+            }
+
+            // Load messages
+            try {
+                const response = await fetch(`/chat/${userId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderMessages(data.messages);
+                    markMessagesAsSeen(userId);
+                }
+            } catch (error) {
+                console.error('Error loading chat:', error);
+            }
+        }
+
+        // Render messages
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            const currentUserId = '<%= user._id %>';
+
+            container.innerHTML = messages.map(msg => {
+                const isMine = msg.sender._id === currentUserId;
+                return `
+      <div class="message ${isMine ? 'message-mine' : 'message-theirs'}" data-message-id="${msg._id}">
+        <div class="message-content">
+          <p>${escapeHtml(msg.message)}</p>
+          ${msg.edited ? '<span class="message-edited">معدلة</span>' : ''}
+        </div>
+        <div class="message-meta">
+          <span class="message-time">${formatTime(msg.createdAt)}</span>
+          ${msg.seen ? '<i class="fa-solid fa-check-double seen"></i>' : '<i class="fa-solid fa-check"></i>'}
+        </div>
+        ${isMine && canEditMessage(msg.createdAt) ? `
+          <div class="message-actions">
+            <button onclick="editMessage('${msg._id}', '${escapeHtml(msg.message)}')" title="تعديل">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="deleteMessage('${msg._id}')" title="حذف">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Append new message
+        function appendMessage(message) {
+            const container = document.getElementById('chatMessages');
+            const currentUserId = '<%= user._id %>';
+            const isMine = message.sender._id === currentUserId;
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${isMine ? 'message-mine' : 'message-theirs'}`;
+            messageEl.setAttribute('data-message-id', message._id);
+            messageEl.innerHTML = `
+    <div class="message-content">
+      <p>${escapeHtml(message.message)}</p>
+    </div>
+    <div class="message-meta">
+      <span class="message-time">${formatTime(message.createdAt)}</span>
+      ${message.seen ? '<i class="fa-solid fa-check-double seen"></i>' : '<i class="fa-solid fa-check"></i>'}
+    </div>
+    ${isMine ? `
+      <div class="message-actions">
+        <button onclick="editMessage('${message._id}', '${escapeHtml(message.message)}')" title="تعديل">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button onclick="deleteMessage('${message._id}')" title="حذف">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    ` : ''}
+  `;
+
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Send message
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            const receiverId = document.getElementById('selectedUserId').value;
+            const editingId = document.getElementById('editingMessageId').value;
+
+            if (!message || !receiverId) return;
+
+            try {
+                if (editingId) {
+                    // Edit message
+                    const response = await fetch(`/chat/${editingId}/edit`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('editingMessageId').value = '';
+                        document.getElementById('sendBtn').innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+                    }
+                } else {
+                    // Send new message
+                    const response = await fetch('/chat/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ receiverId, message })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        appendMessage(data.message);
+                    }
+                }
+
+                input.value = '';
+                input.style.height = 'auto';
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        });
+
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Typing indicator
+        let typingTimer;
+        document.getElementById('messageInput').addEventListener('input', function () {
+            const receiverId = document.getElementById('selectedUserId').value;
+            if (!receiverId) return;
+
+            socket.emit('typing', { receiverId, isTyping: true });
+
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                socket.emit('typing', { receiverId, isTyping: false });
+            }, 1000);
+        });
+
+        // Edit message
+        function editMessage(messageId, currentText) {
+            document.getElementById('editingMessageId').value = messageId;
+            document.getElementById('messageInput').value = currentText;
+            document.getElementById('sendBtn').innerHTML = '<i class="fa-solid fa-check"></i>';
+            document.getElementById('messageInput').focus();
+        }
+
+        // Delete message
+        async function deleteMessage(messageId) {
+            if (!confirm('هل أنت متأكد من حذف هذه الرسالة?')) return;
+
+            try {
+                const response = await fetch(`/chat/${messageId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    removeMessage(messageId);
+                }
+            } catch (error) {
+                console.error('Error deleting message:', error);
+            }
+        }
+
+        // Remove message from DOM
+        function removeMessage(messageId) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.remove();
+            }
+        }
+
+        // Update message in DOM
+        function updateMessage(message) {
+            const messageEl = document.querySelector(`[data-message-id="${message._id}"]`);
+            if (messageEl) {
+                const contentEl = messageEl.querySelector('.message-content p');
+                if (contentEl) {
+                    contentEl.textContent = message.message;
+                }
+
+                // Add edited indicator
+                if (!messageEl.querySelector('.message-edited')) {
+                    messageEl.querySelector('.message-content').innerHTML += '<span class="message-edited">معدلة</span>';
+                }
+            }
+        }
+
+        // Mark messages as seen
+        async function markMessagesAsSeen(userId) {
+            try {
+                await fetch(`/chat/${userId}/seen`, { method: 'PUT' });
+                loadConversations();
+            } catch (error) {
+                console.error('Error marking messages as seen:', error);
+            }
+        }
+
+        // Show typing indicator
+        function showTypingIndicator(isTyping) {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.style.display = isTyping ? 'flex' : 'none';
+        }
+
+        // Check if message can be edited (within 5 minutes)
+        function canEditMessage(createdAt) {
+            const fiveMinutes = 5 * 60 * 1000;
+            const messageTime = new Date(createdAt).getTime();
+            const now = Date.now();
+            return (now - messageTime) < fiveMinutes;
+        }
+
+        // Utility functions
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'الآن';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' د';
+            if (diff < 86400000) return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Search conversations
+        document.getElementById('searchConversations').addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredConversations = conversations.filter(conv =>
+                conv.user.name.toLowerCase().includes(searchTerm)
+            );
+            renderConversations(filteredConversations);
+        });
+    </script>
+
+    <style>
+        .btn-icon {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Modal Styles matching the theme */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border: var(--glass-border);
+            border-radius: var(--border-radius-lg);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .parent-chat-item:hover {
+            background: var(--primary-light) !important;
+            border-color: var(--primary) !important;
+        }
+    </style>
+
+    <script>
+        // Modal functions
+        // Define locally to avoid scope issues, but attach to window for onclick handler availability
+        window.openNewChatModal = function () {
+            const modal = document.getElementById('newChatModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                fetchParentsForChat();
+            } else {
+                console.error('Modal element not found');
+            }
+        }
+
+        window.closeNewChatModal = function () {
+            const modal = document.getElementById('newChatModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('newChatModal');
+            if (event.target == modal) {
+                window.closeNewChatModal();
+            }
+        }
+
+        async function fetchParentsForChat() {
+            const list = document.getElementById('parentsList');
+            const loading = document.getElementById('loadingParents');
+
+            if (!list || !loading) return;
+
+            list.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                // Use the local API endpoint
+                const response = await fetch('/specialist/api/parents');
+                const data = await response.json();
+
+                loading.style.display = 'none';
+
+                if (data.success && data.parents.length > 0) {
+                    list.innerHTML = data.parents.map(parent => `
+                        <div class="parent-chat-item" onclick="startChatWithParent('${parent._id}', '${parent.name}', '${parent.profilePhoto || ''}')" 
+                             style="cursor: pointer; padding: 10px; background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                            <div class="conversation-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                                ${parent.profilePhoto ?
+                            `<img src="${parent.profilePhoto}" alt="${parent.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+                            `<span style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--primary-light); color: var(--primary); border-radius: 50%;">${parent.name.charAt(0).toUpperCase()}</span>`
+                        }
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">${parent.name}</h4>
+                                <small style="color: var(--text-secondary);">${parent.email}</small>
+                            </div>
+                            <i class="fas fa-comment-dots" style="color: var(--primary);"></i>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = `<div class="text-center text-muted" style="grid-column: 1/-1; padding: 20px;">لا يوجد أولياء أمور مرتبطين حالياً</div>`;
+                }
+            } catch (error) {
+                console.error('Error fetching parents:', error);
+                loading.style.display = 'none';
+                list.innerHTML = `<div class="text-center text-danger" style="grid-column: 1/-1;">حدث خطأ أثناء تحميل القائمة</div>`;
+            }
+        }
+
+        window.startChatWithParent = function (userId, name, photo) {
+            window.closeNewChatModal();
+            // Call the existing openChat function
+            if (typeof openChat === 'function') {
+                openChat(userId, name, photo);
+            } else {
+                console.error('openChat function not found');
+            }
+        }
+    </script>
+
+    <%- include('../partials/layout-end') %>
+        </content>

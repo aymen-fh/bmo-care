@@ -1,0 +1,96 @@
+<div class="advanced-filters glass" id="filterPanel" style="display: none; margin-bottom: 1.5rem; padding: 1.5rem;">
+    <form action="" method="GET" id="filterForm">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+
+            <!-- Search (Preserve existing) -->
+            <input type="hidden" name="search" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+
+            <!-- Status Filter -->
+            <div class="form-group">
+                <label>
+                    <%= __('status') || 'الحالة' %>
+                </label>
+                <select name="status" class="form-control" onchange="this.form.submit()">
+                    <option value="">
+                        <%= __('all') %>
+                    </option>
+                    <option value="active" <%=typeof filters !=='undefined' && filters.status==='active' ? 'selected'
+                        : '' %>><%= __('active') %>
+                    </option>
+                    <option value="inactive" <%=typeof filters !=='undefined' && filters.status==='inactive'
+                        ? 'selected' : '' %>><%= __('inactive') %>
+                    </option>
+                </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="form-group">
+                <label>
+                    <%= __('sortBy') || 'ترتيب حسب' %>
+                </label>
+                <select name="sort" class="form-control" onchange="this.form.submit()">
+                    <option value="-createdAt" <%=typeof filters !=='undefined' && filters.sort==='-createdAt'
+                        ? 'selected' : '' %>><%= __('newestFirst') %>
+                    </option>
+                    <option value="createdAt" <%=typeof filters !=='undefined' && filters.sort==='createdAt'
+                        ? 'selected' : '' %>><%= __('oldestFirst') %>
+                    </option>
+                    <option value="name" <%=typeof filters !=='undefined' && filters.sort==='name' ? 'selected' : '' %>>
+                        <%= __('nameAZ') %>
+                    </option>
+                </select>
+            </div>
+
+            <!-- Date Range (Optional) -->
+            <div class="form-group">
+                <label>
+                    <%= __('dateRange') || 'الفترة الزمنية' %>
+                </label>
+                <select name="period" class="form-control" onchange="this.form.submit()">
+                    <option value="">
+                        <%= __('allTime') %>
+                    </option>
+                    <option value="7days" <%=typeof filters !=='undefined' && filters.period==='7days' ? 'selected' : ''
+                        %>><%= __('last7Days') %>
+                    </option>
+                    <option value="30days" <%=typeof filters !=='undefined' && filters.period==='30days' ? 'selected'
+                        : '' %>><%= __('last30Days') %>
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <a href="?" class="btn btn-outline btn-sm">
+                <i class="fas fa-undo"></i>
+                <%= __('reset') %>
+            </a>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fas fa-filter"></i>
+                <%= __('applyFilters') %>
+            </button>
+        </div>
+    </form>
+</div>
+
+<div style="margin-bottom: 1rem;">
+    <button class="btn btn-outline btn-sm" onclick="toggleFilters()">
+        <i class="fas fa-filter"></i>
+        <%= __('showFilters') || 'خيارات التصفية' %>
+    </button>
+</div>
+
+<script>
+    function toggleFilters() {
+        const panel = document.getElementById('filterPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Auto-open if filters are active
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('status') || urlParams.has('sort') || urlParams.has('period')) {
+            document.getElementById('filterPanel').style.display = 'block';
+        }
+    });
+</script>

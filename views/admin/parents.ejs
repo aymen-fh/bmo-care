@@ -1,0 +1,41 @@
+<%- include('../partials/layout-start', { title: __('myParents'), activePage: 'parents' }) %>
+
+    <div class="page-header">
+        <h2><i class="fas fa-users"></i>
+            <%= __('myParents') %>
+        </h2>
+    </div>
+
+    <div class="cards-grid">
+        <% if (parents && parents.length> 0) { %>
+            <% parents.forEach(function(parent) { %>
+                <div class="person-card">
+                    <div class="person-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="person-info">
+                        <h3>
+                            <%= parent.name %>
+                        </h3>
+                        <p><i class="fas fa-envelope"></i>
+                            <%= parent.email %>
+                        </p>
+                        <% if (parent.phone) { %>
+                            <p><i class="fas fa-phone"></i>
+                                <%= parent.phone %>
+                            </p>
+                            <% } %>
+                    </div>
+                </div>
+                <% }); %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>
+                                <%= __('noData') %>
+                            </p>
+                        </div>
+                        <% } %>
+    </div>
+
+    <%- include('../partials/layout-end') %>

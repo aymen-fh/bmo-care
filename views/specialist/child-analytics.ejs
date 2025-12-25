@@ -1,0 +1,525 @@
+<%- include('../partials/layout-start', { title: `تحليلات ${child.name}`, activePage: 'children' }) %>
+
+    <div class="page-container-blue">
+        <!-- Blue Profile Header -->
+        <div class="blue-profile-header">
+            <div class="profile-content-wrapper">
+                <!-- Stats Section (Left in RTL) -->
+                <div class="header-stats-blue">
+                    <div class="stat-item-blue">
+                        <span class="stat-value" id="headerSuccessRate">--</span>
+                        <span class="stat-label">نسبة النجاح</span>
+                    </div>
+                    <div class="stat-item-blue">
+                        <span class="stat-value" id="headerAvgScore">--</span>
+                        <span class="stat-label">متوسط الأداء</span>
+                    </div>
+                    <div class="stat-item-blue">
+                        <span class="stat-value" id="headerTotalSessions">--</span>
+                        <span class="stat-label">إجمالي الجلسات</span>
+                    </div>
+                </div>
+
+                <!-- Profile Info (Right in RTL) -->
+                <!-- Profile Info (Right in RTL) -->
+                <div class="header-info-blue">
+                    <div class="info-details">
+                        <h1>
+                            <%= child.name %>
+                        </h1>
+
+                        <div class="parent-info-row">
+                            <span class="parent-name">
+                                <%= child.parent.name %>
+                            </span>
+                            <% if (child.parent.profilePhoto) { %>
+                                <img src="<%= child.parent.profilePhoto.startsWith('http') ? child.parent.profilePhoto : '/uploads/' + child.parent.profilePhoto.split('/').pop() %>"
+                                    alt="Parent" class="mini-avatar-circle"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                <i class="fa-solid fa-user fallback-icon" style="display:none;"></i>
+                                <% } else { %>
+                                    <i class="fa-solid fa-user"></i>
+                                    <% } %>
+                        </div>
+
+                        <p class="parent-email">
+                            <%= child.parent.email %>
+                                <i class="fa-solid fa-envelope"></i>
+                        </p>
+                    </div>
+
+                    <!-- Child Avatar -->
+                    <div class="avatar-circle-blue">
+                        <!-- Since Child model has no image, we rely on gender avatar -->
+                        <i class="fa-solid fa-<%= child.gender === 'male' ? 'child' : 'child-dress' %>"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .mini-avatar-circle {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+                margin-left: 0.5rem;
+            }
+
+            .parent-info-row {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                /* RTL align */
+                gap: 0.5rem;
+                margin-bottom: 0.25rem;
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 1rem;
+            }
+        </style>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid-blue-layout">
+            <!-- Progress Over Time -->
+            <div class="chart-box-white">
+                <div class="chart-header-simple">
+                    <h3>
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        التقدم عبر الزمن
+                    </h3>
+                    <span>آخر 20 جلسة</span>
+                </div>
+                <div class="chart-wrapper-blue">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Skills Comparison -->
+            <div class="chart-box-white">
+                <div class="chart-header-simple">
+                    <h3>
+                        <i class="fa-solid fa-chart-bar"></i>
+                        مقارنة المهارات
+                    </h3>
+                    <span>متوسط الأداء لكل نشاط</span>
+                </div>
+                <div class="chart-wrapper-blue">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Charts & Table Grid -->
+        <div class="secondary-grid-blue">
+            <!-- Success Rate -->
+            <div class="chart-box-white small-box">
+                <div class="chart-header-simple">
+                    <h3>نسبة النجاح</h3>
+                </div>
+                <div class="chart-wrapper-small">
+                    <canvas id="successChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Difficulty -->
+            <div class="chart-box-white small-box">
+                <div class="chart-header-simple">
+                    <h3>توزيع الصعوبة</h3>
+                </div>
+                <div class="chart-wrapper-small">
+                    <canvas id="difficultyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Skills Table -->
+            <div class="table-box-white span-2">
+                <div class="chart-header-simple">
+                    <h3>تفاصيل المهارات</h3>
+                </div>
+                <table class="clean-blue-table" id="skillsTable">
+                    <thead>
+                        <tr>
+                            <th>المهارة</th>
+                            <th>الجلسات</th>
+                            <th>الأداء</th>
+                            <th>التقدم</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="text-center">جاري التحميل...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXTENDED DETAILS SECTION (Unified View) -->
+    <div class="extended-details-section">
+        <% if (progress) { %>
+            <!-- LETTER PROGRESS -->
+            <div class="clean-card">
+                <div class="card-header-clean">
+                    <h3><i class="fa-solid fa-font"></i> تقدم الحروف</h3>
+                </div>
+                <div class="card-body-clean">
+                    <% if (progress.letterProgress && progress.letterProgress.length> 0) { %>
+                        <div class="progress-items-grid">
+                            <% progress.letterProgress.forEach(function(lp) { %>
+                                <div class="progress-item <%= lp.mastered ? 'item-success' : 'item-pending' %>">
+                                    <span class="item-char">
+                                        <%= lp.letter %>
+                                    </span>
+                                    <div class="item-details">
+                                        <%= lp.attempts || 0 %> محاولة | <%= Math.round((lp.successRate || 0) * 100) %>%
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } else { %>
+                            <div class="empty-placeholder">
+                                <i class="fa-solid fa-font"></i>
+                                <p>لا توجد بيانات للحروف بعد</p>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <!-- WORD PROGRESS -->
+            <div class="clean-card">
+                <div class="card-header-clean">
+                    <h3><i class="fa-solid fa-book"></i> تقدم الكلمات</h3>
+                </div>
+                <div class="card-body-clean">
+                    <% if (progress.wordProgress && progress.wordProgress.length> 0) { %>
+                        <div class="progress-items-grid">
+                            <% progress.wordProgress.forEach(function(wp) { %>
+                                <div class="progress-item <%= wp.mastered ? 'item-success' : 'item-info' %>">
+                                    <span class="item-char text-sm">
+                                        <%= wp.word %>
+                                    </span>
+                                    <div class="item-details">
+                                        <%= wp.attempts || 0 %> محاولة | <%= Math.round((wp.successRate || 0) * 100) %>%
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } else { %>
+                            <div class="empty-placeholder">
+                                <i class="fa-solid fa-book"></i>
+                                <p>لا توجد بيانات للكلمات بعد</p>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <!-- Target Configuration -->
+            <div class="clean-card">
+                <div class="card-header-clean">
+                    <h3><i class="fa-solid fa-bullseye"></i> الأهداف المحددة</h3>
+                </div>
+                <div class="card-body-clean">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <!-- Letters -->
+                        <div>
+                            <h4 style="color: #334155; margin-bottom: 1rem; font-size: 1rem;">
+                                <i class="fa-solid fa-font" style="color: #3b82f6; margin-left: 0.5rem;"></i> الحروف
+                                المستهدفة
+                            </h4>
+                            <% if (child.targetLetters && child.targetLetters.length> 0) { %>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <% child.targetLetters.forEach(function(letter) { %>
+                                        <span class="badge-pill badge-primary-soft">
+                                            <%= letter %>
+                                        </span>
+                                        <% }); %>
+                                </div>
+                                <% } else { %>
+                                    <p style="color: #94a3b8; font-size: 0.9rem;">لم يتم تحديد حروف بعد</p>
+                                    <% } %>
+                        </div>
+
+                        <!-- Words -->
+                        <div>
+                            <h4 style="color: #334155; margin-bottom: 1rem; font-size: 1rem;">
+                                <i class="fa-solid fa-book" style="color: #f59e0b; margin-left: 0.5rem;"></i> الكلمات
+                                المستهدفة
+                            </h4>
+                            <% if (child.targetWords && child.targetWords.length> 0) { %>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <% child.targetWords.forEach(function(word) { %>
+                                        <span class="badge-pill badge-warning-soft">
+                                            <%= word %>
+                                        </span>
+                                        <% }); %>
+                                </div>
+                                <% } else { %>
+                                    <p style="color: #94a3b8; font-size: 0.9rem;">لم يتم تحديد كلمات بعد</p>
+                                    <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+    </div>
+    </div> <!-- Close page-container-blue -->
+
+    <style>
+        /* Merged Styles for Clean Cards in Blue Layout */
+        .extended-details-section {
+            margin-top: 2rem;
+        }
+
+        .clean-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid #f1f5f9;
+        }
+
+        .card-header-clean {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f8fafc;
+            background: white;
+        }
+
+        .card-header-clean h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-body-clean {
+            padding: 2rem;
+        }
+
+        /* Progress Items */
+        .progress-items-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .progress-item {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .item-char {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .text-sm {
+            font-size: 1.25rem;
+        }
+
+        .item-details {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .item-success .item-char {
+            color: #10b981;
+        }
+
+        .item-pending .item-char {
+            color: #92400e;
+        }
+
+        .item-info .item-char {
+            color: #3b82f6;
+        }
+
+        /* Empty States */
+        .empty-placeholder {
+            text-align: center;
+            padding: 3rem;
+            color: #cbd5e1;
+        }
+
+        .empty-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: #e2e8f0;
+        }
+
+        /* Badges */
+        .badge-pill {
+            padding: 0.35rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-success-soft {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning-soft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-primary-soft {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // Initialize Fonts Defaults
+        Chart.defaults.font.family = "'Cairo', sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        const childId = '<%= child._id %>';
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch(`/specialist/child/${childId}/analytics/data`);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateHeaderStats(data.stats);
+                    createCharts(data.chartData);
+                    updateSkillsTable(data.stats.skillsProgress);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function updateHeaderStats(stats) {
+            document.getElementById('headerSuccessRate').textContent = stats.successRate + '%';
+            document.getElementById('headerAvgScore').textContent = stats.averageScore + '%';
+            document.getElementById('headerTotalSessions').textContent = stats.totalSessions;
+        }
+
+        function createCharts(chartData) {
+            // Timeline - Right side usually in RTL but grid flips
+            new Chart(document.getElementById('timelineChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.timeline.labels,
+                    datasets: [{
+                        label: 'الدرجة',
+                        data: chartData.timeline.data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, border: { display: false }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Skills - Left side
+            new Chart(document.getElementById('skillsChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.skills.labels,
+                    datasets: [{
+                        label: 'الأداء',
+                        data: chartData.skills.data,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                        barThickness: 25
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, // Matches screenshot: no legend
+                    indexAxis: 'y', // Horizontal bars match screenshot style often, or vertical
+                    scales: {
+                        x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Success
+            new Chart(document.getElementById('successChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.successRate.labels,
+                    datasets: [{
+                        data: chartData.successRate.data,
+                        backgroundColor: ['#10b981', '#f1f5f9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '75%', plugins: { legend: { display: false } } }
+            });
+
+            // Difficulty
+            new Chart(document.getElementById('difficultyChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['سهل', 'متوسط', 'صعب'],
+                    datasets: [{
+                        label: 'الجلسات',
+                        data: [chartData.difficulty.easy, chartData.difficulty.medium, chartData.difficulty.hard],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+        }
+
+        function updateSkillsTable(skills) {
+            const tbody = document.querySelector('#skillsTable tbody');
+            if (!skills || Object.keys(skills).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">لا توجد بيانات</td></tr>';
+                return;
+            }
+            tbody.innerHTML = Object.entries(skills).map(([k, v]) => `
+            <tr>
+                <td>${k === 'general' ? 'عام' : 'نشاط ' + k}</td>
+                <td>${v.sessionsCount}</td>
+                <td>${v.averageScore}%</td>
+                <td>
+                    <div class="table-progress">
+                        <div style="width: ${v.averageScore}%"></div>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        }
+
+        loadAnalytics();
+    </script>
+
+    <%- include('../partials/layout-end') %>

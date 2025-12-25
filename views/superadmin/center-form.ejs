@@ -1,0 +1,137 @@
+<%- include('../partials/layout-start', { title: title, activePage: 'centers' }) %>
+
+    <div class="page-header">
+        <a href="/superadmin/centers" class="btn btn-link">
+            <i class="fas fa-arrow-<%= isRTL ? 'right' : 'left' %>"></i>
+            <%= __('back') %>
+        </a>
+    </div>
+
+    <div class="form-card">
+        <div class="card-header">
+            <h2>
+                <%= isEdit ? __('edit') + ' ' + center.name : __('createCenter') %>
+            </h2>
+        </div>
+
+        <form action="<%= isEdit ? '/superadmin/centers/' + center._id : '/superadmin/centers' %>" method="POST"
+            class="form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">
+                        <%= __('centerName') %> <span class="required">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" value="<%= isEdit ? center.name : '' %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nameEn">
+                        <%= __('centerNameEn') %>
+                    </label>
+                    <input type="text" id="nameEn" name="nameEn"
+                        value="<%= isEdit && center.nameEn ? center.nameEn : '' %>">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">
+                        <%= __('centerPhone') %>
+                    </label>
+                    <input type="tel" id="phone" name="phone" value="<%= isEdit && center.phone ? center.phone : '' %>">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <%= __('centerEmail') %>
+                    </label>
+                    <input type="email" id="email" name="email"
+                        value="<%= isEdit && center.email ? center.email : '' %>">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="address">
+                    <%= __('centerAddress') %>
+                </label>
+                <input type="text" id="address" name="address"
+                    value="<%= isEdit && center.address ? center.address : '' %>">
+            </div>
+
+            <div class="form-group">
+                <label for="description">
+                    <%= __('centerDescription') %>
+                </label>
+                <textarea id="description" name="description"
+                    rows="3"><%= isEdit && center.description ? center.description : '' %></textarea>
+            </div>
+
+            <% if (!isEdit) { %>
+                <!-- Admin Creation Section -->
+                <div class="form-section-divider">
+                    <h3>
+                        <i class="fas fa-user-shield"></i>
+                        <%= __('centerAdminInfo') %>
+                    </h3>
+                    <p class="text-muted">
+                        <%= __('createAdminForCenterDescription') %>
+                    </p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminName">
+                            <%= __('adminName') %> <span class="required">*</span>
+                        </label>
+                        <input type="text" id="adminName" name="adminName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminEmail">
+                            <%= __('adminEmail') %> <span class="required">*</span>
+                        </label>
+                        <input type="email" id="adminEmail" name="adminEmail" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminPassword">
+                            <%= __('password') %> <span class="required">*</span>
+                        </label>
+                        <input type="password" id="adminPassword" name="adminPassword" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPhone">
+                            <%= __('phone') %>
+                        </label>
+                        <input type="tel" id="adminPhone" name="adminPhone">
+                    </div>
+                </div>
+                <% } %>
+
+                    <% if (isEdit) { %>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="isActive" <%=center.isActive ? 'checked' : '' %>>
+                                <span>
+                                    <%= __('active') %>
+                                </span>
+                            </label>
+                        </div>
+                        <% } %>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    <%= __('save') %>
+                                </button>
+                                <a href="/superadmin/centers" class="btn btn-outline">
+                                    <%= __('cancel') %>
+                                </a>
+                            </div>
+        </form>
+    </div>
+
+    <%- include('../partials/layout-end') %>

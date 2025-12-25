@@ -1,0 +1,310 @@
+<%- include('../partials/layout-start', { title: specialist.name, activePage: 'specialists' }) %>
+
+    <!-- Specialist Header -->
+    <div class="page-header">
+        <div>
+            <h2>
+                <i class="fas fa-user-md"></i>
+                <%= specialist.name %>
+            </h2>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <span class="badge badge-primary"><i class="fas fa-id-card"></i>
+                    <%= specialist.staffId || 'N/A' %>
+                </span>
+                <span class="badge badge-info"><i class="fas fa-envelope"></i>
+                    <%= specialist.email %>
+                </span>
+                <% if (specialist.specialization) { %>
+                    <span class="badge" style="background: var(--warning); color: white;">
+                        <i class="fas fa-stethoscope"></i>
+                        <%= specialist.specialization %>
+                    </span>
+                    <% } %>
+            </div>
+        </div>
+        <a href="/admin/specialists" class="btn btn-outline">
+            <i class="fas fa-arrow-right"></i>
+            <%= __('back') %>
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>
+                    <%= specialist.linkedParents ? specialist.linkedParents.length : 0 %>
+                </h3>
+                <p>
+                    <%= __('linkedParents') || 'أولياء أمور مرتبطين' %>
+                </p>
+            </div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-child"></i>
+            </div>
+            <div class="stat-content">
+                <h3>
+                    <%= specialist.assignedChildren ? specialist.assignedChildren.length : 0 %>
+                </h3>
+                <p>
+                    <%= __('assignedChildren') || 'الأطفال المُعيّنين' %>
+                </p>
+            </div>
+        </div>
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3>
+                    <%= new Date(specialist.createdAt).toLocaleDateString('ar-SA') %>
+                </h3>
+                <p>
+                    <%= __('joinedDate') || 'تاريخ الانضمام' %>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+
+        <!-- Linked Parents Section -->
+        <div class="data-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-link"></i>
+                    <%= __('linkedParents') || 'أولياء الأمور المرتبطين' %>
+                        (<%= specialist.linkedParents ? specialist.linkedParents.length : 0 %>)
+                </h2>
+                <button class="btn btn-sm btn-primary" onclick="toggleParentSearch()">
+                    <i class="fas fa-plus"></i>
+                    <%= __('addParent') || 'إضافة ولي أمر' %>
+                </button>
+            </div>
+
+            <!-- Parent Search (Hidden by default) -->
+            <div id="parentSearchContainer"
+                style="display: none; padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="parentSearchInput"
+                        placeholder="<%= __('searchByNameOrEmail') || 'ابحث بالاسم أو البريد الإلكتروني...' %>"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                </div>
+                <div id="searchResults" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Linked Parents List -->
+            <div class="table-container">
+                <% if (specialist.linkedParents && specialist.linkedParents.length> 0) { %>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <%= __('name') %>
+                                </th>
+                                <th>
+                                    <%= __('email') %>
+                                </th>
+                                <th>
+                                    <%= __('phone') %>
+                                </th>
+                                <th>
+                                    <%= __('actions') %>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% specialist.linkedParents.forEach(function(parent) { %>
+                                <tr>
+                                    <td>
+                                        <div class="cell-with-icon">
+                                            <i class="fas fa-user"></i>
+                                            <%= parent.name %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <%= parent.email %>
+                                    </td>
+                                    <td>
+                                        <%= parent.phone || '-' %>
+                                    </td>
+                                    <td>
+                                        <form
+                                            action="/admin/specialists/<%= specialist._id %>/unlink-parent/<%= parent._id %>"
+                                            method="POST" class="inline"
+                                            onsubmit="return confirm(`<%= __('confirmUnlink') || 'هل أنت متأكد من إلغاء الربط؟' %>`)">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-unlink"></i>
+                                                <%= __('unlink') || 'إلغاء الربط' %>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                        </tbody>
+                    </table>
+                    <% } else { %>
+                        <div style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>
+                                <%= __('noLinkedParents') || 'لا يوجد أولياء أمور مرتبطين بعد' %>
+                            </p>
+                        </div>
+                        <% } %>
+            </div>
+        </div>
+
+        <!-- Assigned Children Section -->
+        <div class="data-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-child"></i>
+                    <%= __('assignedChildren') || 'الأطفال المُعيّنين' %>
+                        (<%= specialist.assignedChildren ? specialist.assignedChildren.length : 0 %>)
+                </h2>
+            </div>
+            <div class="table-container">
+                <% if (specialist.assignedChildren && specialist.assignedChildren.length> 0) { %>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <%= __('name') %>
+                                </th>
+                                <th>
+                                    <%= __('age') %>
+                                </th>
+                                <th>
+                                    <%= __('gender') %>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% specialist.assignedChildren.forEach(function(child) { %>
+                                <tr>
+                                    <td>
+                                        <div class="cell-with-icon">
+                                            <i class="fas fa-child"></i>
+                                            <%= child.name %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <%= child.age %>
+                                            <%= __('years') || 'سنوات' %>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge <%= child.gender === 'male' ? 'badge-info' : 'badge-warning' %>">
+                                            <i class="fas fa-<%= child.gender === 'male' ? 'mars' : 'venus' %>"></i>
+                                            <%= __(child.gender) || (child.gender==='male' ? 'ذكر' : 'أنثى' ) %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                        </tbody>
+                    </table>
+                    <% } else { %>
+                        <div style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-child" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>
+                                <%= __('noAssignedChildren') || 'لا يوجد أطفال مُعيّنين بعد' %>
+                            </p>
+                        </div>
+                        <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Info Section -->
+    <div class="data-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-info-circle"></i>
+                <%= __('additionalInfo') || 'معلومات إضافية' %>
+            </h2>
+        </div>
+        <div style="padding: 1.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                <div>
+                    <label
+                        style="font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                        <%= __('licenseNumber') || 'رقم الترخيص' %>
+                    </label>
+                    <p style="color: var(--text-primary);">
+                        <%= specialist.licenseNumber || '-' %>
+                    </p>
+                </div>
+                <div>
+                    <label
+                        style="font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">
+                        <%= __('phone') %>
+                    </label>
+                    <p style="color: var(--text-primary);">
+                        <%= specialist.phone || '-' %>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Parent Search -->
+    <script>
+        let searchTimeout;
+        const searchInput = document.getElementById('parentSearchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        function toggleParentSearch() {
+            const container = document.getElementById('parentSearchContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+            if (container.style.display === 'block') {
+                searchInput.focus();
+            }
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/admin/specialists/<%= specialist._id %>/search-parents?query=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.parents.length > 0) {
+                            searchResults.innerHTML = data.parents.map(parent => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                                    <div>
+                                        <strong>${parent.name}</strong><br>
+                                        <small style="color: var(--text-secondary);">${parent.email}</small>
+                                    </div>
+                                    <form action="/admin/specialists/<%= specialist._id %>/link-parent" method="POST" class="inline">
+                                        <input type="hidden" name="parentId" value="${parent._id}">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-link"></i> ربط
+                                        </button>
+                                    </form>
+                                </div>
+                            `).join('');
+                        } else {
+                            searchResults.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">لا توجد نتائج</p>';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Search error:', err);
+                        searchResults.innerHTML = '<p style="padding: 1rem; color: var(--danger);">حدث خطأ في البحث</p>';
+                    });
+            }, 300);
+        });
+    </script>
+
+    <%- include('../partials/layout-end') %>

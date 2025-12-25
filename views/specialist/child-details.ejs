@@ -1,0 +1,565 @@
+<%- include('../partials/layout-start', { title: child.name, activePage: 'children' }) %>
+
+    <div class="page-container-clean">
+        <!-- Header / Nav -->
+        <div class="page-header-clean">
+            <a href="/specialist/parents" class="back-btn-clean">
+                <i class="fas fa-arrow-right"></i> العودة للأطفال
+            </a>
+        </div>
+
+        <!-- MAIN INFO CARD -->
+        <div class="clean-card info-card-hero">
+            <div class="card-header-clean">
+                <h3><i class="fas fa-child"></i> معلومات الطفل</h3>
+                <span
+                    class="badge-pill <%= child.difficultyLevel === 'beginner' ? 'badge-success-soft' : child.difficultyLevel === 'intermediate' ? 'badge-warning-soft' : 'badge-danger-soft' %>">
+                    <%= child.difficultyLevel==='beginner' ? 'مبتدئ' : child.difficultyLevel==='intermediate' ? 'متوسط'
+                        : 'متقدم' %>
+                </span>
+            </div>
+
+            <div class="hero-grid">
+                <!-- Child Name (Right) -->
+                <div class="hero-item">
+                    <div class="hero-content">
+                        <h1>
+                            <%= child.name %>
+                        </h1>
+                        <p>اسم الطفل</p>
+                    </div>
+                    <div class="hero-icon icon-blue">
+                        <i class="fas fa-child"></i>
+                    </div>
+                </div>
+
+                <!-- Age (Center) -->
+                <div class="hero-item center-item">
+                    <div class="hero-content">
+                        <h1>
+                            <%= child.age %>
+                        </h1>
+                        <p>العمر (سنوات)</p>
+                    </div>
+                    <div class="hero-icon icon-green">
+                        <i class="fas fa-birthday-cake"></i>
+                    </div>
+                </div>
+
+                <!-- Gender (Center) -->
+                <div class="hero-item center-item">
+                    <div class="hero-content">
+                        <h1>
+                            <%= child.gender==='male' ? 'ذكر' : 'أنثى' %>
+                        </h1>
+                        <p>الجنس</p>
+                    </div>
+                    <div class="hero-icon icon-orange">
+                        <i class="fas fa-<%= child.gender === 'male' ? 'male' : 'female' %>"></i>
+                    </div>
+                </div>
+
+                <!-- Parent (Left) -->
+                <div class="hero-item">
+                    <div class="hero-content">
+                        <h1>
+                            <%= child.parent ? child.parent.name : '-' %>
+                        </h1>
+                        <p>ولي الأمر</p>
+                    </div>
+                    <div class="hero-icon icon-blue">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Strip -->
+            <% if (child.parent && (child.parent.email || child.parent.phone)) { %>
+                <div class="contact-strip">
+                    <% if (child.parent.email) { %>
+                        <div class="contact-item">
+                            <span>
+                                <%= child.parent.email %>
+                            </span>
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <% } %>
+                            <% if (child.parent.phone) { %>
+                                <div class="contact-item">
+                                    <span dir="ltr">
+                                        <%= child.parent.phone %>
+                                    </span>
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <% } %>
+                </div>
+                <% } %>
+        </div>
+
+        <!-- PROGRESS STATS CARD -->
+        <% if (progress) { %>
+            <div class="clean-card stats-card-section">
+                <div class="card-header-clean">
+                    <h3><i class="fas fa-chart-line"></i> إحصائيات التقدم</h3>
+                </div>
+                <div class="quick-stats-grid">
+                    <div class="quick-stat">
+                        <div class="q-content">
+                            <h2>
+                                <%= progress.totalSessions || 0 %>
+                            </h2>
+                            <p>إجمالي الجلسات</p>
+                        </div>
+                        <div class="q-icon icon-green-bg">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="q-content">
+                            <h2>
+                                <%= progress.totalPlayTime || 0 %>
+                            </h2>
+                            <p>وقت اللعب (دقائق)</p>
+                        </div>
+                        <div class="q-icon icon-blue-bg">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="q-content">
+                            <h2>
+                                <%= Math.round(progress.averageScore || 0) %>%
+                            </h2>
+                            <p>متوسط النتيجة</p>
+                        </div>
+                        <div class="q-icon icon-orange-bg">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="q-content">
+                            <h2>
+                                <%= progress.highestScore || 0 %>%
+                            </h2>
+                            <p>أعلى نتيجة</p>
+                        </div>
+                        <div class="q-icon icon-blue-bg">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LETTER PROGRESS -->
+            <div class="clean-card">
+                <div class="card-header-clean">
+                    <h3><i class="fas fa-font"></i> تقدم الحروف</h3>
+                </div>
+                <div class="card-body-clean">
+                    <% if (progress.letterProgress && progress.letterProgress.length> 0) { %>
+                        <div class="progress-items-grid">
+                            <% progress.letterProgress.forEach(function(lp) { %>
+                                <div class="progress-item <%= lp.mastered ? 'item-success' : 'item-pending' %>">
+                                    <span class="item-char">
+                                        <%= lp.letter %>
+                                    </span>
+                                    <div class="item-details">
+                                        <%= lp.attempts || 0 %> محاولة | <%= Math.round((lp.successRate || 0) * 100) %>%
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } else { %>
+                            <div class="empty-placeholder">
+                                <i class="fas fa-font"></i>
+                                <p>لا توجد بيانات للحروف بعد</p>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <!-- WORD PROGRESS -->
+            <div class="clean-card">
+                <div class="card-header-clean">
+                    <h3><i class="fas fa-book"></i> تقدم الكلمات</h3>
+                </div>
+                <div class="card-body-clean">
+                    <% if (progress.wordProgress && progress.wordProgress.length> 0) { %>
+                        <div class="progress-items-grid">
+                            <% progress.wordProgress.forEach(function(wp) { %>
+                                <div class="progress-item <%= wp.mastered ? 'item-success' : 'item-info' %>">
+                                    <span class="item-char text-sm">
+                                        <%= wp.word %>
+                                    </span>
+                                    <div class="item-details">
+                                        <%= wp.attempts || 0 %> محاولة | <%= Math.round((wp.successRate || 0) * 100) %>%
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } else { %>
+                            <div class="empty-placeholder">
+                                <i class="fas fa-book"></i>
+                                <p>لا توجد بيانات للكلمات بعد</p>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+
+            <% } else { %>
+                <div class="clean-card empty-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>لا توجد بيانات تقدم بعد</h3>
+                    <p>ستظهر البيانات هنا بمجرد أن يبدأ الطفل في استخدام التطبيق</p>
+                </div>
+                <% } %>
+
+                    <!-- Target Configuration -->
+                    <div class="clean-card">
+                        <div class="card-header-clean">
+                            <h3><i class="fas fa-bullseye"></i> الأهداف المحددة</h3>
+                        </div>
+                        <div class="card-body-clean">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                                <!-- Letters -->
+                                <div>
+                                    <h4 style="color: #334155; margin-bottom: 1rem; font-size: 1rem;">
+                                        <i class="fas fa-font" style="color: #3b82f6; margin-left: 0.5rem;"></i> الحروف
+                                        المستهدفة
+                                    </h4>
+                                    <% if (child.targetLetters && child.targetLetters.length> 0) { %>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                            <% child.targetLetters.forEach(function(letter) { %>
+                                                <span class="badge-pill badge-primary-soft">
+                                                    <%= letter %>
+                                                </span>
+                                                <% }); %>
+                                        </div>
+                                        <% } else { %>
+                                            <p style="color: #94a3b8; font-size: 0.9rem;">لم يتم تحديد حروف بعد</p>
+                                            <% } %>
+                                </div>
+
+                                <!-- Words -->
+                                <div>
+                                    <h4 style="color: #334155; margin-bottom: 1rem; font-size: 1rem;">
+                                        <i class="fas fa-book" style="color: #f59e0b; margin-left: 0.5rem;"></i> الكلمات
+                                        المستهدفة
+                                    </h4>
+                                    <% if (child.targetWords && child.targetWords.length> 0) { %>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                            <% child.targetWords.forEach(function(word) { %>
+                                                <span class="badge-pill badge-warning-soft">
+                                                    <%= word %>
+                                                </span>
+                                                <% }); %>
+                                        </div>
+                                        <% } else { %>
+                                            <p style="color: #94a3b8; font-size: 0.9rem;">لم يتم تحديد كلمات بعد</p>
+                                            <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+    </div>
+
+    <style>
+        /* Clean White Design System */
+        .page-container-clean {
+            padding: 0 1.5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header-clean {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            /* RTL: Button on left? Or right? Usually back button is on start */
+        }
+
+        .clean-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            /* Header separates padding */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            /* Subtle shadow */
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header-clean {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .card-header-clean h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-body-clean {
+            padding: 2rem;
+        }
+
+        /* Hero Section (Info Card) */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 2.5rem 2rem;
+            gap: 1rem;
+            text-align: right;
+        }
+
+        .hero-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            /* Icon and Text separated */
+            padding: 0 1rem;
+            border-left: 1px solid #f1f5f9;
+            /* Divider logic */
+        }
+
+        .hero-item:last-child {
+            border-left: none;
+        }
+
+        .hero-content h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .hero-content p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .hero-icon {
+            font-size: 1.25rem;
+            width: 30px;
+            /* Implicit size */
+        }
+
+        .icon-blue {
+            color: #3b82f6;
+        }
+
+        .icon-green {
+            color: #10b981;
+        }
+
+        .icon-orange {
+            color: #f59e0b;
+        }
+
+        .contact-strip {
+            background: #f8fafc;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-end;
+            /* RTL: Start from Right */
+            gap: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* Quick Stats Grid */
+        .quick-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        .quick-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .q-content {
+            text-align: right;
+        }
+
+        .q-content h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .q-content p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .q-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .icon-green-bg {
+            background: #10b981;
+        }
+
+        .icon-blue-bg {
+            background: #3b82f6;
+        }
+
+        .icon-orange-bg {
+            background: #f59e0b;
+        }
+
+        /* Progress Items */
+        .progress-items-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            /* Center items like in screenshot */
+        }
+
+        .progress-item {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .item-char {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .text-sm {
+            font-size: 1.25rem;
+        }
+
+        .item-details {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .item-success .item-char {
+            color: #10b981;
+        }
+
+        .item-pending .item-char {
+            color: #92400e;
+        }
+
+        .item-info .item-char {
+            color: #3b82f6;
+        }
+
+        /* Empty States */
+        .empty-placeholder {
+            text-align: center;
+            padding: 3rem;
+            color: #cbd5e1;
+        }
+
+        .empty-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: #e2e8f0;
+        }
+
+        /* Large ghost icon */
+        .empty-placeholder p {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .badge-pill {
+            padding: 0.35rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-success-soft {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning-soft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Orange/Yellow for words */
+        .badge-danger-soft {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-primary-soft {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Blue for letters */
+
+
+        /* Responsive */
+        @media (max-width: 768px) {
+
+            .hero-grid,
+            .quick-stats-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+
+            .hero-item {
+                border-left: none;
+                border-bottom: 1px solid #f1f5f9;
+                padding-bottom: 1rem;
+                flex-direction: column-reverse;
+                /* Icon on top/bottom? */
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .contact-strip {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+        }
+    </style>
+
+    <%- include('../partials/layout-end') %>

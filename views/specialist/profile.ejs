@@ -1,0 +1,289 @@
+<%- include('../partials/layout-start', { title: __('profile'), activePage: 'profile' }) %>
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-header-content">
+            <div class="profile-avatar-large">
+                <% if (user.profilePhoto) { %>
+                    <img src="<%= user.profilePhoto %>" alt="<%= user.name %>">
+                    <% } else { %>
+                        <span>
+                            <%= user.name.charAt(0).toUpperCase() %>
+                        </span>
+                        <% } %>
+                            <button class="change-photo-btn" onclick="document.getElementById('photoInput').click()">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+            </div>
+
+            <div class="profile-header-info">
+                <h1>
+                    <%= user.name %>
+                </h1>
+                <p class="profile-role">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <%= __('specialist') %>
+                </p>
+                <% if (user.specialization) { %>
+                    <p class="profile-specialization">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <%= user.specialization %>
+                    </p>
+                    <% } %>
+            </div>
+
+            <div class="profile-stats-quick">
+                <div class="stat-quick">
+                    <div class="stat-quick-value">
+                        <%= stats.children %>
+                    </div>
+                    <div class="stat-quick-label">
+                        <%= __('children') %>
+                    </div>
+                </div>
+                <div class="stat-quick">
+                    <div class="stat-quick-value">
+                        <%= stats.parents %>
+                    </div>
+                    <div class="stat-quick-label">
+                        <%= __('parents') %>
+                    </div>
+                </div>
+                <div class="stat-quick">
+                    <div class="stat-quick-value">
+                        <%= stats.sessions %>
+                    </div>
+                    <div class="stat-quick-label">الجلسات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Form (Hidden) -->
+    <form action="/specialist/profile/upload-photo" method="POST" enctype="multipart/form-data" id="photoForm">
+        <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;"
+            onchange="document.getElementById('photoForm').submit()">
+    </form>
+
+    <!-- Profile Tabs -->
+    <div class="profile-tabs">
+        <button class="profile-tab active" data-tab="info">
+            <i class="fa-solid fa-user"></i>
+            المعلومات الشخصية
+        </button>
+        <button class="profile-tab" data-tab="bio">
+            <i class="fa-solid fa-file-lines"></i>
+            النبذة التعريفية
+        </button>
+        <button class="profile-tab" data-tab="security">
+            <i class="fa-solid fa-lock"></i>
+            الأمان
+        </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="profile-content">
+
+        <!-- Personal Info Tab -->
+        <div class="profile-tab-content active" id="info-tab">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>
+                        <i class="fa-solid fa-user"></i>
+                        المعلومات الأساسية
+                    </h3>
+                </div>
+
+                <form action="/specialist/profile/update" method="POST" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">
+                                <i class="fa-solid fa-user"></i>
+                                الاسم الكامل
+                            </label>
+                            <input type="text" id="name" name="name" value="<%= user.name %>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">
+                                <i class="fa-solid fa-envelope"></i>
+                                البريد الإلكتروني
+                            </label>
+                            <input type="email" id="email" name="email" value="<%= user.email %>" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">
+                                <i class="fa-solid fa-phone"></i>
+                                رقم الهاتف
+                            </label>
+                            <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="specialization">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                التخصص
+                            </label>
+                            <input type="text" id="specialization" name="specialization"
+                                value="<%= user.specialization || '' %>">
+                        </div>
+                    </div>
+
+                    <% if (user.center) { %>
+                        <div class="form-group">
+                            <label>
+                                <i class="fa-solid fa-building"></i>
+                                المركز
+                            </label>
+                            <input type="text" value="<%= isRTL ? user.center.name_ar : user.center.name_en %>" disabled
+                                class="disabled-input">
+                        </div>
+                        <% } %>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fa-solid fa-check-circle"></i>
+                                    تأكيد التعديلات
+                                </button>
+                            </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bio Tab -->
+        <div class="profile-tab-content" id="bio-tab">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>
+                        <i class="fa-solid fa-file-lines"></i>
+                        النبذة التعريفية
+                    </h3>
+                    <p class="profile-card-description">أضف نبذة تعريفية عن نفسك وخبراتك</p>
+                </div>
+
+                <form action="/specialist/profile/update" method="POST" class="profile-form">
+                    <!-- Hidden fields to preserve other data -->
+                    <input type="hidden" name="name" value="<%= user.name %>">
+                    <input type="hidden" name="email" value="<%= user.email %>">
+                    <input type="hidden" name="phone" value="<%= user.phone || '' %>">
+                    <input type="hidden" name="specialization" value="<%= user.specialization || '' %>">
+
+                    <div class="form-group">
+                        <label for="bio">
+                            نبذة تعريفية (حتى 500 حرف)
+                        </label>
+                        <textarea id="bio" name="bio" rows="8" maxlength="500"
+                            placeholder="اكتب نبذة عنك..."><%= user.bio || '' %></textarea>
+                        <div class="character-count">
+                            <span id="charCount">
+                                <%= (user.bio || '' ).length %>
+                            </span> / 500
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fa-solid fa-check-circle"></i>
+                            تأكيد التعديلات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div class="profile-tab-content" id="security-tab">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>
+                        <i class="fa-solid fa-lock"></i>
+                        تغيير كلمة المرور
+                    </h3>
+                    <p class="profile-card-description">احرص على استخدام كلمة مرور قوية</p>
+                </div>
+
+                <form action="/specialist/profile/change-password" method="POST" class="profile-form">
+                    <div class="form-group">
+                        <label for="currentPassword">
+                            <i class="fa-solid fa-key"></i>
+                            كلمة المرور الحالية
+                        </label>
+                        <input type="password" id="currentPassword" name="currentPassword" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">
+                            <i class="fa-solid fa-lock"></i>
+                            كلمة المرور الجديدة
+                        </label>
+                        <input type="password" id="newPassword" name="newPassword" required minlength="6">
+                        <small class="form-help">يجب أن تكون 6 أحرف على الأقل</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">
+                            <i class="fa-solid fa-lock-keyhole"></i>
+                            تأكيد كلمة المرور الجديدة
+                        </label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fa-solid fa-check-circle"></i>
+                            تأكيد التعديلات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Profile Tabs
+        const tabs = document.querySelectorAll('.profile-tab');
+        const tabContents = document.querySelectorAll('.profile-tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+
+        // Character counter for bio
+        const bioTextarea = document.getElementById('bio');
+        const charCount = document.getElementById('charCount');
+
+        if (bioTextarea && charCount) {
+            bioTextarea.addEventListener('input', () => {
+                charCount.textContent = bioTextarea.value.length;
+            });
+        }
+
+        // Password confirmation validation
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+
+        if (confirmPassword) {
+            confirmPassword.addEventListener('input', () => {
+                if (newPassword.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('كلمات المرور غير متطابقة');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            });
+        }
+    </script>
+
+    <%- include('../partials/layout-end') %>

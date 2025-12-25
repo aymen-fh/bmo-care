@@ -1,0 +1,14 @@
+/* FIX: Force Profile Form Button Style */
+.profile-form .btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ed0b0b !important;
+    border: none !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.5) !important;
+}
+
+.profile-form .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.6) !important;
+}

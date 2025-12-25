@@ -1,0 +1,390 @@
+<%- include('../partials/layout-start', { title: parent.name, activePage: 'parents' }) %>
+
+    <div class="page-container-clean">
+        <!-- Header with Unlink and Back -->
+        <div class="page-header-clean" style="justify-content: space-between; margin-bottom: 2rem;">
+            <button onclick="document.getElementById('unlinkForm').submit()" class="btn-unlink-text">
+                <i class="fas fa-unlink"></i>
+                <%= __('cancelLink') %>
+            </button>
+            <form id="unlinkForm" action="/specialist/parents/<%= parent._id %>/unlink" method="POST"
+                style="display: none;" onsubmit="return confirm('<%= __('confirmUnlinkParent') %>')">
+            </form>
+
+            <a href="/specialist/parents" class="btn-back-clean">
+                <i class="fas fa-arrow-left"></i>
+                <%= __('returnToParents') %>
+            </a>
+        </div>
+
+        <!-- Hero Card (Blue) -->
+        <div class="hero-card">
+            <!-- Right Side: Info -->
+            <div class="info-side">
+                <span class="label-small">
+                    <%= __('parentInfo') %>:
+                </span>
+                <h1 class="parent-name-large">
+                    <%= parent.name %>
+                </h1>
+                <div class="parent-email-small">
+                    <%= parent.email %>
+                </div>
+            </div>
+
+            <!-- Left Side: 3 Action Squares -->
+            <div class="actions-side">
+                <!-- Chat Square -->
+                <a href="/specialist/chat/init/<%= parent._id %>" class="action-square" title="محادثة مباشرة">
+                    <i class="fas fa-comments"></i>
+                </a>
+
+                <!-- Email Square -->
+                <a href="mailto:<%= parent.email %>" class="action-square" title="إرسال بريد">
+                    <i class="fas fa-envelope"></i>
+                </a>
+
+                <!-- Phone Square -->
+                <% if (parent.phone) { %>
+                    <a href="tel:<%= parent.phone %>" class="action-square" title="اتصال">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                    <% } else { %>
+                        <div class="action-square disabled" title="لا يوجد هاتف">
+                            <i class="fas fa-phone-slash"></i>
+                        </div>
+                        <% } %>
+            </div>
+        </div>
+
+        <!-- Children Section -->
+        <div class="children-section-clean">
+            <div class="section-header-clean">
+                <h3>
+                    <%= __('parentChildren') %>
+                        <i class="fas fa-child"></i>
+                </h3>
+                <span class="count-badge">
+                    <%= children.length %>
+                        <%= __('child') %>
+                </span>
+            </div>
+
+            <% if (children && children.length> 0) { %>
+                <div class="children-grid-centered">
+                    <% children.forEach(function(child) { %>
+                        <div class="child-card-centered" style="cursor: default;">
+                            <div class="avatar-large-blue">
+                                <i class="fas fa-child"></i>
+                            </div>
+
+                            <h3 class="child-name-clean">
+                                <%= child.name %>
+                            </h3>
+
+                            <div class="detail-row-clean">
+                                <span>
+                                    <%= child.age %>
+                                        <%= __('years') %>
+                                </span>
+                                <i class="fas fa-birthday-cake icon-secondary"></i>
+                            </div>
+
+                            <div class="badge-container-clean">
+                                <span
+                                    class="badge-pill-custom <%= child.difficultyLevel === 'beginner' ? 'badge-beginner' : child.difficultyLevel === 'intermediate' ? 'badge-intermediate' : 'badge-advanced' %>">
+                                    <%= child.difficultyLevel==='beginner' ? 'مبتدئ' :
+                                        child.difficultyLevel==='intermediate' ? 'متوسط' : 'متقدم' %>
+                                </span>
+                            </div>
+
+                            <div style="margin-top: 2rem; width: 100%;">
+                                <a href="/specialist/child/<%= child._id %>/analytics"
+                                    class="btn-outline-clean btn-block">
+                                    <i class="fas fa-chart-line"></i>
+                                    <%= __('viewProgress') %>
+                                </a>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+                <% } else { %>
+                    <div class="empty-state-clean">
+                        <i class="fas fa-child"></i>
+                        <h3>
+                            <%= __('noChildren') %>
+                        </h3>
+                    </div>
+                    <% } %>
+        </div>
+    </div>
+
+    <style>
+        /* Page Layout */
+        .page-container-clean {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .btn-back-clean {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-back-clean:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .btn-unlink-text {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-unlink-text:hover {
+            background: #fee2e2;
+        }
+
+        /* Hero Card (Blue Theme) */
+        .hero-card {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            /* Primary Blue Gradient */
+            border-radius: 24px;
+            padding: 3rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            margin-bottom: 4rem;
+            min-height: 220px;
+            direction: rtl;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+        }
+
+        /* Right Side (Info) */
+        .info-side {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .label-small {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .parent-name-large {
+            font-size: 3.5rem;
+            font-weight: 400;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.1;
+        }
+
+        .parent-email-small {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Left Side (Action Squares) */
+        .actions-side {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .action-square {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .action-square:hover {
+            background: white;
+            color: #2563eb;
+            transform: scale(1.05);
+            border-color: white;
+        }
+
+        .action-square.disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: default;
+            border: none;
+        }
+
+        .action-square.disabled:hover {
+            transform: none;
+        }
+
+
+        /* Children Section */
+        .children-section-clean {
+            margin-top: 2rem;
+        }
+
+        .section-header-clean {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header-clean h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .count-badge {
+            background: #eff6ff;
+            color: #3b82f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .children-grid-centered {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .child-card-centered {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f8fafc;
+        }
+
+        .avatar-large-blue {
+            width: 80px;
+            height: 80px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-size: 2.5rem;
+        }
+
+        .child-name-clean {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .detail-row-clean {
+            color: #64748b;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge-pill-custom {
+            padding: 0.4rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-beginner {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-intermediate {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge-advanced {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-outline-clean {
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 0.75rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-clean:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        @media(max-width: 900px) {
+            .hero-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 2rem;
+                gap: 2rem;
+            }
+
+            .info-side {
+                text-align: center;
+            }
+
+            .actions-side {
+                justify-content: center;
+            }
+        }
+    </style>
+
+    <%- include('../partials/layout-end') %>

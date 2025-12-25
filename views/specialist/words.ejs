@@ -1,0 +1,846 @@
+<%- include('../partials/layout-start', { title: title, activePage: 'words' }) %>
+
+    <% if (mode==='select_child' ) { %>
+        <!-- MODE 1: SELECT CHILD -->
+        <div class="page-container-clean">
+            <div class="page-header-clean">
+                <h2>
+                    <%= __('wordsManagement') %>
+                        <i class="fas fa-shapes" style="color: #3b82f6;"></i>
+                </h2>
+                <p class="text-muted" style="margin-right: 1rem;">
+                    <%= __('selectChildToManageWords') || 'اختر طفلاً لإدارة كلماته' %>
+                </p>
+            </div>
+
+            <div class="children-grid-centered">
+                <% if (children && children.length> 0) { %>
+                    <% children.forEach(function(child) { %>
+                        <a href="/specialist/words?childId=<%= child._id %>" class="child-card-centered">
+                            <!-- Avatar -->
+                            <div class="avatar-large-blue">
+                                <i class="fas fa-child"></i>
+                            </div>
+
+                            <!-- Name -->
+                            <h3 class="child-name-clean">
+                                <%= child.name %>
+                            </h3>
+
+                            <!-- Details Row: Age -->
+                            <div class="detail-row-clean">
+                                <span>
+                                    <%= child.age %>
+                                        <%= __('years') %>
+                                </span>
+                                <i class="fas fa-birthday-cake icon-secondary"></i>
+                            </div>
+
+                            <!-- Details Row: Parent -->
+                            <div class="detail-row-clean">
+                                <span>
+                                    <%= child.parent ? child.parent.name : '-' %>
+                                </span>
+                                <i class="fas fa-user icon-primary"></i>
+                            </div>
+
+                            <!-- Action Hint -->
+                            <div class="action-hint">
+                                <span class="btn-action-text">
+                                    <%= __('manageWords') || 'إدارة الكلمات' %>
+                                </span>
+                                <i class="fas fa-arrow-left"></i>
+                            </div>
+                        </a>
+                        <% }); %>
+                            <% } else { %>
+                                <div class="empty-state-clean">
+                                    <i class="fas fa-child"></i>
+                                    <h3>
+                                        <%= __('noChildren') %>
+                                    </h3>
+                                    <p>
+                                        <%= __('childrenWillAppear') %>
+                                    </p>
+                                </div>
+                                <% } %>
+            </div>
+        </div>
+
+        <style>
+            /* Clean Centered Card Design (Adapted to Modern White Card) */
+            .page-container-clean {
+                padding: 2rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            .page-header-clean {
+                margin-bottom: 3rem;
+                text-align: right;
+            }
+
+            .page-header-clean h2 {
+                font-size: 1.8rem;
+                font-weight: 800;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 0.75rem;
+            }
+
+            .children-grid-centered {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 3rem;
+                padding: 1rem 0;
+            }
+
+            .child-card-centered {
+                background: #ffffff;
+                border-radius: 28px;
+                border: 1px solid #f1f5f9;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                padding: 3rem 2rem 2.5rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                text-decoration: none;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .child-card-centered:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+                border-color: #3b82f6;
+            }
+
+            .avatar-large-blue {
+                width: 150px;
+                height: 150px;
+                background: transparent;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+                border: 4px solid #3b82f6;
+                color: #3b82f6;
+                transition: transform 0.4s ease;
+            }
+
+            .child-card-centered:hover .avatar-large-blue {
+                transform: scale(1.05);
+                background: #eff6ff;
+            }
+
+            .avatar-large-blue i {
+                font-size: 4rem;
+            }
+
+            .child-name-clean {
+                font-size: 1.6rem;
+                font-weight: 800;
+                color: #1e293b;
+                margin: 0 0 1rem 0;
+            }
+
+            .detail-row-clean {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                color: #64748b;
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+            }
+
+            .icon-primary,
+            .icon-secondary {
+                color: #3b82f6;
+            }
+
+            .action-hint {
+                margin-top: 2rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.75rem;
+                background: #3b82f6;
+                color: white;
+                padding: 0.8rem 2rem;
+                border-radius: 50px;
+                font-weight: 700;
+                font-size: 0.95rem;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+
+            .child-card-centered:hover .action-hint {
+                background: #2563eb;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4);
+            }
+
+            .empty-state-clean {
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 4rem;
+                color: #94a3b8;
+            }
+
+            .empty-state-clean i {
+                font-size: 4rem;
+                margin-bottom: 1rem;
+                opacity: 0.3;
+            }
+        </style>
+
+        <% } else { %>
+            <!-- MODE 2: MANAGE WORDS FOR CHILD -->
+            <div class="dashboard-container">
+                <div class="page-header-modern">
+                    <div class="header-content">
+                        <h1><i class="fas fa-shapes"></i>
+                            <%= __('wordsManagement') %>
+                        </h1>
+                        <p class="text-muted">
+                            <%= __('manageWordsFor') || 'إدارة الكلمات للطفل:' %> <strong>
+                                    <%= child.name %>
+                                </strong>
+                        </p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="/specialist/words" class="btn-secondary">
+                            <i class="fas fa-arrow-right"></i>
+                            <%= __('backToChildren') || 'العودة للأطفال' %>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="content-card add-section">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-plus-circle"></i>
+                            <%= __('addNewWord') || 'إضافة كلمة جديدة' %>
+                        </h3>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #64748b;">
+                            <i class="fas fa-info-circle" style="margin-left: 4px;"></i>
+                            سيتم إرسال هذه الكلمة تلقائيًا إلى لعبة تدريب الطفل
+                        </p>
+                    </div>
+
+                    <form action="/specialist/words/add" method="POST" enctype="multipart/form-data"
+                        class="modern-form">
+                        <input type="hidden" name="childId" value="<%= child._id %>">
+
+                        <div class="form-row">
+                            <div class="form-col text-inputs">
+                                <div class="form-group">
+                                    <label for="text" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">
+                                        <%= __('wordText') %>
+                                    </label>
+                                    <input type="text" name="text" id="text" class="form-control" required
+                                        placeholder="<%= __('enterWord') %>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="label-sm">
+                                        <%= __('difficultyLevel') %>
+                                    </label>
+                                    <div class="difficulty-selector">
+                                        <input type="radio" name="difficulty" id="diff_easy" value="easy" checked>
+                                        <label for="diff_easy" class="diff-btn easy">
+                                            <%= __('easy') %>
+                                        </label>
+
+                                        <input type="radio" name="difficulty" id="diff_medium" value="medium">
+                                        <label for="diff_medium" class="diff-btn medium">
+                                            <%= __('medium') %>
+                                        </label>
+
+                                        <input type="radio" name="difficulty" id="diff_hard" value="hard">
+                                        <label for="diff_hard" class="diff-btn hard">
+                                            <%= __('hard') %>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-col suggested-words-box">
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #334155;">
+                                    <i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i>
+                                    <%= __('suggestedWords') || 'كلمات مقترحة' %>
+                                </label>
+                                <div class="suggestions-grid">
+                                    <button type="button" class="suggestion-tag"
+                                        onclick="selectSuggestion('تفاحة')">تفاحة 🍎</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('كرة')">كرة
+                                        ⚽</button>
+                                    <button type="button" class="suggestion-tag"
+                                        onclick="selectSuggestion('سيارة')">سيارة 🚗</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('قطة')">قطة
+                                        🐱</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('كلب')">كلب
+                                        🐶</button>
+                                    <button type="button" class="suggestion-tag"
+                                        onclick="selectSuggestion('عصفور')">عصفور 🐦</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('ماء')">ماء
+                                        💧</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('حليب')">حليب
+                                        🥛</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('خبز')">خبز
+                                        🍞</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('باب')">باب
+                                        🚪</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('كرسي')">كرسي
+                                        🪑</button>
+                                    <button type="button" class="suggestion-tag" onclick="selectSuggestion('شمس')">شمس
+                                        ☀️</button>
+                                </div>
+                                <script>
+                                    function selectSuggestion(word) {
+                                        document.getElementById('text').value = word;
+                                    }
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="form-footer">
+                            <button type="submit" class="btn-main">
+                                <i class="fas fa-save"></i>
+                                <%= __('saveWord') || 'حفظ الكلمة' %>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="content-card list-section">
+                    <div class="toolbar">
+                        <h2><i class="fas fa-layer-group"></i>
+                            <%= __('library') || 'مكتبة الكلمات' %>
+                        </h2>
+
+                        <form method="GET" action="/specialist/words" class="filter-group">
+                            <input type="hidden" name="childId" value="<%= child._id %>">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="<%= __('search') %>..."
+                                    onkeyup="filterClientSide()">
+                            </div>
+
+                            <select name="difficulty" class="custom-select" onchange="this.form.submit()">
+                                <option value="">
+                                    <%= __('allLevels') %>
+                                </option>
+                                <option value="easy" <%=difficulty==='easy' ? 'selected' : '' %>><%= __('easy') %>
+                                </option>
+                                <option value="medium" <%=difficulty==='medium' ? 'selected' : '' %>><%= __('medium') %>
+                                </option>
+                                <option value="hard" <%=difficulty==='hard' ? 'selected' : '' %>><%= __('hard') %>
+                                </option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="words-grid" id="wordsGrid">
+                        <% if (typeof words !=='undefined' && words && words.length> 0) { %>
+                            <% words.forEach(function(word) { %>
+                                <div class="word-card" data-text="<%= word.text %>">
+                                    <div class="card-img-top"
+                                        style="<%= word.image === 'default-word.png' ? 'display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);' : '' %>">
+                                        <% if (word.image==='default-word.png' ) { %>
+                                            <div style="font-size: 4rem;">
+                                                <% // Try to extract emoji from text const
+                                                    emojiMatch=word.text.match(/[\p{Emoji}]/u); const
+                                                    displayText=emojiMatch ? emojiMatch[0] : word.text.charAt(0); %>
+                                                    <%= displayText %>
+                                            </div>
+                                            <% } else { %>
+                                                <img src="/uploads/words/<%= word.image %>" alt="<%= word.text %>"
+                                                    loading="lazy">
+                                                <% } %>
+
+                                                    <span class="badge <%= word.difficulty %>">
+                                                        <%= __(word.difficulty) %>
+                                                    </span>
+
+                                                    <div class="overlay-actions">
+                                                        <button type="button" class="btn-icon speak-btn"
+                                                            onclick="speakWord('<%= word.text %>')">
+                                                            <i class="fas fa-volume-up"></i>
+                                                        </button>
+                                                    </div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <h3 class="word-title">
+                                            <%= word.text %>
+                                        </h3>
+
+                                        <div class="card-actions">
+                                            <form action="/specialist/words/delete/<%= word._id %>" method="POST"
+                                                data-confirm="<%= __('confirmDelete') %>"
+                                                onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                                                <button type="submit" class="btn-action delete">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                    <%= __('delete') %>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }); %>
+                                    <% } else { %>
+                                        <div class="empty-state">
+                                            <img src="/images/empty-box.svg" alt="No Data"
+                                                onerror="this.style.display='none'">
+                                            <i class="fas fa-box-open fa-3x text-muted"></i>
+                                            <p>
+                                                <%= __('noWordsFound') || 'لا توجد كلمات مضافة حالياً لهذا الطفل' %>
+                                            </p>
+                                        </div>
+                                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // 1. Image Preview Logic
+                function previewImage(input) {
+                    const preview = document.getElementById('img-preview');
+                    const placeholder = document.getElementById('preview-container');
+
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                            placeholder.style.display = 'none';
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+
+                // 2. Text to Speech Logic (Browser Native)
+                function speakWord(text) {
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.lang = 'ar-SA'; // Set to Arabic
+                        window.speechSynthesis.speak(utterance);
+                    } else {
+                        alert("Browser does not support Text-to-Speech");
+                    }
+                }
+
+                // 3. Simple Client Side Filter
+                function filterClientSide() {
+                    const input = document.getElementById('searchInput');
+                    const filter = input.value.toUpperCase();
+                    const grid = document.getElementById('wordsGrid');
+                    const cards = grid.getElementsByClassName('word-card');
+
+                    for (let i = 0; i < cards.length; i++) {
+                        const txtValue = cards[i].getAttribute('data-text');
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            cards[i].style.display = "";
+                        } else {
+                            cards[i].style.display = "none";
+                        }
+                    }
+                }
+            </script>
+
+            <style>
+                /* Copied & Adapted CSS */
+                :root {
+                    --primary-color: #4f46e5;
+                    --secondary-color: #818cf8;
+                    --bg-color: #f3f4f6;
+                    --card-bg: #ffffff;
+                    --text-dark: #1f2937;
+                    --text-light: #6b7280;
+                    --danger: #ef4444;
+                    --success: #10b981;
+                    --warning: #f59e0b;
+                    --radius: 16px;
+                    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                }
+
+                .dashboard-container {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 2rem 1rem;
+                    background-color: var(--bg-color);
+                    min-height: 100vh;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                }
+
+                .page-header-modern {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                }
+
+                .page-header-modern h1 {
+                    font-size: 1.8rem;
+                    color: var(--text-dark);
+                    margin: 0;
+                }
+
+                .btn-secondary {
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    color: var(--text-dark);
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    transition: 0.2s;
+                }
+
+                .btn-secondary:hover {
+                    background: #f9fafb;
+                }
+
+                .content-card {
+                    background: var(--card-bg);
+                    border-radius: var(--radius);
+                    box-shadow: var(--shadow);
+                    padding: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .form-row {
+                    display: flex;
+                    gap: 2rem;
+                    flex-wrap: wrap;
+                }
+
+                .form-col {
+                    flex: 1;
+                    min-width: 300px;
+                }
+
+                .form-control {
+                    width: 100%;
+                    padding: 0.8rem;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 12px;
+                    transition: 0.3s;
+                }
+
+                .form-control:focus {
+                    border-color: var(--primary-color);
+                    outline: none;
+                }
+
+                .difficulty-selector {
+                    display: flex;
+                    gap: 0.5rem;
+                    margin-top: 0.5rem;
+                }
+
+                .difficulty-selector input {
+                    display: none;
+                }
+
+                .diff-btn {
+                    padding: 0.5rem 1.5rem;
+                    border-radius: 20px;
+                    border: 2px solid #e5e7eb;
+                    cursor: pointer;
+                    font-weight: bold;
+                    color: var(--text-light);
+                    transition: 0.3s;
+                }
+
+                input:checked+.diff-btn.easy {
+                    background: #d1fae5;
+                    border-color: var(--success);
+                    color: var(--success);
+                }
+
+                input:checked+.diff-btn.medium {
+                    background: #fef3c7;
+                    border-color: var(--warning);
+                    color: var(--warning);
+                }
+
+                input:checked+.diff-btn.hard {
+                    background: #fee2e2;
+                    border-color: var(--danger);
+                    color: var(--danger);
+                }
+
+                .upload-area {
+                    border: 2px dashed #cbd5e1;
+                    border-radius: var(--radius);
+                    height: 150px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    position: relative;
+                    overflow: hidden;
+                    transition: 0.3s;
+                    background: #f8fafc;
+                }
+
+                .upload-area:hover {
+                    border-color: var(--primary-color);
+                    background: #eef2ff;
+                }
+
+                .suggestions-grid {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.75rem;
+                    background: white;
+                    padding: 1rem;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 12px;
+                    min-height: 150px;
+                    align-content: flex-start;
+                }
+
+                .suggestion-tag {
+                    background: #f1f5f9;
+                    border: 1px solid #cbd5e1;
+                    padding: 0.5rem 1rem;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    color: #475569;
+                    transition: all 0.2s;
+                    font-family: inherit;
+                }
+
+                .suggestion-tag:hover {
+                    background: #3b82f6;
+                    color: white;
+                    border-color: #3b82f6;
+                    transform: translateY(-2px);
+                }
+
+                .suggestion-tag:active {
+                    transform: scale(0.95);
+                }
+
+                #img-preview {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .preview-placeholder {
+                    text-align: center;
+                    color: var(--text-light);
+                }
+
+                .preview-placeholder i {
+                    font-size: 2rem;
+                    margin-bottom: 0.5rem;
+                    display: block;
+                }
+
+                .btn-main {
+                    width: 100%;
+                    padding: 1rem;
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    margin-top: 1.5rem;
+                    transition: 0.3s;
+                }
+
+                .btn-main:hover {
+                    background: #4338ca;
+                }
+
+                .toolbar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    border-bottom: 1px solid #f3f4f6;
+                    padding-bottom: 1rem;
+                }
+
+
+                .filter-group {
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                }
+
+                .search-box {
+                    position: relative;
+                }
+
+                .search-box input {
+                    padding: 0.5rem 2rem 0.5rem 1rem;
+                    border-radius: 20px;
+                    border: 1px solid #e5e7eb;
+                }
+
+                .search-box i {
+                    position: absolute;
+                    right: 10px;
+                    top: 10px;
+                    color: var(--text-light);
+                }
+
+                .custom-select {
+                    padding: 0.5rem;
+                    border-radius: 10px;
+                    border: 1px solid #e5e7eb;
+                }
+
+                .words-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                    gap: 1.5rem;
+                }
+
+                .word-card {
+                    background: white;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                    /* Softer border */
+                    transition: all 0.3s ease;
+                    position: relative;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                }
+
+                .word-card:hover {
+                    transform: translateY(-5px) scale(1.02);
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                }
+
+                .word-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: var(--shadow);
+                }
+
+                .card-img-top {
+                    height: 180px;
+                    position: relative;
+                }
+
+                .card-img-top img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .badge {
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    color: white;
+                    font-size: 0.75rem;
+                    font-weight: bold;
+                    z-index: 2;
+                }
+
+                .badge.easy {
+                    background: var(--success);
+                }
+
+                .badge.medium {
+                    background: var(--warning);
+                }
+
+                .badge.hard {
+                    background: var(--danger);
+                }
+
+                .overlay-actions {
+                    position: absolute;
+                    bottom: 10px;
+                    left: 10px;
+                    z-index: 2;
+                    opacity: 0.8;
+                    transition: 0.3s;
+                }
+
+                .word-card:hover .overlay-actions {
+                    opacity: 1;
+                }
+
+                .btn-icon {
+                    width: 35px;
+                    height: 35px;
+                    border-radius: 50%;
+                    border: none;
+                    background: rgba(255, 255, 255, 0.9);
+                    color: var(--primary-color);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                }
+
+                .btn-icon:hover {
+                    background: white;
+                    transform: scale(1.1);
+                }
+
+                .card-body {
+                    padding: 1rem;
+                    text-align: center;
+                }
+
+                .word-title {
+                    margin: 0.5rem 0 1rem 0;
+                    font-size: 1.4rem;
+                    font-weight: 800;
+                    color: var(--text-dark);
+                    letter-spacing: -0.025em;
+                }
+
+                .btn-action.delete {
+                    background: #fee2e2;
+                    color: var(--danger);
+                    border: none;
+                    padding: 0.4rem 1rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    width: 100%;
+                    transition: 0.2s;
+                }
+
+                .btn-action.delete:hover {
+                    background: var(--danger);
+                    color: white;
+                }
+
+                .empty-state {
+                    text-align: center;
+                    padding: 3rem;
+                    color: var(--text-light);
+                    width: 100%;
+                    grid-column: 1 / -1;
+                }
+            </style>
+            <% } %>
+
+                <%- include('../partials/layout-end') %>

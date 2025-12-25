@@ -1,0 +1,94 @@
+<%- include('../partials/layout-start', { title: __('centers'), activePage: 'centers' }) %>
+
+    <div class="page-header">
+        <h2><i class="fas fa-building"></i>
+            <%= __('centers') %>
+        </h2>
+        <a href="/superadmin/centers/create" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            <%= __('createCenter') %>
+        </a>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>
+                        <%= __('centerName') %>
+                    </th>
+                    <th>
+                        <%= __('admin') %>
+                    </th>
+                    <th>
+                        <%= __('centerPhone') %>
+                    </th>
+                    <th>
+                        <%= __('centerEmail') %>
+                    </th>
+                    <th>الحالة</th>
+                    <th>
+                        <%= __('actions') %>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (centers && centers.length> 0) { %>
+                    <% centers.forEach(function(center) { %>
+                        <tr>
+                            <td>
+                                <div class="cell-with-icon">
+                                    <i class="fas fa-building"></i>
+                                    <div>
+                                        <strong>
+                                            <%= center.name %>
+                                        </strong>
+                                        <% if (center.nameEn) { %><small class="text-muted">
+                                                <%= center.nameEn %>
+                                            </small>
+                                            <% } %>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <%= center.admin ? center.admin.name : 'لم يتم التعيين' %>
+                            </td>
+                            <td>
+                                <%= center.phone || '-' %>
+                            </td>
+                            <td>
+                                <%= center.email || '-' %>
+                            </td>
+                            <td>
+                                <span class="badge <%= center.isActive ? 'badge-success' : 'badge-danger' %>">
+                                    <%= center.isActive ? __('active') : __('inactive') %>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/superadmin/centers/<%= center._id %>/edit" class="btn btn-sm btn-outline"
+                                        title="<%= __('edit') %>">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="/superadmin/centers/<%= center._id %>/delete" method="POST"
+                                        class="inline" onsubmit="return confirm('<%= __('confirmDelete') %>')">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="<%= __('delete') %>">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <%= __('noData') %>
+                                    </td>
+                                </tr>
+                                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <%- include('../partials/layout-end') %>

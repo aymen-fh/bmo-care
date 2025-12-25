@@ -1,0 +1,129 @@
+<%- include('../partials/layout-start', { title: __('linkRequests'), activePage: 'requests' }) %>
+
+    <div class="page-header">
+        <h2><i class="fas fa-link"></i>
+            <%= __('linkRequests') %>
+        </h2>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="data-section">
+        <div class="section-header">
+            <h2><i class="fas fa-clock"></i>
+                <%= __('pendingRequests') %>
+            </h2>
+            <span class="badge badge-warning">
+                <%= pendingRequests.length %>
+            </span>
+        </div>
+
+        <% if (pendingRequests && pendingRequests.length> 0) { %>
+            <div class="cards-grid" style="padding: 1rem;">
+                <% pendingRequests.forEach(function(request) { %>
+                    <div class="request-card pending">
+                        <div class="request-info">
+                            <div class="person-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="person-details">
+                                <h3>
+                                    <%= request.from ? request.from.name : __('unknown') %>
+                                </h3>
+                                <p><i class="fas fa-envelope"></i>
+                                    <%= request.from ? request.from.email : '-' %>
+                                </p>
+                                <% if (request.from && request.from.phone) { %>
+                                    <p><i class="fas fa-phone"></i>
+                                        <%= request.from.phone %>
+                                    </p>
+                                    <% } %>
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            <form action="/specialist/requests/<%= request._id %>/accept" method="POST" class="inline">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check"></i>
+                                    <%= __('acceptRequest') %>
+                                </button>
+                            </form>
+                            <form action="/specialist/requests/<%= request._id %>/reject" method="POST" class="inline">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-times"></i>
+                                    <%= __('rejectRequest') %>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <% }); %>
+            </div>
+            <% } else { %>
+                <div class="empty-state small">
+                    <i class="fas fa-inbox"></i>
+                    <p>
+                        <%= __('noPendingRequests') %>
+                    </p>
+                </div>
+                <% } %>
+    </div>
+
+    <!-- Request History -->
+    <div class="data-section">
+        <div class="section-header">
+            <h2><i class="fas fa-history"></i>
+                <%= __('requestHistory') %>
+            </h2>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <%= __('name') %>
+                        </th>
+                        <th>
+                            <%= __('email') %>
+                        </th>
+                        <th>
+                            <%= __('status') %>
+                        </th>
+                        <th>
+                            <%= __('date') %>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (historyRequests && historyRequests.length> 0) { %>
+                        <% historyRequests.forEach(function(request) { %>
+                            <tr>
+                                <td>
+                                    <%= request.from ? request.from.name : '-' %>
+                                </td>
+                                <td>
+                                    <%= request.from ? request.from.email : '-' %>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge badge-<%= request.status === 'accepted' ? 'success' : 'danger' %>">
+                                        <%= request.status==='accepted' ? __('approved') : __('rejected') %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <%= new Date(request.createdAt).toLocaleDateString(currentLang==='ar' ? 'ar-SA'
+                                        : 'en-US' ) %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">
+                                            <%= __('noData') %>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <%- include('../partials/layout-end') %>

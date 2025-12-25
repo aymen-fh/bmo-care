@@ -1,0 +1,78 @@
+<%- include('../partials/layout-start', { title: __('createSpecialist'), activePage: 'specialists' }) %>
+
+    <div class="page-header">
+        <a href="/admin/specialists" class="btn btn-link">
+            <i class="fas fa-arrow-<%= isRTL ? 'right' : 'left' %>"></i>
+            <%= __('back') %>
+        </a>
+    </div>
+
+    <div class="form-card">
+        <div class="card-header">
+            <h2>
+                <%= __('createSpecialist') %>
+            </h2>
+        </div>
+
+        <form action="/admin/specialists" method="POST" class="form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">
+                        <%= __('name') %> <span class="required">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <%= __('email') %> <span class="required">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">
+                        <%= __('password') %> <span class="required">*</span>
+                    </label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">
+                        <%= __('phone') %>
+                    </label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="specialization">
+                        <%= __('specialization') %>
+                    </label>
+                    <input type="text" id="specialization" name="specialization" placeholder="مثال: علاج النطق">
+                </div>
+
+                <div class="form-group">
+                    <label for="licenseNumber">
+                        <%= __('licenseNumber') %>
+                    </label>
+                    <input type="text" id="licenseNumber" name="licenseNumber">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <%= __('save') %>
+                </button>
+                <a href="/admin/specialists" class="btn btn-outline">
+                    <%= __('cancel') %>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <%- include('../partials/layout-end') %>

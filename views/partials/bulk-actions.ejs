@@ -1,0 +1,133 @@
+<div id="bulkActionsBar" class="bulk-actions-bar glass" style="display: none;">
+    <div class="selected-count">
+        <span id="selectedCount">0</span>
+        <%= __('selected') || 'عنصر محدد' %>
+    </div>
+    <div class="actions">
+        <button onclick="bulkDelete()" class="btn btn-danger btn-sm">
+            <i class="fas fa-trash"></i>
+            <%= __('deleteSelected') || 'حذف المحدد' %>
+        </button>
+        <!-- Future: Export, Email, etc. -->
+    </div>
+    <button onclick="clearSelection()" class="close-btn">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
+
+<style>
+    .bulk-actions-bar {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        z-index: 1000;
+        border: 1px solid var(--primary);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: comeUp 0.3s ease-out;
+    }
+
+    .selected-count {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    @keyframes comeUp {
+        from {
+            transform: translate(-50%, 100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+    }
+</style>
+
+<script>
+    let selectedIds = new Set();
+    const entityType = '<%= typeof entityType !== "undefined" ? entityType : "" %>';
+
+    function toggleSelectAll(checkbox) {
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+            updateSelection(cb.value, cb.checked);
+        });
+    }
+
+    function updateSelection(id, isSelected) {
+        if (isSelected) {
+            selectedIds.add(id);
+        } else {
+            selectedIds.delete(id);
+        }
+        updateBulkBar();
+    }
+
+    function updateBulkBar() {
+        const bar = document.getElementById('bulkActionsBar');
+        const countSpan = document.getElementById('selectedCount');
+
+        countSpan.textContent = selectedIds.size;
+
+        if (selectedIds.size > 0) {
+            bar.style.display = 'flex';
+        } else {
+            bar.style.display = 'none';
+        }
+    }
+
+    function clearSelection() {
+        selectedIds.clear();
+        document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('selectAll').checked = false;
+        updateBulkBar();
+    }
+
+    async function bulkDelete() {
+        if (!confirm('<%= __("confirmBulkDelete") || "هل أنت متأكد من حذف العناصر المحددة؟" %>')) return;
+
+        try {
+            const response = await fetch(`/admin/${entityType}/bulk-delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: Array.from(selectedIds) })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert(result.message || 'Error deleting items');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    }
+
+    // Initialize checkboxes
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => updateSelection(e.target.value, e.target.checked));
+        });
+    });
+</script>
