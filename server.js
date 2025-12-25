@@ -9,6 +9,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 const BACKEND_URL = process.env.BACKEND_URL;
+console.log('BACKEND_URL =', BACKEND_URL);
 
 if (!BACKEND_URL) {
     console.error('❌ BACKEND_URL is missing');
@@ -19,7 +20,13 @@ if (!BACKEND_URL) {
 app.use('/api', createProxyMiddleware({
     target: BACKEND_URL,
     changeOrigin: true,
-    ws: true
+    ws: true,
+    logLevel: 'debug',
+    onProxyReq: (proxyReq, req) => {
+        if (req.headers.cookie) {
+            proxyReq.setHeader('cookie', req.headers.cookie);
+        }
+    }
 }));
 
 // View engine
@@ -34,12 +41,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Upload redirect
 app.use('/uploads', (req, res) => {
+    if (!BACKEND_URL) return res.status(500).send('Backend URL missing');
     res.redirect(`${BACKEND_URL}/uploads${req.url}`);
 });
 
 // Session
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'keyboard_cat',
     resave: false,
     saveUninitialized: false
 }));
@@ -52,10 +60,23 @@ app.use(passport.session());
 // Flash
 app.use(flash());
 
+// Translation middleware (مهم جدًا قبل أي Route)
+const translations = require('./config/translations');
+app.use((req, res, next) => {
+    const lang = req.cookies.lang || 'ar';
+    res.locals.__ = (key) => translations[lang]?.[key] || translations['ar']?.[key] || key;
+    res.locals.currentLang = lang;
+    res.locals.isRTL = lang === 'ar';
+    next();
+});
+
 // Globals
 app.use((req, res, next) => {
     res.locals.user = req.user || null;
     res.locals.lang = req.cookies.lang || 'ar';
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
     next();
 });
 
@@ -66,16 +87,17 @@ app.use('/admin', require('./routes/admin'));
 app.use('/superadmin', require('./routes/superadmin'));
 app.use('/specialist', require('./routes/specialist'));
 
-// Health
+// Health check
 app.get('/health', (req, res) => {
     res.send('🌐 Web Portal is running');
 });
 
-// 404
+// 404 handler
 app.use((req, res) => {
     res.status(404).render('errors/404');
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Web Portal running on port ${PORT}`);
