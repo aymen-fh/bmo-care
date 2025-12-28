@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
         ]);
 
         const recentChildren = await Child.find({ assignedSpecialist: req.user.id })
-            .populate('parent', 'name')
+            .populate('parent', 'name profilePhoto')
             .sort('-updatedAt')
             .limit(5);
 
