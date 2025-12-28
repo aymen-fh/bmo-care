@@ -7,6 +7,8 @@ const Progress = require('../models/Progress');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
+const axios = require('axios');
+const FormData = require('form-data');
 const { ensureSpecialist } = require('../middleware/auth');
 
 // Apply specialist middleware to all routes
@@ -541,21 +543,9 @@ router.post('/account/link/:parentId', async (req, res) => {
 // ===== PROFILE ROUTES =====
 
 // Configure multer for profile photo upload
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Save to BACKEND uploads folder to share with mobile app
-        const uploadPath = path.join(__dirname, '../../backend/uploads/');
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        // Simple filename to avoid path complications
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
+// Configure multer for profile photo upload (Memory Storage for Relay)
 const upload = multer({
-    storage: storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     fileFilter: function (req, file, cb) {
         const allowedTypes = /jpeg|jpg|png|gif/;
@@ -631,6 +621,7 @@ router.post('/profile/update', async (req, res) => {
 });
 
 // Upload Profile Photo
+// Upload Profile Photo (Relay to Backend)
 router.post('/profile/upload-photo', upload.single('photo'), async (req, res) => {
     try {
         if (!req.file) {
@@ -638,16 +629,43 @@ router.post('/profile/upload-photo', upload.single('photo'), async (req, res) =>
             return res.redirect('/specialist/profile');
         }
 
-        const photoPath = '/uploads/' + req.file.filename;
+        // Create form data to send to backend
+        const form = new FormData();
+        form.append('photo', req.file.buffer, req.file.originalname);
 
-        await User.findByIdAndUpdate(req.user.id, {
-            profilePhoto: photoPath
+        // Get Backend URL
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+
+        // Log for debugging
+        console.log(`Uploading photo to: ${backendUrl}/api/upload`);
+
+        // Send to backend
+        const response = await axios.post(`${backendUrl}/api/upload`, form, {
+            headers: {
+                ...form.getHeaders()
+            }
         });
 
-        req.flash('success_msg', 'تم تحديث الصورة بنجاح');
+        if (response.data && response.data.success) {
+            const photoPath = response.data.path;
+
+            // Update user in DB with the path returned by backend
+            await User.findByIdAndUpdate(req.user.id, {
+                profilePhoto: photoPath
+            });
+
+            req.flash('success_msg', 'تم تحديث الصورة بنجاح');
+        } else {
+            console.error('Backend upload failed:', response.data);
+            req.flash('error_msg', 'فشل تحميل الصورة على الخادم');
+        }
         res.redirect('/specialist/profile');
+
     } catch (error) {
-        console.error(error);
+        console.error('Upload Relay Error:', error.message);
+        if (error.response) {
+            console.error('Backend Response:', error.response.data);
+        }
         req.flash('error_msg', res.locals.__('errorOccurred'));
         res.redirect('/specialist/profile');
     }
