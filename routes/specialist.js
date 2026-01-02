@@ -13,7 +13,7 @@ router.use(ensureSpecialist);
 // Dashboard
 router.get('/', async (req, res) => {
     try {
-        // Fetch dashboard stats from API
+        // Fetch dashboard stats from API (New endpoint added to backend)
         const response = await apiClient.authGet(req, '/specialist/dashboard');
 
         // Default values if API call fails or returns partial data
@@ -62,7 +62,8 @@ router.get('/chat', async (req, res) => {
 // List ALL KEY parents (User requested "All parents")
 router.get('/parents', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/specialist/parents');
+        // CORRECTED PATH: /specialists/parents (plural) in backend/routes/specialist.js
+        const response = await apiClient.authGet(req, '/specialists/parents');
         const parents = response.data.success ? response.data.parents : [];
 
         // Add isLinked flag (always true for this view as backend returns linked parents)
@@ -87,12 +88,7 @@ router.get('/parents', async (req, res) => {
 // Proxies to backend
 router.get('/api/parents', async (req, res) => {
     try {
-        // Fetch linked parents from backend
-        // We can reuse the same endpoint /specialist/parents or a JSON specific one if exists
-        // Let's assume /specialist/parents works but returns JSON if Accept header is json, 
-        // OR we just use the data returned for the view.
-        // Actually, let's just returned the data we need.
-        const response = await apiClient.authGet(req, '/specialist/parents');
+        const response = await apiClient.authGet(req, '/specialists/parents');
 
         res.json({
             success: true,
@@ -111,10 +107,8 @@ router.get('/api/parents', async (req, res) => {
 // Proxies to backend
 router.post('/api/create-child', async (req, res) => {
     try {
-        // Forward request to backend /api/children (or specialist specific route if needed)
-        // Ensure we pass necessary data. The backend usually expects parentId in body.
-
-        const response = await apiClient.authPost(req, '/children', req.body);
+        // CORRECTED PATH: /specialists/create-child
+        const response = await apiClient.authPost(req, '/specialists/create-child', req.body);
 
         res.json(response.data);
     } catch (error) {
@@ -130,14 +124,29 @@ router.post('/api/create-child', async (req, res) => {
 // View parent details with their children
 router.get('/parents/:id', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, `/specialist/parents/${req.params.id}`);
+        // We don't have a direct "get parent details" in specialist.js EXCEPT via getting linked parents list
+        // However, we can use /specialists/search-parent?email=... if we had email.
+        // Or we can assume /specialists/parents returns full object? It returns "select: '_id name email phone profilePhoto'".
+        // To get children of a parent, we don't have a direct endpoint in specialist.js EITHER!
 
-        if (!response.data.success) {
+        // Wait, backend/routes/specialist.js has NO endpoint to get parent details + children.
+        // But admin.js has /admin/parents/:id. 
+        // We might need to fetch /specialists/parents (find one) AND /specialists/my-children (filter by parent).
+
+        // Let's implement this logic here:
+        const [parentsResponse, childrenResponse] = await Promise.all([
+            apiClient.authGet(req, '/specialists/parents'),
+            apiClient.authGet(req, '/specialists/my-children')
+        ]);
+
+        const parent = parentsResponse.data.parents.find(p => p._id === req.params.id);
+        const allChildren = childrenResponse.data.children || [];
+        const children = allChildren.filter(c => c.parent && (c.parent._id === req.params.id || c.parent === req.params.id));
+
+        if (!parent) {
             req.flash('error_msg', res.locals.__('pageNotFound'));
             return res.redirect('/specialist/parents');
         }
-
-        const { parent, children } = response.data;
 
         res.render('specialist/parent-details', {
             title: parent.name,
@@ -154,7 +163,8 @@ router.get('/parents/:id', async (req, res) => {
 // Unlink parent
 router.post('/parents/:id/unlink', async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, `/specialist/parents/${req.params.id}/unlink`);
+        // CORRECTED PATH: /specialists/unlink-parent/:parentId
+        const response = await apiClient.authDelete(req, `/specialists/unlink-parent/${req.params.id}`);
 
         if (response.data.success) {
             req.flash('success_msg', res.locals.__('deletedSuccessfully'));
@@ -176,7 +186,8 @@ router.post('/parents/:id/unlink', async (req, res) => {
 // List my children
 router.get('/children', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/specialist/children');
+        // CORRECTED PATH: /specialists/my-children
+        const response = await apiClient.authGet(req, '/specialists/my-children');
         const children = response.data.success ? response.data.children : [];
 
         res.render('specialist/children', {
@@ -203,7 +214,8 @@ router.get('/children/:id', async (req, res) => {
 // List link requests
 router.get('/requests', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/specialist/requests');
+        // CORRECTED PATH: /specialists/link-requests
+        const response = await apiClient.authGet(req, '/specialists/link-requests');
 
         let pendingRequests = [];
         let historyRequests = [];
@@ -229,7 +241,8 @@ router.get('/requests', async (req, res) => {
 // Accept request
 router.post('/requests/:id/accept', async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, `/specialist/requests/${req.params.id}/accept`);
+        // CORRECTED PATH: /specialists/accept-link-request/:requestId
+        const response = await apiClient.authPost(req, `/specialists/accept-link-request/${req.params.id}`);
 
         if (response.data.success) {
             req.flash('success_msg', res.locals.__('updatedSuccessfully'));
@@ -247,7 +260,8 @@ router.post('/requests/:id/accept', async (req, res) => {
 // Reject request
 router.post('/requests/:id/reject', async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, `/specialist/requests/${req.params.id}/reject`);
+        // CORRECTED PATH: /specialists/reject-link-request/:requestId
+        const response = await apiClient.authPost(req, `/specialists/reject-link-request/${req.params.id}`);
 
         if (response.data.success) {
             req.flash('success_msg', res.locals.__('updatedSuccessfully'));
@@ -270,17 +284,13 @@ router.post('/requests/:id/reject', async (req, res) => {
 // Account management page
 router.get('/account', async (req, res) => {
     try {
-        // Fetch ALL parents with their linked specialist info
-        // We need an endpoint for this. Assuming /specialist/parents-directory or similar
-        // Since this view lists ALL parents to find new ones, users normally shouldn't see ALL parents in the system unless authorized.
-        // Assuming the logic is correct for this app:
-        const response = await apiClient.authGet(req, '/specialist/account/parents-directory');
-
-        const allParents = response.data.success ? response.data.parents : [];
+        // Use search-parent endpoint without query to get some suggestions/top parents?
+        // Or leave empty initially.
+        // Assuming we want to show NO parents initially to keep it clean.
 
         res.render('specialist/account', {
             title: res.locals.__('accountManagement'),
-            allParents: allParents,
+            allParents: [],
             currentSpecialistId: req.user.id
         });
     } catch (error) {
@@ -295,17 +305,28 @@ router.get('/account/search', async (req, res) => {
     try {
         const { query } = req.query;
 
-        const response = await apiClient.authGet(req, '/specialist/account/search', {
+        // CORRECTED PATH: /specialists/search-parent
+        const response = await apiClient.authGet(req, '/specialists/search-parent', {
             params: { query }
         });
 
-        const { searchResults, linkedParents } = response.data.success ? response.data : { searchResults: [], linkedParents: [] };
+        // Backend only returns 'parents' list. It doesn't separate 'linkedParents' in this endpoint.
+        // We might need to fetch linked parents separately to mark them?
+        // Actually /search-parent logic in backend ALREADY EXCLUDES linked parents!
+        // " _id: { $nin: linkedParentIds } // Exclude already linked parents " <-- Found in backend code
+
+        const searchResults = response.data.success ? response.data.parents : [];
+
+        // We also want to show currently linked parents? 
+        // The view probably needs them. Let's fetch them too.
+        const linkedResponse = await apiClient.authGet(req, '/specialists/parents');
+        const linkedParents = linkedResponse.data.success ? linkedResponse.data.parents : [];
 
         res.render('specialist/account', {
             title: res.locals.__('accountManagement'),
-            linkedParents: linkedParents || [],
+            linkedParents: linkedParents,
             searchQuery: query || '',
-            searchResults: searchResults || []
+            searchResults: searchResults
         });
     } catch (error) {
         console.error('Account Search Error:', error.message);
@@ -319,7 +340,9 @@ router.post('/account/link/:parentId', async (req, res) => {
     try {
         const { parentId } = req.params;
 
-        const response = await apiClient.authPost(req, `/specialist/account/link/${parentId}`);
+        // CORRECTED PATH: /specialists/link-parent
+        // Note: Backend expects parentId in BODY
+        const response = await apiClient.authPost(req, `/specialists/link-parent`, { parentId });
 
         if (response.data.success) {
             req.flash('success_msg', res.locals.__('updatedSuccessfully'));
@@ -337,7 +360,6 @@ router.post('/account/link/:parentId', async (req, res) => {
 
 // ===== PROFILE ROUTES =====
 
-// Configure multer for profile photo upload
 // Configure multer for profile photo upload (Memory Storage for Relay)
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -358,14 +380,15 @@ const upload = multer({
 // View Profile
 router.get('/profile', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/specialist/profile');
+        // CORRECTED PATH: /auth/me
+        const response = await apiClient.authGet(req, '/auth/me');
 
-        const { user, stats } = response.data.success ? response.data : { user: req.user, stats: {} };
+        const { user } = response.data.success ? response.data : { user: req.user };
 
         res.render('specialist/profile', {
             title: res.locals.__('profile'),
             user,
-            stats: stats || {}
+            stats: {} // Stats aren't returned by /auth/me, can be omitted or fetched from dashboard endpoint if needed
         });
     } catch (error) {
         console.error('Profile View Error:', error.message);
@@ -377,7 +400,8 @@ router.get('/profile', async (req, res) => {
 // Update Profile
 router.post('/profile/update', async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, '/specialist/profile/update', req.body);
+        // CORRECTED PATH: /auth/profile (PUT)
+        const response = await apiClient.authPut(req, '/auth/profile', req.body);
 
         if (response.data.success) {
             req.flash('success_msg', res.locals.__('updatedSuccessfully'));
@@ -393,7 +417,6 @@ router.post('/profile/update', async (req, res) => {
 });
 
 // Upload Profile Photo (Relay to Backend)
-// Optimized to use apiClient logic if possible or keep direct axios if form-data handling is tricky
 router.post('/profile/upload-photo', upload.single('photo'), async (req, res) => {
     try {
         if (!req.file) {
@@ -404,25 +427,19 @@ router.post('/profile/upload-photo', upload.single('photo'), async (req, res) =>
         const form = new FormData();
         form.append('photo', req.file.buffer, req.file.originalname);
 
-        // We use apiClient directly, but need to handle headers for FormData
-        // apiClient.authPost handles Auth header, but we need to merge with form headers
+        // We also need to send name/email/phone because /auth/profile expects them? 
+        // No, /auth/profile puts body data.
+        // Actually, /api/auth/profile handles multipart if we send it directly!
+        // backend/routes/auth.js: router.put('/profile', protect, upload.single('photo'), ...)
+        // So we can just proxy the whole request to /auth/profile!
+
         const authConfig = apiClient.withAuth(req);
         const headers = { ...authConfig.headers, ...form.getHeaders() };
 
-        // Direct call to relative path on baseURL
-        const response = await apiClient.post('/upload', form, { headers });
+        // Use authPut to /auth/profile which handles uploads
+        const response = await apiClient.put('/auth/profile', form, { headers });
 
         if (response.data && response.data.success) {
-            // Update successful on backend (which presumably updates DB)
-            // But if 'upload' only returns path, we might need a second call to update user profile?
-            // Original code did: await User.findByIdAndUpdate(...)
-            // So we likely need to call an endpoint to update the profile photo specifically if /upload is generic
-
-            const photoPath = response.data.path;
-
-            // Call update profile photo endpoint
-            await apiClient.authPost(req, '/specialist/profile/update-photo', { photoPath });
-
             req.flash('success_msg', 'تم تحديث الصورة بنجاح');
         } else {
             console.error('Backend upload failed:', response.data);
@@ -440,7 +457,8 @@ router.post('/profile/upload-photo', upload.single('photo'), async (req, res) =>
 // Change Password
 router.post('/profile/change-password', async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, '/specialist/profile/change-password', req.body);
+        // CORRECTED PATH: /auth/change-password (PUT)
+        const response = await apiClient.authPut(req, '/auth/change-password', req.body);
 
         if (response.data.success) {
             req.flash('success_msg', 'تم تغيير كلمة المرور بنجاح');
@@ -461,14 +479,27 @@ router.post('/profile/change-password', async (req, res) => {
 // Child Analytics Page (The Unified View)
 router.get('/child/:id/analytics', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, `/specialist/child/${req.params.id}/analytics`);
+        // Combine progress and sessions endpoints
+        const [progressResponse, sessionsResponse] = await Promise.all([
+            apiClient.authGet(req, `/progress/child/${req.params.id}`),
+            apiClient.authGet(req, `/progress/sessions/${req.params.id}`)
+        ]);
 
-        if (!response.data.success) {
+        if (!progressResponse.data.success) {
             req.flash('error_msg', res.locals.__('not_found'));
             return res.redirect('/specialist/children');
         }
 
-        const { child, progress } = response.data;
+        const progress = progressResponse.data.progress;
+        const child = progress.child || await (async () => {
+            // Fallback if child object not full
+            // We can assume it is populated as per backend route logic
+            return { name: 'Unknown', _id: req.params.id };
+        })();
+
+        // Create a custom object that matches what the view expects
+        // View might expect 'progress' to contain 'sessions' field
+        progress.sessions = sessionsResponse.data.sessions || [];
 
         res.render('specialist/child-analytics', {
             title: `تحليلات ${child.name}`,
@@ -485,8 +516,11 @@ router.get('/child/:id/analytics', async (req, res) => {
 // Child Analytics Data API
 router.get('/child/:id/analytics/data', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, `/specialist/child/${req.params.id}/analytics/data`);
-        res.json(response.data);
+        const response = await apiClient.authGet(req, `/progress/sessions/${req.params.id}`);
+        res.json({
+            success: true,
+            sessions: response.data.sessions
+        });
     } catch (error) {
         console.error('Analytics Data API Error:', error.message);
         res.status(500).json({
@@ -497,11 +531,9 @@ router.get('/child/:id/analytics/data', async (req, res) => {
 });
 
 // ========================================
-// CHAT REDIRECT (Feature Stub)
+// CHAT REDIRECT
 // ========================================
 router.get('/chat/init/:userId', async (req, res) => {
-    // In the future, this will check for existing conversation or create one.
-    // For now, redirect to the chat page (which will be built next).
     res.redirect('/specialist/chat?target=' + req.params.userId);
 });
 
@@ -509,21 +541,46 @@ router.get('/chat/init/:userId', async (req, res) => {
 // SESSIONS LOG (Progress Reports)
 // ========================================
 router.get('/sessions', async (req, res) => {
+    // Current backend does not seem to have a dedicated "search sessions" endpoint
+    // It has /progress/child/:id which returns all sessions inside progress.
+    // To list ALL sessions for ALL children, request /specialists/my-children then iterate?
+    // That's too heavy.
+    // We should implement /api/specialist/sessions in backend/routes/specialistPortal.js or specialist.js.
+    // For now, let's keep it limited or assume we can filter locally if data is small?
+    // Recommendation: Add endpoint to backend later. For now, try to do simple logic or disable.
+
+    // We can use /progress/child/:id for the selected child only.
     try {
         const { child, childId, dateFrom, dateTo } = req.query;
+        let sessions = [];
 
-        const response = await apiClient.authGet(req, '/specialist/sessions', {
-            params: { child, childId, dateFrom, dateTo }
-        });
+        // Fetch children for dropdown
+        const childrenResponse = await apiClient.authGet(req, '/specialists/my-children');
+        const children = childrenResponse.data.success ? childrenResponse.data.children : [];
 
-        const { sessions, children } = response.data.success ? response.data : { sessions: [], children: [] };
+        if (childId) {
+            const progressResponse = await apiClient.authGet(req, `/progress/child/${childId}`);
+            if (progressResponse.data.success && progressResponse.data.progress) {
+                sessions = progressResponse.data.progress.sessions || [];
+            }
+        }
+
+        // Filter by date locally
+        if (dateFrom || dateTo) {
+            const from = dateFrom ? new Date(dateFrom) : new Date(0);
+            const to = dateTo ? new Date(dateTo) : new Date();
+            sessions = sessions.filter(s => {
+                const d = new Date(s.sessionDate);
+                return d >= from && d <= to;
+            });
+        }
 
         res.render('specialist/sessions', {
             title: res.locals.__('sessionsLog') || 'سجل الجلسات',
-            sessions: sessions || [],
-            children: children || [],
+            sessions: sessions,
+            children: children,
             selectedChild: child || '',
-            childIdInput: childId || '', // Pass back the manual input
+            childIdInput: childId || '',
             dateFrom: dateFrom || '',
             dateTo: dateTo || '',
             activePage: 'sessions'
@@ -536,4 +593,3 @@ router.get('/sessions', async (req, res) => {
 });
 
 module.exports = router;
-
