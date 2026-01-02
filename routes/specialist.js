@@ -282,15 +282,22 @@ router.post('/requests/:id/reject', async (req, res) => {
 // ========================================
 
 // Account management page
+// Account management page
 router.get('/account', async (req, res) => {
     try {
-        // Use search-parent endpoint without query to get some suggestions/top parents?
-        // Or leave empty initially.
-        // Assuming we want to show NO parents initially to keep it clean.
+        // Fetch both Linked Parents and Available (Unlinked) Parents
+        const [linkedResponse, availableResponse] = await Promise.all([
+            apiClient.authGet(req, '/specialists/parents'),
+            apiClient.authGet(req, '/specialists/search-parent')
+        ]);
+
+        const linkedParents = linkedResponse.data.success ? linkedResponse.data.parents : [];
+        const allParents = availableResponse.data.success ? availableResponse.data.parents : [];
 
         res.render('specialist/account', {
             title: res.locals.__('accountManagement'),
-            allParents: [],
+            allParents: allParents, // Available parents to link
+            linkedParents: linkedParents, // Already linked parents
             currentSpecialistId: req.user.id
         });
     } catch (error) {
