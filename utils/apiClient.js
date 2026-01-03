@@ -1,4 +1,5 @@
 const axios = require('axios');
+const https = require('https');
 
 // Normalize and fallback to local dev backend if env is missing.
 const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '');
@@ -8,7 +9,8 @@ const apiClient = axios.create({
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
-    }
+    },
+    httpsAgent: new https.Agent({ keepAlive: true, family: 4 })
 });
 
 // Request interceptor to add token if available in session

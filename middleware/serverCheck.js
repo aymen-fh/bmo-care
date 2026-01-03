@@ -1,4 +1,5 @@
 const axios = require('axios');
+const https = require('https');
 let isServerUp = true;
 let lastCheckTime = 0;
 const CACHE_DURATION = 10000; // Check every 10 seconds
@@ -18,12 +19,19 @@ module.exports = async (req, res, next) => {
     }
 
     try {
-        await axios.get(`${backendUrl}/health`, { timeout: 2000 });
-        isServerUp = true;
-        lastCheckTime = currentTime;
-        next();
-    } catch (error) {
-        console.error('❌ Backend Server is DOWN:', error.message);
+        const response = await axios.get(`${backendUrl}/health`, {
+            timeout: 4000,
+            httpsAgent: new https.Agent({ keepAlive: true, family: 4 }), // prefer IPv4 to avoid env DNS quirks
+            validateStatus: () => true // handle non-2xx without throwing
+        });
+
+        if (response.status === 200) {
+            isServerUp = true;
+            lastCheckTime = currentTime;
+            return next();
+        }
+
+        console.error(`❌ Backend health check failed: status=${response.status}`);
         isServerUp = false;
 
         // If it's an API request (AJAX), return JSON error
@@ -37,6 +45,21 @@ module.exports = async (req, res, next) => {
         // Otherwise render error page
         res.status(503).render('errors/service-unavailable', {
             layout: false, // No layout to avoid dependencies
+            title: 'الخدمة غير متاحة'
+        });
+    } catch (error) {
+        console.error('❌ Backend Server is DOWN:', error.message);
+        isServerUp = false;
+
+        if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+            return res.status(503).json({
+                success: false,
+                message: 'عذراً، الخادم متوقف حالياً للصيانة. يرجى المحاولة لاحقاً.'
+            });
+        }
+
+        res.status(503).render('errors/service-unavailable', {
+            layout: false,
             title: 'الخدمة غير متاحة'
         });
     }
