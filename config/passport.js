@@ -26,10 +26,28 @@ module.exports = function (passport) {
                     return done(null, false, { message: response.data.message || 'فشل تسجيل الدخول' });
                 }
             } catch (err) {
-                // Extract error message from backend response if available
-                const msg = err.response?.data?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة'; // Default fallback
-                // If it's a connection error (setup earlier), it might be handled differently, 
-                // but here we just report Auth failure.
+                // Distinguish between invalid credentials and backend/network failures
+                const status = err.response?.status;
+                const backendMessage = err.response?.data?.message;
+                const code = err.code;
+
+                // Wrong credentials
+                if (status === 401) {
+                    return done(null, false, { message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+                }
+
+                // Backend temporarily unavailable (Railway/edge 502, timeouts, DNS issues, etc.)
+                const looksLikeNetworkIssue =
+                    status === 502 || status === 503 || status === 504 ||
+                    code === 'ECONNABORTED' || code === 'ETIMEDOUT' || code === 'ENOTFOUND' ||
+                    code === 'ECONNREFUSED' || code === 'EAI_AGAIN';
+
+                if (looksLikeNetworkIssue) {
+                    return done(null, false, { message: 'الخادم غير متاح حالياً. حاول مرة أخرى بعد دقيقة.' });
+                }
+
+                // Fallback to backend message if present, otherwise a safe generic
+                const msg = backendMessage || 'حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.';
                 return done(null, false, { message: msg });
             }
         })
