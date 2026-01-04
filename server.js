@@ -10,6 +10,22 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
+process.on('unhandledRejection', (reason) => {
+    console.error('❌ Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err);
+});
+
+process.on('SIGTERM', () => {
+    console.error('⚠️ Received SIGTERM (container stopping)');
+});
+
+process.on('SIGINT', () => {
+    console.error('⚠️ Received SIGINT');
+});
+
 // Normalize backend URL and provide a sane default for local dev.
 const normalizeBackendUrl = (raw) => (raw || 'http://localhost:8080').replace(/\/$/, '');
 const BACKEND_URL = normalizeBackendUrl(process.env.BACKEND_URL);
@@ -69,6 +85,9 @@ if (sessionMongoUrl) {
 }
 
 app.use(session(sessionOptions));
+
+console.log('NODE_ENV =', process.env.NODE_ENV);
+console.log('SESSION_STORE =', sessionMongoUrl ? 'mongo' : 'memory');
 
 // Passport
 require('./config/passport')(passport);
