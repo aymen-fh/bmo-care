@@ -47,7 +47,8 @@ module.exports = async (req, res, next) => {
     const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '');
 
     // Return cached status if within duration
-    if (isServerUp && (currentTime - lastCheckTime < CACHE_DURATION)) {
+    if (currentTime - lastCheckTime < CACHE_DURATION) {
+        res.locals.backendDown = !isServerUp;
         return next();
     }
 
@@ -61,6 +62,7 @@ module.exports = async (req, res, next) => {
         if (result.ok) {
             isServerUp = true;
             lastCheckTime = currentTime;
+            res.locals.backendDown = false;
             return next();
         }
 
@@ -68,20 +70,9 @@ module.exports = async (req, res, next) => {
         console.error(`❌ Backend health check failed (${target}): status=${result.status || 'n/a'} body=${result.data ? JSON.stringify(result.data).slice(0,200) : ''} ${result.message ? `error=${result.message}` : ''}`);
     }
 
-    lastCheckTime = currentTime; // avoid log spam while backend is down
+    // Mark down but don't block the user; let downstream routes attempt and show their own errors
+    lastCheckTime = currentTime;
     isServerUp = false;
-
-    // If it's an API request (AJAX), return JSON error
-    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-        return res.status(503).json({
-            success: false,
-            message: 'عذراً، الخادم متوقف حالياً للصيانة. يرجى المحاولة لاحقاً.'
-        });
-    }
-
-    // Otherwise render error page
-    res.status(503).render('errors/service-unavailable', {
-        layout: false, // No layout to avoid dependencies
-        title: 'الخدمة غير متاحة'
-    });
+    res.locals.backendDown = true;
+    return next();
 };
