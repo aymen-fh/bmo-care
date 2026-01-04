@@ -11,7 +11,11 @@
             <% parents.forEach(function(parent) { %>
                 <div class="person-card">
                     <div class="person-avatar">
-                        <i class="fas fa-user"></i>
+                        <% if (parent.profilePhoto) { %>
+                            <img src="<%= uploadUrl(parent.profilePhoto) %>" alt="<%= parent.name %>" />
+                        <% } else { %>
+                            <i class="fas fa-user"></i>
+                        <% } %>
                     </div>
                     <div class="person-info">
                         <h3>
@@ -24,7 +28,7 @@
                             <p><i class="fas fa-phone"></i>
                                 <%= parent.phone %>
                             </p>
-                            <% } %>
+                        <% } %>
                     </div>
                 </div>
                 <% }); %>

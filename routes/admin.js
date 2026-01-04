@@ -348,7 +348,7 @@ router.post('/specialists/:id/unlink-child/:childId', async (req, res) => {
 // My parents
 router.get('/parents', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/admin/my-parents');
+        const response = await apiClient.authGet(req, '/admin/parents');
         const parents = response.data.success ? response.data.parents : [];
 
         res.render('admin/parents', {

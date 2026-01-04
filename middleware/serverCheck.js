@@ -20,7 +20,7 @@ module.exports = async (req, res, next) => {
 
     try {
         const response = await axios.get(`${backendUrl}/health`, {
-            timeout: 4000,
+            timeout: 5000,
             httpsAgent: new https.Agent({ keepAlive: true, family: 4 }), // prefer IPv4 to avoid env DNS quirks
             validateStatus: () => true // handle non-2xx without throwing
         });
@@ -31,7 +31,8 @@ module.exports = async (req, res, next) => {
             return next();
         }
 
-        console.error(`❌ Backend health check failed: status=${response.status}`);
+        lastCheckTime = currentTime; // avoid log spam while backend is down
+        console.error(`❌ Backend health check failed: status=${response.status} body=${JSON.stringify(response.data).slice(0,200)}`);
         isServerUp = false;
 
         // If it's an API request (AJAX), return JSON error
@@ -48,7 +49,10 @@ module.exports = async (req, res, next) => {
             title: 'الخدمة غير متاحة'
         });
     } catch (error) {
-        console.error('❌ Backend Server is DOWN:', error.message);
+        lastCheckTime = currentTime; // avoid log spam while backend is down
+        const status = error.response?.status;
+        const body = error.response?.data;
+        console.error('❌ Backend Server is DOWN:', error.message, status ? `status=${status}` : '', body ? `body=${JSON.stringify(body).slice(0,200)}` : '');
         isServerUp = false;
 
         if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
