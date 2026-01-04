@@ -70,9 +70,10 @@
 
   --bg-sidebar: rgba(15, 12, 41, 0.85);
 
-  --text-primary: #ffffff;
-  --text-secondary: #ffffff;
-  --text-sidebar: #ffffff;
+  /* Slightly softer whites for readability */
+  --text-primary: #f8fafc;
+  --text-secondary: rgba(248, 250, 252, 0.75);
+  --text-sidebar: #f8fafc;
 
   --border-color: rgba(255, 255, 255, 0.15);
 
@@ -330,7 +331,7 @@ body {
 [data-theme="dark"] .data-table,
 [data-theme="dark"] .data-table td,
 [data-theme="dark"] .data-table th {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] .glass {
@@ -339,7 +340,7 @@ body {
 }
 
 [data-theme="dark"] .glass *:not(.btn):not(button):not(a) {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] .settings-modern-container {
@@ -348,7 +349,7 @@ body {
 }
 
 [data-theme="dark"] .settings-modern-container *:not(.btn):not(button) {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 /* Input fields dark mode */
@@ -357,36 +358,36 @@ body {
 [data-theme="dark"] textarea {
   background: rgba(30, 27, 75, 0.6) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] select::placeholder,
 [data-theme="dark"] textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(248, 250, 252, 0.55) !important;
 }
 
 /* Keep buttons and links white on dark cards */
 [data-theme="dark"] .btn,
 [data-theme="dark"] button {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 /* Sidebar text stays white */
 [data-theme="dark"] .sidebar,
 [data-theme="dark"] .sidebar * {
-  color: #ffffff;
+  color: var(--text-sidebar);
 }
 
 /* Header text stays white */
 [data-theme="dark"] .header,
 [data-theme="dark"] .header * {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Text on dark backgrounds stays white */
 [data-theme="dark"] .page-header {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* ... existing RTL/LTR ... */

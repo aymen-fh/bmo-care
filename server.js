@@ -44,6 +44,14 @@ app.use('/api', createProxyMiddleware({
     }
 }));
 
+// Proxy Socket.IO to backend (chat realtime)
+app.use('/socket.io', createProxyMiddleware({
+    target: BACKEND_URL,
+    changeOrigin: true,
+    ws: true,
+    logLevel: 'warn'
+}));
+
 // View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -159,6 +167,7 @@ app.use(serverCheck);
 app.use('/', require('./routes/index'));
 
 app.use('/auth', require('./routes/auth'));
+app.use('/chat', require('./routes/chat'));
 app.use('/admin', require('./routes/admin'));
 app.use('/superadmin', require('./routes/superadmin'));
 app.use('/specialist/words', require('./routes/words'));

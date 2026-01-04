@@ -307,7 +307,7 @@ module.exports = {
         applyFilters: 'تطبيق الفلاتر',
 
         // Settings Form
-        appName: 'BEST',
+        appName: 'BMO',
         general: 'عام',
         contact: 'التواصل',
         supportEmail: 'بريد الدعم',
@@ -328,7 +328,7 @@ module.exports = {
 
     en: {
         // General
-        appName: 'BEST',
+        appName: 'BMO',
         dashboard: 'Dashboard',
         welcome: 'Welcome',
         logout: 'Logout',

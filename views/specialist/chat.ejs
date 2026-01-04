@@ -223,7 +223,7 @@
                 const hasMessage = !!conv.lastMessage;
                 const timeDisplay = hasMessage ? formatTime(conv.lastMessage.createdAt) : '';
                 const previewText = hasMessage
-                    ? (conv.lastMessage.message.substring(0, 30) + (conv.lastMessage.message.length > 30 ? '...' : ''))
+                    ? (conv.lastMessage.content.substring(0, 30) + (conv.lastMessage.content.length > 30 ? '...' : ''))
                     : '<span style="color: var(--primary); font-size: 0.85rem; font-style: italic;">بدء محادثة جديدة</span>';
 
                 return `
@@ -330,7 +330,7 @@
             messageEl.setAttribute('data-message-id', message._id);
             messageEl.innerHTML = `
     <div class="message-content">
-      <p>${escapeHtml(message.message)}</p>
+    <p>${escapeHtml(message.content)}</p>
     </div>
     <div class="message-meta">
       <span class="message-time">${formatTime(message.createdAt)}</span>
@@ -338,7 +338,7 @@
     </div>
     ${isMine ? `
       <div class="message-actions">
-        <button onclick="editMessage('${message._id}', '${escapeHtml(message.message)}')" title="تعديل">
+        <button onclick="editMessage('${message._id}', '${escapeHtml(message.content)}')" title="تعديل">
           <i class="fa-solid fa-pen"></i>
         </button>
         <button onclick="deleteMessage('${message._id}')" title="حذف">
@@ -456,7 +456,7 @@
             if (messageEl) {
                 const contentEl = messageEl.querySelector('.message-content p');
                 if (contentEl) {
-                    contentEl.textContent = message.message;
+                    contentEl.textContent = message.content;
                 }
 
                 // Add edited indicator
