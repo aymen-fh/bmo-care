@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const flash = require('connect-flash');
 const cookieParser = require('cookie-parser');
@@ -78,10 +77,31 @@ const sessionOptions = {
 const sessionMongoUrl = process.env.SESSION_MONGO_URL || process.env.MONGO_URI || process.env.MONGODB_URI;
 if (sessionMongoUrl) {
     app.set('trust proxy', 1); // required on many hosted platforms when behind a proxy
-    sessionOptions.store = MongoStore.create({
-        mongoUrl: sessionMongoUrl,
-        ttl: 14 * 24 * 60 * 60 // 14 days
-    });
+    try {
+        // connect-mongo has had multiple APIs across versions and CJS/ESM.
+        // This tries the modern API first, then falls back to the legacy factory API.
+        // If anything fails, we log and continue with MemoryStore (so the container stays up).
+        const connectMongo = require('connect-mongo');
+        const MongoStore = connectMongo?.default || connectMongo;
+
+        if (MongoStore && typeof MongoStore.create === 'function') {
+            sessionOptions.store = MongoStore.create({
+                mongoUrl: sessionMongoUrl,
+                ttl: 14 * 24 * 60 * 60 // 14 days
+            });
+        } else if (typeof MongoStore === 'function') {
+            // Legacy API: require('connect-mongo')(session)
+            const MongoStoreClass = MongoStore(session);
+            sessionOptions.store = new MongoStoreClass({
+                mongoUrl: sessionMongoUrl,
+                ttl: 14 * 24 * 60 * 60
+            });
+        } else {
+            console.error('⚠️ SESSION_MONGO_URL provided but connect-mongo API was not recognized; using MemoryStore');
+        }
+    } catch (err) {
+        console.error('⚠️ Failed to initialize Mongo session store; using MemoryStore:', err.message);
+    }
 }
 
 app.use(session(sessionOptions));
