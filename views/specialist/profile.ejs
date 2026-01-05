@@ -5,7 +5,7 @@
         <div class="profile-header-content">
             <div class="profile-avatar-large">
                 <% if (user.profilePhoto) { %>
-                    <img src="<%= user.profilePhoto %>" alt="<%= user.name %>">
+                    <img src="<%= uploadUrl(user.profilePhoto) %>" alt="<%= user.name %>">
                     <% } else { %>
                         <span>
                             <%= user.name.charAt(0).toUpperCase() %>
