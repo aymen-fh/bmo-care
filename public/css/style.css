@@ -2854,7 +2854,7 @@ body {
    PROFILE PAGE STYLES
    ====================================== */
 .profile-header {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--primary) 55%, var(--primary-hover) 100%);
   color: #ffffff;
   border-radius: var(--border-radius-lg);
   padding: 3rem 2.5rem;
@@ -2879,6 +2879,7 @@ body {
   display: flex;
   align-items: center;
   gap: 2rem;
+  justify-content: space-between;
   position: relative;
   z-index: 1;
 }
@@ -2961,19 +2962,32 @@ body {
 }
 
 .stat-quick {
+  width: 78px;
+  height: 78px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  gap: 0.25rem;
+  backdrop-filter: blur(5px);
 }
 
 .stat-quick-value {
-  font-size: 2.5rem;
+  font-size: 2.15rem;
   font-weight: 700;
   line-height: 1;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
+  color: var(--bg-sidebar);
 }
 
 .stat-quick-label {
   font-size: 0.875rem;
-  opacity: 0.9;
+  opacity: 0.85;
+  color: rgba(2, 6, 23, 0.75);
 }
 
 .profile-tabs {
