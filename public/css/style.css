@@ -277,32 +277,37 @@ body {
 .card *,
 .child-card *,
 .parent-card *,
-.stat-card *,
-.action-card *,
-.settings-modern-container *,
-.stat-content h3,
-.stat-content p {
+html:not([data-theme="dark"]) .stat-card *,
+html:not([data-theme="dark"]) .action-card *,
+html:not([data-theme="dark"]) .settings-modern-container *,
+html:not([data-theme="dark"]) .stat-content h3,
+html:not([data-theme="dark"]) .stat-content p {
   color: #1a1b3a !important;
 }
 
 /* Stats Icon - make it white/transparent to blend */
-.stat-icon {
+html:not([data-theme="dark"]) .stat-icon {
   background: rgba(255, 255, 255, 0.4) !important;
   color: #1a1b3a !important;
   border-radius: 50% !important;
   /* Circular like the color dot? Or keep rounded square? User code has .color-dot 50% */
 }
 
-/* Dark Mode Overrides - User said "whether in dark or night mode" -> SAME STYLE */
+[data-theme="dark"] .stat-icon {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dark Mode Overrides - make surfaces actually dark */
 [data-theme="dark"] .card,
 [data-theme="dark"] .child-card,
 [data-theme="dark"] .parent-card,
 [data-theme="dark"] .stat-card,
 [data-theme="dark"] .action-card,
 [data-theme="dark"] .settings-modern-container {
-  background: linear-gradient(135deg, #DBF4FF 0%, #2F5CFF 100%) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-  /* Slightly stronger shadow for dark mode context */
+  background: var(--bg-card) !important;
+  border: var(--glass-border) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
 [data-theme="dark"] .card *,
@@ -313,16 +318,12 @@ body {
 [data-theme="dark"] .settings-modern-container *,
 [data-theme="dark"] .stat-content h3,
 [data-theme="dark"] .stat-content p {
-  color: #1a1b3a !important;
+  color: var(--text-primary) !important;
 }
 
 /* [REMOVED CONFLICTING BLOCK] */
 
-/* Update primary blue colors to match reference */
-[data-theme="dark"] {
-  --primary: #00c2fa;
-  --primary-hover: #005fea;
-}
+/* Note: keep dark theme palette from the main variables above */
 
 [data-theme="dark"] .data-table {
   background: rgba(30, 27, 75, 0.6);
@@ -359,6 +360,36 @@ body {
   background: rgba(30, 27, 75, 0.6) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   color: var(--text-primary) !important;
+}
+
+/* Defensive overrides for inline styles (many views use inline/light colors) */
+[data-theme="dark"] [style*="background: #fff"],
+[data-theme="dark"] [style*="background:#fff"],
+[data-theme="dark"] [style*="background: #ffffff"],
+[data-theme="dark"] [style*="background:#ffffff"],
+[data-theme="dark"] [style*="background: #f8fafc"],
+[data-theme="dark"] [style*="background:#f8fafc"],
+[data-theme="dark"] [style*="background: #f9fafb"],
+[data-theme="dark"] [style*="background:#f9fafb"],
+[data-theme="dark"] [style*="background: #f3f4f6"],
+[data-theme="dark"] [style*="background:#f3f4f6"] {
+  background: var(--bg-card) !important;
+}
+
+[data-theme="dark"] [style*="color: #0f172a"],
+[data-theme="dark"] [style*="color:#0f172a"],
+[data-theme="dark"] [style*="color: #1e293b"],
+[data-theme="dark"] [style*="color:#1e293b"],
+[data-theme="dark"] [style*="color: #334155"],
+[data-theme="dark"] [style*="color:#334155"] {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] [style*="border: 2px solid #e2e8f0"],
+[data-theme="dark"] [style*="border:2px solid #e2e8f0"],
+[data-theme="dark"] [style*="border-color: #e2e8f0"],
+[data-theme="dark"] [style*="border-color:#e2e8f0"] {
+  border-color: var(--border-color) !important;
 }
 
 [data-theme="dark"] input::placeholder,
