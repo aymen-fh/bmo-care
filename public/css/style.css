@@ -321,6 +321,69 @@ html:not([data-theme="dark"]) .stat-icon {
   color: var(--text-primary) !important;
 }
 
+/* Modern cards used in multiple specialist screens (account/parents/children/dashboard) */
+[data-theme="dark"] .profile-card-modern,
+[data-theme="dark"] .child-card-centered,
+[data-theme="dark"] .stat-card-clean,
+[data-theme="dark"] .action-card-clean,
+[data-theme="dark"] .table-container-clean {
+  background: var(--bg-card) !important;
+  border: var(--glass-border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[data-theme="dark"] .profile-name-modern,
+[data-theme="dark"] .child-name-clean,
+[data-theme="dark"] .stat-content-clean h2,
+[data-theme="dark"] .section-header-clean h3 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .profile-role-modern,
+[data-theme="dark"] .detail-row-clean,
+[data-theme="dark"] .stat-content-clean p,
+[data-theme="dark"] .action-card-clean {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .avatar-modern {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .avatar-large-blue,
+[data-theme="dark"] .avatar-modern {
+  border-color: var(--primary) !important;
+}
+
+[data-theme="dark"] .child-card-centered:hover .avatar-large-blue {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme="dark"] .btn-modern.btn-unlink {
+  background: rgba(248, 113, 113, 0.18) !important;
+  color: var(--danger) !important;
+}
+
+[data-theme="dark"] .btn-modern.btn-unlink:hover {
+  background: rgba(248, 113, 113, 0.25) !important;
+}
+
+[data-theme="dark"] .empty-state-modern,
+[data-theme="dark"] .empty-state-clean {
+  color: var(--text-secondary) !important;
+}
+
+/* Dashboard table ("clean" table) */
+[data-theme="dark"] .clean-table th {
+  background: rgba(15, 23, 42, 0.45) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .clean-table td {
+  color: var(--text-primary) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 /* [REMOVED CONFLICTING BLOCK] */
 
 /* Note: keep dark theme palette from the main variables above */
