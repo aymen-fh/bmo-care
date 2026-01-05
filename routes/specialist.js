@@ -387,15 +387,24 @@ const upload = multer({
 // View Profile
 router.get('/profile', async (req, res) => {
     try {
-        // CORRECTED PATH: /auth/me
-        const response = await apiClient.authGet(req, '/auth/me');
+        const [meResponse, dashboardResponse] = await Promise.all([
+            apiClient.authGet(req, '/auth/me'),
+            apiClient.authGet(req, '/specialist/dashboard')
+        ]);
 
-        const { user } = response.data.success ? response.data : { user: req.user };
+        const { user } = meResponse.data && meResponse.data.success ? meResponse.data : { user: req.user };
+
+        const dashboardStats = dashboardResponse.data && dashboardResponse.data.success ? dashboardResponse.data.stats : null;
+        const stats = {
+            children: dashboardStats && typeof dashboardStats.children === 'number' ? dashboardStats.children : 0,
+            parents: dashboardStats && typeof dashboardStats.parents === 'number' ? dashboardStats.parents : 0,
+            sessions: dashboardStats && typeof dashboardStats.sessions === 'number' ? dashboardStats.sessions : 0
+        };
 
         res.render('specialist/profile', {
             title: res.locals.__('profile'),
             user,
-            stats: {} // Stats aren't returned by /auth/me, can be omitted or fetched from dashboard endpoint if needed
+            stats
         });
     } catch (error) {
         console.error('Profile View Error:', error.message);
