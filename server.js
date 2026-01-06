@@ -139,7 +139,13 @@ app.use((req, res, next) => {
 const buildUploadUrl = (value) => {
     if (!value) return '';
     if (value.startsWith('http://') || value.startsWith('https://')) return value;
-    const cleaned = value.replace(/^\/+/, '').replace(/^uploads\/+/, '');
+    // Normalize slashes
+    let cleaned = value.replace(/\\/g, '/');
+    // Remove leading slashes
+    cleaned = cleaned.replace(/^\/+/, '');
+    // Remove leading 'uploads/' if present
+    cleaned = cleaned.replace(/^uploads\//, '');
+    
     return `${BACKEND_URL}/uploads/${cleaned}`;
 };
 
