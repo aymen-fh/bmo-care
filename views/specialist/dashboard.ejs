@@ -115,14 +115,9 @@
                                 <tr>
                                     <td>
                                         <div class="child-cell">
-                                            <% if (child.parent && child.parent.profilePhoto) { %>
-                                                <div class="avatar-square-blue" style="background-image: url('<%= uploadUrl(child.parent.profilePhoto) %>'); background-size: cover; background-position: center;">
-                                                </div>
-                                            <% } else { %>
-                                                <div class="avatar-square-blue">
-                                                    <i class="fas fa-child"></i>
-                                                </div>
-                                            <% } %>
+                                            <div class="avatar-square-blue">
+                                                <i class="fas fa-child"></i>
+                                            </div>
                                             <span class="child-name-text">
                                                 <%= child.name %>
                                             </span>
