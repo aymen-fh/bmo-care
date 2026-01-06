@@ -69,7 +69,7 @@
                     </div>
                     <div class="hero-icon">
                         <% if (child.parent && child.parent.profilePhoto) { %>
-                            <img src="/<%= child.parent.profilePhoto.replace(/\\/g, '/') %>"
+                            <img src="<%= uploadUrl(child.parent.profilePhoto) %>"
                                 alt="<%= child.parent.name %>"
                                 style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                             <% } else { %>

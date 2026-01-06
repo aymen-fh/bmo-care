@@ -33,7 +33,7 @@
                                 <%= child.parent.name %>
                             </span>
                             <% if (child.parent.profilePhoto) { %>
-                                <img src="<%= child.parent.profilePhoto.startsWith('http') ? child.parent.profilePhoto : '/uploads/' + child.parent.profilePhoto.split('/').pop() %>"
+                                <img src="<%= uploadUrl(child.parent.profilePhoto) %>"
                                     alt="Parent" class="mini-avatar-circle"
                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
                                 <i class="fa-solid fa-user fallback-icon" style="display:none;"></i>

@@ -116,7 +116,7 @@
                                     <td>
                                         <div class="child-cell">
                                             <% if (child.parent && child.parent.profilePhoto) { %>
-                                                <div class="avatar-square-blue" style="background-image: url('<%= child.parent.profilePhoto.startsWith('http') ? child.parent.profilePhoto : (child.parent.profilePhoto.startsWith('/') ? child.parent.profilePhoto : '/' + child.parent.profilePhoto) %>'); background-size: cover; background-position: center;">
+                                                <div class="avatar-square-blue" style="background-image: url('<%= uploadUrl(child.parent.profilePhoto) %>'); background-size: cover; background-position: center;">
                                                 </div>
                                             <% } else { %>
                                                 <div class="avatar-square-blue">

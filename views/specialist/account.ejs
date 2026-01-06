@@ -37,7 +37,7 @@
                     <div class="avatar-wrapper-modern">
                         <div class="avatar-modern">
                             <% if (parent.profilePhoto) { %>
-                                <img src="<%= parent.profilePhoto %>" alt="<%= parent.name %>">
+                                <img src="<%= uploadUrl(parent.profilePhoto) %>" alt="<%= parent.name %>">
                                 <% } else { %>
                                     <i class="fas fa-user"></i>
                                     <% } %>
