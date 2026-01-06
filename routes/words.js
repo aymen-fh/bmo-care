@@ -92,10 +92,22 @@ router.post('/add', upload.single('image'), async (req, res) => {
             return res.redirect('/specialist/words');
         }
 
+        const normalizedContentType = (contentType === 'letter' || contentType === 'word')
+            ? contentType
+            : 'word';
+        const normalizedDifficulty = (difficulty === 'easy' || difficulty === 'medium' || difficulty === 'hard')
+            ? difficulty
+            : 'easy';
+
+        if (!text || !String(text).trim()) {
+            req.flash('error_msg', 'Text is required');
+            return res.redirect(`/specialist/words?childId=${childId}&contentType=${normalizedContentType}&difficulty=${normalizedDifficulty}`);
+        }
+
         const form = new FormData();
-        form.append('text', text);
-        form.append('contentType', contentType);
-        form.append('difficulty', difficulty);
+        form.append('text', String(text).trim());
+        form.append('contentType', normalizedContentType);
+        form.append('difficulty', normalizedDifficulty);
         form.append('childId', childId);
 
         if (req.file) {
@@ -109,7 +121,7 @@ router.post('/add', upload.single('image'), async (req, res) => {
         const response = await apiClient.post('/words', form, { headers });
 
         if (response.data.success) {
-            const successMessage = contentType === 'word'
+            const successMessage = normalizedContentType === 'word'
                 ? '✅ تم حفظ الكلمة وإضافتها إلى قائمة تدريب الطفل بنجاح'
                 : '✅ تم حفظ الحرف وإضافته إلى قائمة تدريب الطفل بنجاح';
             req.flash('success_msg', successMessage);
@@ -117,7 +129,7 @@ router.post('/add', upload.single('image'), async (req, res) => {
             req.flash('error_msg', response.data.message || 'Error adding content');
         }
 
-        res.redirect(`/specialist/words?childId=${childId}`);
+        res.redirect(`/specialist/words?childId=${childId}&contentType=${normalizedContentType}&difficulty=${normalizedDifficulty}`);
     } catch (error) {
         console.error('Add Word Error:', error.message);
         req.flash('error_msg', 'Error adding content');

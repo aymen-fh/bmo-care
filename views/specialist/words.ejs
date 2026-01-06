@@ -251,6 +251,7 @@
                     <form action="/specialist/words/add" method="POST" enctype="multipart/form-data"
                         class="modern-form" id="contentForm">
                         <input type="hidden" name="childId" value="<%= child._id %>">
+                        <input type="hidden" name="contentType" id="contentTypeHidden" value="<%= (typeof contentType !== 'undefined' ? contentType : 'word') %>">
 
                         <div class="form-row">
                             <div class="form-col text-inputs">

@@ -104,8 +104,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Real-time Updates (Socket.io)
     if (typeof io !== 'undefined') {
-        // Connect to local backend
-        const socket = io('http://localhost:5000');
+        // Connect via same-origin proxy (/socket.io is proxied to BACKEND_URL in specialist-portal/server.js)
+        const socket = io({
+            path: '/socket.io'
+        });
 
         socket.on('connect', () => {
             console.log('🔌 Connected to Real-time Server');
