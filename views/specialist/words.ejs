@@ -372,10 +372,16 @@
                                     <div class="card-img-top <%= word.image === 'default-word.png' ? 'default-image' : '' %>">
                                         <% if (word.image==='default-word.png' ) { %>
                                             <div class="default-display">
-                                                <% // Try to extract emoji from text const
-                                                    emojiMatch=word.text.match(/[\p{Emoji}]/u); const
-                                                    displayText=emojiMatch ? emojiMatch[0] : word.text.charAt(0); %>
-                                                    <%= displayText %>
+                                                <%
+                                                    let displayText = (word.text || '').trim();
+                                                    if (displayText.length === 0) {
+                                                        displayText = '؟';
+                                                    } else {
+                                                        const emojiMatch = displayText.match(/[\u{2600}-\u{27BF}\u{1F300}-\u{1FAFF}]/u);
+                                                        displayText = emojiMatch ? emojiMatch[0] : displayText.charAt(0);
+                                                    }
+                                                %>
+                                                <%= displayText %>
                                             </div>
                                             <% } else { %>
                                                 <img src="<%= uploadUrl(word.image) %>" alt="<%= word.text %>"
@@ -710,7 +716,9 @@
 
                     for (let i = 0; i < cards.length; i++) {
                         const txtValue = cards[i].getAttribute('data-text');
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        if (!txtValue) {
+                            cards[i].style.display = "none";
+                        } else if (txtValue.toUpperCase().indexOf(filter) > -1) {
                             cards[i].style.display = "";
                         } else {
                             cards[i].style.display = "none";

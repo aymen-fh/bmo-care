@@ -147,7 +147,11 @@ router.post('/delete/:id', async (req, res) => {
         if (response.data.success) {
             req.flash('success_msg', 'Deleted successfully');
 
-            const childId = response.data.childId;
+            const rawChildId = response.data.childId;
+            const childId = typeof rawChildId === 'object'
+                ? (rawChildId?._id || rawChildId?.id)
+                : rawChildId;
+
             if (childId) {
                 res.redirect(`/specialist/words?childId=${childId}`);
             } else {
