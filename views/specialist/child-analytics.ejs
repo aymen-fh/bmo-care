@@ -24,17 +24,16 @@
                 <!-- Profile Info (Right in RTL) -->
                 <div class="header-info-blue">
                     <div class="info-details">
-                        <h1>
+                        <h1 class="child-name">
                             <%= child.name %>
+                        </h1>
+
+                        <div class="child-meta">
                             <span class="email-pill" title="ولي الأمر">
-                                <i class="fa-solid fa-user"></i>
+                                <i class="fa-solid fa-envelope"></i>
                                 <%= (child.parent && child.parent.email) ? child.parent.email : '-' %>
                             </span>
-                            <span class="email-pill" title="الأخصائي">
-                                <i class="fa-solid fa-user-doctor"></i>
-                                <%= (child.assignedSpecialist && child.assignedSpecialist.email) ? child.assignedSpecialist.email : '-' %>
-                            </span>
-                        </h1>
+                        </div>
 
                         <div class="parent-info-row">
                             <span class="parent-name">
@@ -65,6 +64,20 @@
         </div>
 
         <style>
+            .child-name {
+                margin: 0;
+                display: block;
+                line-height: 1.2;
+            }
+
+            .child-meta {
+                margin-top: 0.5rem;
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
             .email-pill {
                 display: inline-flex;
                 align-items: center;
@@ -76,7 +89,6 @@
                 border: 1px solid rgba(255,255,255,0.25);
                 border-radius: 999px;
                 padding: 0.25rem 0.6rem;
-                margin-inline-start: 0.5rem;
             }
             .mini-avatar-circle {
                 width: 24px;
