@@ -26,7 +26,12 @@ process.on('SIGINT', () => {
 });
 
 // Normalize backend URL and provide a sane default for local dev.
-const normalizeBackendUrl = (raw) => (raw || 'http://localhost:8080').replace(/\/$/, '');
+// IMPORTANT: Some deployments set BACKEND_URL including `/api`.
+// The portal already prefixes requests with `/api`, so strip trailing `/api`.
+const normalizeBackendUrl = (raw) => {
+    const base = (raw || 'http://localhost:8080').replace(/\/$/, '');
+    return base.replace(/\/api\/?$/, '');
+};
 const BACKEND_URL = normalizeBackendUrl(process.env.BACKEND_URL);
 process.env.BACKEND_URL = BACKEND_URL; // Keep other modules (apiClient, serverCheck) in sync.
 console.log('BACKEND_URL =', BACKEND_URL);

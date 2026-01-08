@@ -2,7 +2,10 @@ const axios = require('axios');
 const https = require('https');
 
 // Normalize and fallback to local dev backend if env is missing.
-const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '');
+// Some environments may set BACKEND_URL including `/api`.
+const backendUrl = (process.env.BACKEND_URL || 'http://localhost:8080')
+    .replace(/\/$/, '')
+    .replace(/\/api\/?$/, '');
 
 const apiClient = axios.create({
     baseURL: `${backendUrl}/api`,
