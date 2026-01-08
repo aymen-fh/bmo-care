@@ -1,0 +1,11 @@
+<%
+  const requested = (child && child.avatarId) ? String(child.avatarId) : 'avatar_01';
+  const avatarId = /^avatar_0[1-8]$/.test(requested) ? requested : 'avatar_01';
+  const size = (typeof sizePx === 'number' && sizePx > 0) ? sizePx : 56;
+%>
+<img
+  src="/avatars/<%= avatarId %>.png"
+  alt="avatar"
+  style="width:<%= size %>px; height:<%= size %>px; border-radius:50%; object-fit:cover; display:block;"
+  onerror="this.onerror=null;this.src='/avatars/avatar_01.png';"
+/>

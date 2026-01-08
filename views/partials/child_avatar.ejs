@@ -1,0 +1,14 @@
+<%
+  const requested = (child && child.avatarId) ? String(child.avatarId) : 'avatar_01';
+  const avatarId = /^avatar_0[1-8]$/.test(requested) ? requested : 'avatar_01';
+  const sizeClass = (typeof avatarSizeClass !== 'undefined' && avatarSizeClass) ? avatarSizeClass : 'avatar-large-blue';
+%>
+
+<div class="<%= sizeClass %>" style="background: transparent; overflow: hidden;">
+  <img
+    src="/avatars/<%= avatarId %>.png"
+    alt="avatar"
+    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;"
+    onerror="this.onerror=null;this.src='/avatars/avatar_01.png';"
+  />
+</div>

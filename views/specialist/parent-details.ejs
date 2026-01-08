@@ -81,7 +81,7 @@
                     <% children.forEach(function(child) { %>
                         <div class="child-card-centered" style="cursor: default;">
                             <div class="avatar-large-blue">
-                                <i class="fas fa-child"></i>
+                                <%- include('../partials/child-avatar', { child: child, sizePx: 142 }) %>
                             </div>
 
                             <h3 class="child-name-clean">
@@ -104,7 +104,7 @@
                             </div>
 
                             <div style="margin-top: 2rem; width: 100%;">
-                                <a href="/specialist/child/<%= child._id %>/analytics"
+                                <a href="/specialist/child/<%= child._id || child.id %>/analytics"
                                     class="btn-outline-clean btn-block">
                                     <i class="fas fa-chart-line"></i>
                                     <%= __('viewProgress') %>

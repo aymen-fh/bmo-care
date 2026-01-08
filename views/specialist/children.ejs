@@ -17,9 +17,7 @@
                 <% children.forEach(function(child) { %>
                     <a href="/specialist/child/<%= child._id %>/analytics" class="child-card-centered">
                         <!-- Avatar -->
-                        <div class="avatar-large-blue">
-                            <i class="fas fa-child"></i>
-                        </div>
+                        <%- include('../partials/child-avatar', { child: child, sizePx: 56 }) %>
 
                         <!-- Name -->
                         <h3 class="child-name-clean">

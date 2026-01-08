@@ -16,10 +16,10 @@
             <div class="children-grid-centered">
                 <% if (children && children.length> 0) { %>
                     <% children.forEach(function(child) { %>
-                        <a href="/specialist/words?childId=<%= child._id %>" class="child-card-centered">
+                        <a href="/specialist/words?childId=<%= child._id || child.id %>" class="child-card-centered">
                             <!-- Avatar -->
                             <div class="avatar-large-blue">
-                                <i class="fas fa-child"></i>
+                                <%- include('../partials/child-avatar', { child: child, sizePx: 142 }) %>
                             </div>
 
                             <!-- Name -->
@@ -39,7 +39,7 @@
                             <!-- Details Row: Parent -->
                             <div class="detail-row-clean">
                                 <span>
-                                    <%= child.parent ? child.parent.name : '-' %>
+                                    <%= (child.parent && child.parent.name) ? child.parent.name : (child.parentName || '-') %>
                                 </span>
                                 <i class="fas fa-user icon-primary"></i>
                             </div>

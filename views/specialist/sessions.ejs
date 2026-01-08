@@ -120,14 +120,27 @@
                                     </td>
                                     <td>
                                         <div class="cell-with-icon">
-                                            <% if (childObj && (childObj.avatar || childObj.profilePhoto)) { %>
-                                                <img src="<%= uploadUrl(childObj.avatar || childObj.profilePhoto) %>"
-                                                    alt="<%= childObj.name || __('child') %>" class="avatar-small">
-                                                <% } else { %>
-                                                    <div class="avatar-circle">
-                                                        <i class="fas fa-child"></i>
-                                                    </div>
-                                                    <% } %>
+                                            <% const rawAvatarId = (childObj && childObj.avatarId) ? String(childObj.avatarId) : null; %>
+                                            <% const safeAvatarId = (rawAvatarId && /^avatar_0[1-8]$/.test(rawAvatarId)) ? rawAvatarId : null; %>
+
+                                            <% if (safeAvatarId) { %>
+                                                <img
+                                                    src="/avatars/<%= safeAvatarId %>.png"
+                                                    alt="<%= (childObj && childObj.name) ? childObj.name : __('child') %>"
+                                                    class="avatar-small"
+                                                    onerror="this.onerror=null;this.src='/avatars/avatar_01.png';"
+                                                >
+                                            <% } else if (childObj && (childObj.avatar || childObj.profilePhoto)) { %>
+                                                <img
+                                                    src="<%= uploadUrl(childObj.avatar || childObj.profilePhoto) %>"
+                                                    alt="<%= childObj.name || __('child') %>"
+                                                    class="avatar-small"
+                                                >
+                                            <% } else { %>
+                                                <div class="avatar-circle">
+                                                    <i class="fas fa-child"></i>
+                                                </div>
+                                            <% } %>
                                                         <span>
                                                             <%= (childObj && childObj.name) ? childObj.name : (session.childName || '-') %>
                                                         </span>
