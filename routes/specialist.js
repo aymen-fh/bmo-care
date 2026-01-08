@@ -492,15 +492,73 @@ router.post('/profile/change-password', async (req, res) => {
 
 // ===== CHILD ANALYTICS ROUTES =====
 
+function _normalizeSessionsForCharts(progressSessions) {
+    const sessions = Array.isArray(progressSessions) ? progressSessions : [];
+    // Keep only the fields the portal charts expect.
+    return sessions.slice(-30).map((s) => {
+        const totalAttempts = Number(s.totalAttempts ?? s.total_attempts ?? 0) || 0;
+        const successfulAttempts = Number(s.successfulAttempts ?? s.successful_attempts ?? 0) || 0;
+        const failedAttempts = Number(s.failedAttempts ?? s.failed_attempts ?? 0) || Math.max(0, totalAttempts - successfulAttempts);
+        const averageScore = Number(s.averageScore ?? s.average_score ?? 0) || 0;
+        const duration = Number(s.duration ?? 0) || 0;
+        const sessionDate = s.sessionDate ?? s.session_date;
+
+        return {
+            sessionDate,
+            duration,
+            totalAttempts,
+            successfulAttempts,
+            failedAttempts,
+            averageScore,
+            successRate: totalAttempts > 0 ? (successfulAttempts / totalAttempts) * 100 : 0,
+        };
+    });
+}
+
+function _flattenAttemptsFromProgress(progressSessions, limit = 50) {
+    const sessions = Array.isArray(progressSessions) ? progressSessions : [];
+    const attempts = [];
+    for (const s of sessions) {
+        const sessionDate = s.sessionDate ?? s.session_date;
+        const sessionAttempts = Array.isArray(s.attempts) ? s.attempts : [];
+        for (const a of sessionAttempts) {
+            const target = a.word || a.letter || a.vowel || '';
+            attempts.push({
+                sessionDate,
+                timestamp: a.timestamp,
+                target,
+                letter: a.letter,
+                word: a.word,
+                vowel: a.vowel,
+                success: !!a.success,
+                score: typeof a.score === 'number' ? a.score : undefined,
+                pronunciationScore: typeof a.pronunciationScore === 'number' ? a.pronunciationScore : undefined,
+                accuracyScore: typeof a.accuracyScore === 'number' ? a.accuracyScore : undefined,
+                fluencyScore: typeof a.fluencyScore === 'number' ? a.fluencyScore : undefined,
+                completenessScore: typeof a.completenessScore === 'number' ? a.completenessScore : undefined,
+                recognizedText: a.recognizedText,
+                referenceText: a.referenceText,
+                analysisSource: a.analysisSource,
+            });
+        }
+    }
+
+    attempts.sort((a, b) => {
+        const ta = new Date(a.timestamp || 0).getTime();
+        const tb = new Date(b.timestamp || 0).getTime();
+        return tb - ta;
+    });
+
+    return attempts.slice(0, Math.max(1, Math.min(limit, 200)));
+}
+
 // Child Analytics Page (The Unified View)
 router.get('/child/:id/analytics', async (req, res) => {
     try {
-        // Combine progress and sessions endpoints
-        const [progressResponse, sessionsResponse, attemptsResponse] = await Promise.all([
-            apiClient.authGet(req, `/progress/child/${req.params.id}`),
-            apiClient.authGet(req, `/progress/sessions/${req.params.id}`),
-            apiClient.authGet(req, `/progress/attempts/${req.params.id}?limit=50`)
-        ]);
+        const childId = req.params.id;
+
+        // Always prefer /progress/child (most compatible). Other endpoints are optional.
+        const progressResponse = await apiClient.authGet(req, `/progress/child/${childId}`);
 
         if (!progressResponse.data.success) {
             req.flash('error_msg', res.locals.__('not_found'));
@@ -514,13 +572,36 @@ router.get('/child/:id/analytics', async (req, res) => {
             return { name: 'Unknown', _id: req.params.id };
         })();
 
-        // Create a custom object that matches what the view expects
-        // View might expect 'progress' to contain 'sessions' field
-        progress.sessions = sessionsResponse.data.sessions || [];
+        // Sessions: prefer /progress/sessions; fallback to deriving from progress.sessions.
+        let sessions = [];
+        try {
+            const sessionsResponse = await apiClient.authGet(req, `/progress/sessions/${childId}`);
+            sessions = sessionsResponse?.data?.sessions || [];
+        } catch (e) {
+            const status = e?.response?.status;
+            if (status !== 404) {
+                console.warn('Sessions endpoint failed; falling back to progress.sessions:', e.message);
+            }
+            sessions = _normalizeSessionsForCharts(progress.sessions);
+        }
 
-        const attempts = (attemptsResponse && attemptsResponse.data && attemptsResponse.data.success)
-            ? (attemptsResponse.data.attempts || [])
-            : [];
+        // Attempts: prefer /progress/attempts; fallback to flattening progress.sessions.
+        let attempts = [];
+        try {
+            const attemptsResponse = await apiClient.authGet(req, `/progress/attempts/${childId}?limit=50`);
+            attempts = (attemptsResponse?.data?.success)
+                ? (attemptsResponse.data.attempts || [])
+                : [];
+        } catch (e) {
+            const status = e?.response?.status;
+            if (status !== 404) {
+                console.warn('Attempts endpoint failed; falling back to progress.sessions:', e.message);
+            }
+            attempts = _flattenAttemptsFromProgress(progress.sessions, 50);
+        }
+
+        // The view expects progress.sessions.
+        progress.sessions = sessions;
 
         res.render('specialist/child-analytics', {
             title: `تحليلات ${child.name}`,
@@ -529,7 +610,9 @@ router.get('/child/:id/analytics', async (req, res) => {
             attempts
         });
     } catch (error) {
-        console.error('Analytics View Error:', error.message);
+        const status = error?.response?.status;
+        const url = error?.config?.url;
+        console.error('Analytics View Error:', status ? `${status}` : error.message, url ? `url=${url}` : '');
         req.flash('error_msg', res.locals.__('errorOccurred'));
         res.redirect('/specialist/children');
     }
@@ -538,8 +621,21 @@ router.get('/child/:id/analytics', async (req, res) => {
 // Child Analytics Data API
 router.get('/child/:id/analytics/data', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, `/progress/sessions/${req.params.id}`);
-        const sessions = (response.data && response.data.sessions) ? response.data.sessions : [];
+        const childId = req.params.id;
+
+        let sessions = [];
+        try {
+            const response = await apiClient.authGet(req, `/progress/sessions/${childId}`);
+            sessions = (response.data && response.data.sessions) ? response.data.sessions : [];
+        } catch (e) {
+            const status = e?.response?.status;
+            if (status !== 404) {
+                console.warn('Analytics data sessions endpoint failed; falling back to /progress/child:', e.message);
+            }
+            const progressResponse = await apiClient.authGet(req, `/progress/child/${childId}`);
+            const progress = progressResponse?.data?.progress;
+            sessions = _normalizeSessionsForCharts(progress?.sessions);
+        }
 
         const totalSessions = sessions.length;
         const totalAttempts = sessions.reduce((sum, s) => sum + (Number(s.totalAttempts) || 0), 0);
@@ -610,7 +706,9 @@ router.get('/child/:id/analytics/data', async (req, res) => {
             chartData,
         });
     } catch (error) {
-        console.error('Analytics Data API Error:', error.message);
+        const status = error?.response?.status;
+        const url = error?.config?.url;
+        console.error('Analytics Data API Error:', status ? `${status}` : error.message, url ? `url=${url}` : '');
         res.status(500).json({
             success: false,
             message: error.message
