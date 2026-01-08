@@ -496,9 +496,10 @@ router.post('/profile/change-password', async (req, res) => {
 router.get('/child/:id/analytics', async (req, res) => {
     try {
         // Combine progress and sessions endpoints
-        const [progressResponse, sessionsResponse] = await Promise.all([
+        const [progressResponse, sessionsResponse, attemptsResponse] = await Promise.all([
             apiClient.authGet(req, `/progress/child/${req.params.id}`),
-            apiClient.authGet(req, `/progress/sessions/${req.params.id}`)
+            apiClient.authGet(req, `/progress/sessions/${req.params.id}`),
+            apiClient.authGet(req, `/progress/attempts/${req.params.id}?limit=50`)
         ]);
 
         if (!progressResponse.data.success) {
@@ -517,10 +518,15 @@ router.get('/child/:id/analytics', async (req, res) => {
         // View might expect 'progress' to contain 'sessions' field
         progress.sessions = sessionsResponse.data.sessions || [];
 
+        const attempts = (attemptsResponse && attemptsResponse.data && attemptsResponse.data.success)
+            ? (attemptsResponse.data.attempts || [])
+            : [];
+
         res.render('specialist/child-analytics', {
             title: `تحليلات ${child.name}`,
             child,
-            progress
+            progress,
+            attempts
         });
     } catch (error) {
         console.error('Analytics View Error:', error.message);
@@ -533,9 +539,75 @@ router.get('/child/:id/analytics', async (req, res) => {
 router.get('/child/:id/analytics/data', async (req, res) => {
     try {
         const response = await apiClient.authGet(req, `/progress/sessions/${req.params.id}`);
+        const sessions = (response.data && response.data.sessions) ? response.data.sessions : [];
+
+        const totalSessions = sessions.length;
+        const totalAttempts = sessions.reduce((sum, s) => sum + (Number(s.totalAttempts) || 0), 0);
+        const successfulAttempts = sessions.reduce((sum, s) => sum + (Number(s.successfulAttempts) || 0), 0);
+
+        const successRate = totalAttempts > 0
+            ? Math.round((successfulAttempts / totalAttempts) * 100)
+            : 0;
+
+        const averageScore = totalSessions > 0
+            ? Math.round(sessions.reduce((sum, s) => sum + (Number(s.averageScore) || 0), 0) / totalSessions)
+            : 0;
+
+        // Simple difficulty buckets based on averageScore.
+        const difficulty = sessions.reduce((acc, s) => {
+            const score = Number(s.averageScore) || 0;
+            if (score >= 80) acc.easy += 1;
+            else if (score >= 50) acc.medium += 1;
+            else acc.hard += 1;
+            return acc;
+        }, { easy: 0, medium: 0, hard: 0 });
+
+        // Timeline: last 20 sessions
+        const last = sessions.slice(-20);
+        const timeline = {
+            labels: last.map((s, i) => {
+                const d = s.sessionDate ? new Date(s.sessionDate) : null;
+                if (d && !Number.isNaN(d.getTime())) {
+                    return d.toLocaleDateString('ar-SA');
+                }
+                return `جلسة ${i + 1}`;
+            }),
+            data: last.map(s => Math.round(Number(s.averageScore) || 0)),
+        };
+
+        // Skills: minimal "general" bucket so the UI has data.
+        const skillsProgress = {
+            general: {
+                sessionsCount: totalSessions,
+                averageScore,
+            }
+        };
+
+        const chartData = {
+            timeline,
+            skills: {
+                labels: ['عام'],
+                data: [averageScore],
+            },
+            successRate: {
+                labels: ['نجاح', 'محاولات أخرى'],
+                data: [successRate, Math.max(0, 100 - successRate)],
+            },
+            difficulty,
+        };
+
         res.json({
             success: true,
-            sessions: response.data.sessions
+            sessions,
+            stats: {
+                totalSessions,
+                totalAttempts,
+                successfulAttempts,
+                successRate,
+                averageScore,
+                skillsProgress,
+            },
+            chartData,
         });
     } catch (error) {
         console.error('Analytics Data API Error:', error.message);

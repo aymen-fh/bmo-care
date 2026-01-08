@@ -261,6 +261,45 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Recent Speech Attempts -->
+            <div class="clean-card">
+                <div class="card-header-clean">
+                    <h3><i class="fa-solid fa-microphone"></i> محاولات النطق الأخيرة</h3>
+                </div>
+                <div class="card-body-clean">
+                    <% if (typeof attempts !== 'undefined' && attempts && attempts.length > 0) { %>
+                        <table class="clean-blue-table">
+                            <thead>
+                                <tr>
+                                    <th>المستهدف</th>
+                                    <th>المنطوق</th>
+                                    <th>النتيجة</th>
+                                    <th>المصدر</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% attempts.forEach(function(a) { %>
+                                    <tr>
+                                        <td><%= a.target || '-' %></td>
+                                        <td><%= (a.recognizedText && a.recognizedText.trim()) ? a.recognizedText : '-' %></td>
+                                        <td>
+                                            <% const s = (typeof a.pronunciationScore === 'number') ? a.pronunciationScore : a.score; %>
+                                            <%= (typeof s === 'number') ? Math.round(s) + '%' : '-' %>
+                                        </td>
+                                        <td><%= a.analysisSource || '-' %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <div class="empty-placeholder">
+                            <i class="fa-solid fa-microphone"></i>
+                            <p>لا توجد محاولات نطق بعد</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
             <% } %>
     </div>
     </div> <!-- Close page-container-blue -->
