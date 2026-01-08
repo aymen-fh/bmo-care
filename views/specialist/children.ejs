@@ -17,7 +17,9 @@
                 <% children.forEach(function(child) { %>
                     <a href="/specialist/child/<%= child._id %>/analytics" class="child-card-centered">
                         <!-- Avatar -->
-                        <%- include('../partials/child-avatar', { child: child, sizePx: 56 }) %>
+                        <div class="avatar-large-blue">
+                            <%- include('../partials/child-avatar', { child: child, sizePx: 142 }) %>
+                        </div>
 
                         <!-- Name -->
                         <h3 class="child-name-clean">
@@ -34,31 +36,19 @@
                         </div>
 
                         <!-- Details Row: Parent -->
-
-                        <!-- Details Row: Parent -->
-                        <div class="detail-row-clean" style="flex-direction: column; gap: 0.2rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #64748b;">
-                                <i class="fas fa-user-tie icon-primary"></i>
-                                <span style="font-size: 0.9rem;"><%= __('parent') %>:</span>
-                            </div>
-                            <div style="font-weight: 600; color: #334155;">
-                                <%= child.parent ? child.parent.name : __('notAssigned') %>
-                            </div>
-                            <% if (child.parent && child.parent.staffId) { %>
-                                <span class="badge-pill-custom"
-                                    style="background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; padding: 2px 8px; font-size: 0.75rem; border-radius: 6px;">
-                                    <%= child.parent.staffId %>
-                                </span>
-                                <% } %>
+                        <div class="detail-row-clean">
+                            <span>
+                                <%= (child.parent && child.parent.name) ? child.parent.name : (child.parentName || __('notAssigned')) %>
+                            </span>
+                            <i class="fas fa-user icon-primary"></i>
                         </div>
 
-
-                        <!-- Difficulty Badge -->
-                        <div class="badge-container-clean">
-                            <span
-                                class="badge-pill-custom <%= child.difficultyLevel === 'beginner' ? 'badge-beginner' : child.difficultyLevel === 'intermediate' ? 'badge-intermediate' : 'badge-advanced' %>">
-                                <%= __(child.difficultyLevel) %>
+                        <!-- Action Hint -->
+                        <div class="action-hint">
+                            <span class="btn-action-text">
+                                <%= __('analytics') || 'التحليلات' %>
                             </span>
+                            <i class="fas fa-arrow-left"></i>
                         </div>
                     </a>
                     <% }); %>
@@ -509,6 +499,27 @@
         .icon-primary,
         .icon-secondary {
             color: #3b82f6;
+        }
+
+        .action-hint {
+            margin-top: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #3b82f6;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .child-card-centered:hover .action-hint {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4);
         }
 
         .badge-container-clean {

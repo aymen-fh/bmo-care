@@ -30,9 +30,9 @@
 
                         <div class="parent-info-row">
                             <span class="parent-name">
-                                <%= child.parent.name %>
+                                <%= (child.parent && child.parent.name) ? child.parent.name : '-' %>
                             </span>
-                            <% if (child.parent.profilePhoto) { %>
+                            <% if (child.parent && child.parent.profilePhoto) { %>
                                 <img src="<%= uploadUrl(child.parent.profilePhoto) %>"
                                     alt="Parent" class="mini-avatar-circle"
                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
@@ -43,15 +43,14 @@
                         </div>
 
                         <p class="parent-email">
-                            <%= child.parent.email %>
+                            <%= (child.parent && child.parent.email) ? child.parent.email : '' %>
                                 <i class="fa-solid fa-envelope"></i>
                         </p>
                     </div>
 
                     <!-- Child Avatar -->
                     <div class="avatar-circle-blue">
-                        <!-- Since Child model has no image, we rely on gender avatar -->
-                        <i class="fa-solid fa-<%= child.gender === 'male' ? 'child' : 'child-dress' %>"></i>
+                        <%- include('../partials/child-avatar', { child: child, sizePx: 92 }) %>
                     </div>
                 </div>
             </div>
