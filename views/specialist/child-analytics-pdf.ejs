@@ -3,336 +3,311 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
     <% if (tajawalFontBase64 && tajawalFontBoldBase64) { %>
     @font-face {
       font-family: 'Tajawal';
       src: url(data:font/ttf;base64,<%= tajawalFontBase64 %>) format('truetype');
       font-weight: 400;
-      font-style: normal;
     }
     @font-face {
       font-family: 'Tajawal';
       src: url(data:font/ttf;base64,<%= tajawalFontBoldBase64 %>) format('truetype');
       font-weight: 700;
-      font-style: normal;
     }
     <% } %>
 
     :root {
-      --blue: #2563eb;
-      --pink1: #ec4899;
-      --pink2: #db2777;
-      --gray-500: #64748b;
-      --gray-200: #e2e8f0;
-      --text: #0f172a;
+      --primary: #2563eb;
+      --secondary: #ec4899;
+      --secondary-dark: #db2777;
+      --bg: #f8fafc;
       --card: #ffffff;
-      --danger: #ef4444;
-      --warn: #f59e0b;
+      --text: #0f172a;
+      --muted: #64748b;
+      --success: #22c55e;
+      --warning-bg: #fff7ed;
+      --warning-border: #fed7aa;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      padding: 0;
-      font-family: <%= (tajawalFontBase64 && tajawalFontBoldBase64) ? "'Tajawal', sans-serif" : "system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" %>;
+      font-family: <%= (tajawalFontBase64 && tajawalFontBoldBase64) ? "'Tajawal', sans-serif" : "system-ui, Arial, sans-serif" %>;
+      background: var(--bg);
       color: var(--text);
-      background: #fff;
     }
 
     .page {
-      padding: 22px 28px 26px;
+      padding: 28px;
     }
 
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .brand {
-      text-align: right;
-      font-weight: 800;
-      font-size: 28px;
-      color: var(--blue);
-      line-height: 1;
-    }
-
-    .subtitle {
-      text-align: left;
-      font-size: 12px;
-      color: var(--gray-500);
-      margin-top: 6px;
-    }
-
-    .rule {
-      margin: 10px 0 14px;
-      height: 2px;
-      background: var(--blue);
-      opacity: 0.85;
-    }
-
-    .content-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .main-col {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .side-col {
-      min-width: 0;
-    }
-
-    .report-card {
-      width: 100%;
-      border-radius: 14px;
-      padding: 16px 16px 14px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--pink1), var(--pink2));
-      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
-    }
-
-    .report-title {
-      font-size: 18px;
-      font-weight: 800;
+    /* Header */
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .divider {
+      height: 3px;
+      background: linear-gradient(to left, var(--primary), var(--secondary));
+      border-radius: 2px;
+      margin-bottom: 18px;
+    }
+
+    /* Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr;
+      gap: 18px;
+    }
+
+    /* Report Card */
+    .report {
+      background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+      color: #fff;
+      border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+    }
+
+    .report h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 900;
     }
 
     .report-meta {
       margin-top: 10px;
-      font-size: 12px;
+      font-size: 13px;
+      line-height: 1.8;
       opacity: 0.95;
-      line-height: 1.7;
     }
 
-    .child-summary {
-      border-radius: 14px;
+    /* Child Card */
+    .card {
       background: var(--card);
-      border: 1px solid #f1f5f9;
+      border-radius: 18px;
+      margin-top: 14px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
       overflow: hidden;
-      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.06);
     }
 
-    .child-summary-top {
-      background: #fde7f0;
-      padding: 14px 16px;
+    .card-header {
+      background: #fdf2f8;
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
     }
 
-    .pill {
-      background: #f43f5e;
+    .badge {
+      background: var(--secondary);
       color: #fff;
-      font-weight: 800;
-      font-size: 12px;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 999px;
-      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 900;
     }
 
-    .child-ident {
+    .child {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
     .avatar {
-      width: 34px;
-      height: 34px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
-      background: var(--pink2);
-      color: #fff;
+      background: var(--secondary-dark);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
+      color: #fff;
+      font-weight: 900;
       font-size: 16px;
     }
 
     .child-name {
-      font-weight: 800;
-      font-size: 14px;
-      line-height: 1.2;
+      font-weight: 900;
+      font-size: 15px;
     }
 
     .child-age {
       font-size: 12px;
-      color: var(--gray-500);
+      color: var(--muted);
       margin-top: 2px;
     }
 
-    .child-table {
+    /* Table */
+    table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 13px;
     }
 
-    .child-table thead th {
-      background: #f8fafc;
-      padding: 10px 10px;
-      border-bottom: 1px solid var(--gray-200);
-      color: var(--gray-500);
+    th {
+      background: #f1f5f9;
+      padding: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    td {
+      padding: 14px;
+      text-align: center;
       font-weight: 800;
-      text-align: center;
+      border-top: 1px solid #e5e7eb;
     }
 
-    .child-table tbody td {
-      padding: 12px 10px;
-      border-bottom: 1px solid #f1f5f9;
-      text-align: center;
-      font-weight: 700;
+    /* Progress */
+    .progress {
+      padding: 14px 18px 18px;
     }
 
-    .progress-row {
-      padding: 10px 16px 14px;
-    }
-
-    .progress-labels {
+    .progress-info {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: var(--gray-500);
+      font-size: 12px;
+      color: var(--muted);
       margin-bottom: 6px;
-    }
-
-    .progress-side {
-      display: flex;
-      align-items: center;
-      gap: 8px;
       font-weight: 800;
     }
 
     .bar {
-      height: 6px;
-      background: #e2e8f0;
+      height: 8px;
+      background: #e5e7eb;
       border-radius: 999px;
       overflow: hidden;
-      position: relative;
     }
 
-    .bar > div {
-      height: 100%;
+    .bar div {
       width: <%= successRate %>%;
-      background: #22c55e;
+      height: 100%;
+      background: linear-gradient(to left, #22c55e, #16a34a);
     }
 
+    /* Recommendations */
     .recs {
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      background: #fff7ed;
-      border-radius: 14px;
-      padding: 14px 16px;
-      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.05);
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.06);
     }
 
-    .recs-title {
+    .recs h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
       font-weight: 900;
       color: #b45309;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
     }
 
     .recs ul {
+      padding-right: 18px;
       margin: 0;
-      padding: 0 18px 0 0;
-      color: #7c2d12;
+      font-size: 13px;
       line-height: 1.9;
-      font-weight: 700;
-      font-size: 12px;
+      font-weight: 800;
+      color: #7c2d12;
     }
 
-    /* Ensure crisp print */
-    @page { size: A4 landscape; margin: 16mm; }
+    @page {
+      size: A4 landscape;
+      margin: 16mm;
+    }
   </style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="top">
-      <div class="subtitle">تطبيق علاج النطق للأطفال</div>
-      <div class="brand">نطق</div>
+<div class="page">
+
+  <div class="header">
+    <div class="subtitle">تطبيق علاج النطق للأطفال</div>
+    <div class="brand">نطق</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="grid">
+    <div>
+      <div class="report">
+        <h2>تقرير تفصيلي</h2>
+        <div class="report-meta">
+          <div>اسم الطفل: <%= childName %></div>
+          <div>تاريخ التقرير: <%= reportDate %></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="badge"><%= successRate %>% نسبة النجاح</div>
+          <div class="child">
+            <div>
+              <div class="child-name"><%= childName %></div>
+              <div class="child-age"><%= childAgeText %></div>
+            </div>
+            <div class="avatar"><%= childInitial %></div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>متوسط الدرجة</th>
+              <th>نسبة النجاح</th>
+              <th>وقت اللعب</th>
+              <th>عدد الجلسات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= averageScore %></td>
+              <td><%= successRate %>%</td>
+              <td><%= playTimeText %></td>
+              <td><%= totalSessions %></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="progress">
+          <div class="progress-info">
+            <span>التقدم في النطق</span>
+            <span><%= successRate %>%</span>
+          </div>
+          <div class="bar"><div></div></div>
+        </div>
+      </div>
     </div>
-    <div class="rule"></div>
 
-    <div class="content-grid">
-      <div class="main-col">
-        <div class="report-card">
-          <div class="report-title">
-            <span>تقرير تفصيلي</span>
-          </div>
-          <div class="report-meta">
-            <div>الطفل: <%= childName %></div>
-            <div>تاريخ التقرير: <%= reportDate %></div>
-          </div>
-        </div>
-
-        <div class="child-summary">
-          <div class="child-summary-top">
-            <div class="pill"><%= successRate %>% نجاح تام</div>
-            <div class="child-ident">
-              <div>
-                <div class="child-name"><%= childName %></div>
-                <div class="child-age"><%= childAgeText %></div>
-              </div>
-              <div class="avatar"><%= childInitial %></div>
-            </div>
-          </div>
-
-          <div style="padding: 10px 16px 0;">
-            <table class="child-table">
-              <thead>
-                <tr>
-                  <th>متوسط الدرجة</th>
-                  <th>معدل النجاح</th>
-                  <th>وقت اللعب</th>
-                  <th>الجلسات</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><%= averageScore %></td>
-                  <td><%= successRate %>%</td>
-                  <td><%= playTimeText %></td>
-                  <td><%= totalSessions %></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="progress-row">
-            <div class="progress-labels">
-              <div class="progress-side"><span>النطق النهائي</span><span>0%</span></div>
-              <div class="progress-side"><span><%= successRate %>%</span><span>النطق</span></div>
-            </div>
-            <div class="bar"><div></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="side-col">
-        <div class="recs">
-          <div class="recs-title">التوصيات</div>
-          <ul>
-            <li>الطفل يحتاج دعماً إضافياً.</li>
-            <li>زيادة عدد الجلسات الأسبوعية.</li>
-            <li>زيادة عدد الجلسات للحصول على نتائج أفضل.</li>
-          </ul>
-        </div>
-      </div>
+    <div class="recs">
+      <h3>التوصيات</h3>
+      <ul>
+        <li>تشجيع الطفل على الاستمرارية اليومية.</li>
+        <li>زيادة عدد الجلسات الأسبوعية.</li>
+        <li>مراقبة التقدم بشكل دوري.</li>
+      </ul>
     </div>
   </div>
+
+</div>
 </body>
 </html>
