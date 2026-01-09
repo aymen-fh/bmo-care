@@ -873,9 +873,23 @@ router.get('/child/:id/analytics/pdf', async (req, res) => {
                 margin: { top: '14mm', right: '12mm', bottom: '16mm', left: '12mm' }
             });
 
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=child-analytics-${childId}.pdf`);
-            res.status(200).send(pdfBuffer);
+                        // Guard: make sure we actually generated a PDF.
+                        const isPdf = Buffer.isBuffer(pdfBuffer) && pdfBuffer.slice(0, 4).toString('utf8') === '%PDF';
+                        if (!isPdf) {
+                                const debug = req.query.debug === '1' || process.env.NODE_ENV !== 'production';
+                                if (debug) {
+                                        const head = Buffer.isBuffer(pdfBuffer)
+                                                ? pdfBuffer.slice(0, 80).toString('utf8')
+                                                : String(pdfBuffer).slice(0, 80);
+                                        throw new Error(`Generated output is not a PDF. Head=${JSON.stringify(head)}`);
+                                }
+                                throw new Error('Generated output is not a PDF');
+                        }
+
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-Disposition', `attachment; filename=child-analytics-${childId}.pdf`);
+                        res.setHeader('Content-Length', String(pdfBuffer.length));
+                        res.status(200).end(pdfBuffer);
         } finally {
             await browser.close();
         }
