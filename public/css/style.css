@@ -4477,16 +4477,16 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 92px;
-  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   text-decoration: none;
   text-align: center;
   font-weight: 700;
-  font-size: 0.85rem;
-  line-height: 1.1;
+  font-size: 1.1rem;
+  line-height: 1;
   background: rgba(255, 255, 255, 0.85);
-  color: #1e293b;
+  color: #ef4444;
   border: 2px solid rgba(255, 255, 255, 0.55);
 }
 
