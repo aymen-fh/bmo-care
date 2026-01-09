@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @font-face {
+      font-family: 'Tajawal';
+      src: url(data:font/ttf;base64,<%= tajawalFontBase64 %>) format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Tajawal';
+      src: url(data:font/ttf;base64,<%= tajawalFontBoldBase64 %>) format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    :root {
+      --blue: #2563eb;
+      --pink1: #ec4899;
+      --pink2: #db2777;
+      --gray-500: #64748b;
+      --gray-200: #e2e8f0;
+      --text: #0f172a;
+      --card: #ffffff;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .page {
+      padding: 28px 36px 40px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .brand {
+      text-align: right;
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--blue);
+      line-height: 1;
+    }
+
+    .subtitle {
+      text-align: left;
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 6px;
+    }
+
+    .rule {
+      margin: 10px 0 18px;
+      height: 2px;
+      background: var(--blue);
+      opacity: 0.85;
+    }
+
+    .report-card {
+      width: 260px;
+      border-radius: 14px;
+      padding: 18px 18px 14px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink1), var(--pink2));
+      margin-inline-start: auto;
+    }
+
+    .report-title {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-title .x {
+      font-weight: 800;
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .report-meta {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.95;
+      line-height: 1.7;
+    }
+
+    .child-summary {
+      margin-top: 18px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid #f1f5f9;
+      overflow: hidden;
+    }
+
+    .child-summary-top {
+      background: #fde7f0;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill {
+      background: #f43f5e;
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .child-ident {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--pink2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .child-name {
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .child-age {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    .child-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .child-table thead th {
+      background: #f8fafc;
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .child-table tbody td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .progress-row {
+      padding: 10px 16px 14px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+
+    .progress-side {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+    }
+
+    .bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar > div {
+      height: 100%;
+      width: <%= successRate %>%;
+      background: #22c55e;
+    }
+
+    .recs {
+      margin-top: 18px;
+      border: 2px solid var(--warn);
+      background: #fff7ed;
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .recs-title {
+      font-weight: 900;
+      color: #b45309;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .recs ul {
+      margin: 0;
+      padding: 0 18px 0 0;
+      color: #7c2d12;
+      line-height: 1.9;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* Ensure crisp print */
+    @page { size: A4; margin: 16mm; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="subtitle">تطبيق علاج النطق للأطفال</div>
+      <div class="brand">نطق</div>
+    </div>
+    <div class="rule"></div>
+
+    <div class="report-card">
+      <div class="report-title">
+        <span>تقرير تفصيلي</span>
+        <span class="x">✕</span>
+      </div>
+      <div class="report-meta">
+        <div>الطفل: <%= childName %></div>
+        <div>تاريخ التقرير: <%= reportDate %></div>
+      </div>
+    </div>
+
+    <div class="child-summary">
+      <div class="child-summary-top">
+        <div class="pill"><%= successRate %>% نجاح تام</div>
+        <div class="child-ident">
+          <div>
+            <div class="child-name"><%= childName %></div>
+            <div class="child-age"><%= childAgeText %></div>
+          </div>
+          <div class="avatar"><%= childInitial %></div>
+        </div>
+      </div>
+
+      <div style="padding: 10px 16px 0;">
+        <table class="child-table">
+          <thead>
+            <tr>
+              <th>متوسط الدرجة</th>
+              <th>معدل النجاح</th>
+              <th>وقت اللعب</th>
+              <th>الجلسات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= averageScore %></td>
+              <td><%= successRate %>%</td>
+              <td><%= playTimeText %></td>
+              <td><%= totalSessions %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="progress-row">
+        <div class="progress-labels">
+          <div class="progress-side"><span>النطق النهائي</span><span>0%</span></div>
+          <div class="progress-side"><span><%= successRate %>%</span><span>النطق</span></div>
+        </div>
+        <div class="bar"><div></div></div>
+      </div>
+    </div>
+
+    <div class="recs">
+      <div class="recs-title">التوصيات</div>
+      <ul>
+        <li>الطفل يحتاج دعماً إضافياً.</li>
+        <li>زيادة عدد الجلسات الأسبوعية.</li>
+        <li>زيادة عدد الجلسات للحصول على نتائج أفضل.</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

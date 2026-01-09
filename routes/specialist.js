@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { ensureSpecialist } = require('../middleware/auth');
 const apiClient = require('../utils/apiClient');
 const FormData = require('form-data');
-const PDFDocument = require('pdfkit');
+const ejs = require('ejs');
+const puppeteer = require('puppeteer');
 
 // Apply specialist middleware to all routes
 router.use(ensureSpecialist);
@@ -782,34 +784,81 @@ router.get('/child/:id/analytics/pdf', async (req, res) => {
             ? Math.round(sessions.reduce((sum, s) => sum + (Number(s.averageScore) || 0), 0) / totalSessions)
             : 0;
 
-        // Child name for the PDF title (optional)
+        // Child info for the PDF title (optional)
         let childName = '';
+        let childAge = null;
         try {
             const childResp = await apiClient.authGet(req, `/children/${childId}`);
             childName = childResp?.data?.child?.name || '';
+            childAge = childResp?.data?.child?.age ?? null;
         } catch (e) {
             // optional
         }
 
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=child-analytics-${childId}.pdf`);
+        const totalDuration = sessions.reduce((sum, s) => sum + (Number(s.duration) || 0), 0);
+        const playMinutes = Math.max(0, Math.round(totalDuration));
 
-        const doc = new PDFDocument({ margin: 50 });
-        doc.pipe(res);
+        const now = new Date();
+        const reportDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 
-        doc.fontSize(18).text('Child Analytics', { align: 'left' });
-        if (childName) {
-            doc.moveDown(0.5);
-            doc.fontSize(12).text(`Child: ${childName}`, { align: 'left' });
+        const ageNum = (typeof childAge === 'number' && Number.isFinite(childAge)) ? childAge : null;
+        const childAgeText = ageNum ? `${ageNum} سنوات` : '5 سنوات';
+
+        const childInitial = (childName || 'طفل').trim().slice(0, 1).toLowerCase();
+
+        const tajawalRegularPath = path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Regular.ttf');
+        const tajawalBoldPath = path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Bold.ttf');
+        const tajawalFontBase64 = fs.readFileSync(tajawalRegularPath).toString('base64');
+        const tajawalFontBoldBase64 = fs.readFileSync(tajawalBoldPath).toString('base64');
+
+        const html = await ejs.renderFile(
+            path.join(__dirname, '..', 'views', 'specialist', 'child-analytics-pdf.ejs'),
+            {
+                tajawalFontBase64,
+                tajawalFontBoldBase64,
+                childName: childName || '---',
+                childInitial,
+                childAgeText,
+                reportDate,
+                totalSessions,
+                averageScore,
+                successRate,
+                playTimeText: `${playMinutes} دقيقة`,
+            },
+            { async: true }
+        );
+
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        try {
+            const page = await browser.newPage();
+            await page.setContent(html, { waitUntil: 'load' });
+
+            const pdfBuffer = await page.pdf({
+                format: 'A4',
+                printBackground: true,
+                displayHeaderFooter: true,
+                headerTemplate: '<div></div>',
+                footerTemplate: `
+                  <div style="width:100%; font-size:10px; padding:0 18px; font-family: Tajawal, sans-serif; color:#64748b;">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                      <div>تم الإنشاء بواسطة تطبيق نطق</div>
+                      <div>صفحة <span class="pageNumber"></span> من <span class="totalPages"></span></div>
+                    </div>
+                  </div>
+                `,
+                margin: { top: '14mm', right: '12mm', bottom: '16mm', left: '12mm' }
+            });
+
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=child-analytics-${childId}.pdf`);
+            res.status(200).send(pdfBuffer);
+        } finally {
+            await browser.close();
         }
-        doc.moveDown(1);
-
-        doc.fontSize(12);
-        doc.text(`Total Sessions: ${totalSessions}`);
-        doc.text(`Average Score: ${averageScore}%`);
-        doc.text(`Success Rate: ${successRate}%`);
-
-        doc.end();
     } catch (error) {
         const status = error?.response?.status;
         const url = error?.config?.url;
