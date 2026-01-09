@@ -831,11 +831,21 @@ router.get('/child/:id/analytics/pdf', async (req, res) => {
             path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Bold.ttf'),
         ]);
 
+        // Template expects Cairo variables; we map to the packaged font files (Tajawal)
+        // to ensure the PDF renders with embedded Arabic-friendly fonts in production.
+        const cairoFontRegular = tajawalFontBase64;
+        const cairoFontBold = tajawalFontBoldBase64;
+
         const html = await ejs.renderFile(
             path.join(__dirname, '..', 'views', 'specialist', 'child-analytics-pdf.ejs'),
             {
+                // Backward-compatible names
                 tajawalFontBase64,
                 tajawalFontBoldBase64,
+
+                // Current template variables
+                cairoFontRegular,
+                cairoFontBold,
                 childName: childName || '---',
                 childInitial,
                 childAgeText,
@@ -857,21 +867,15 @@ router.get('/child/:id/analytics/pdf', async (req, res) => {
             const page = await browser.newPage();
             await page.setContent(html, { waitUntil: 'load' });
 
+                        // Ensure print CSS rules (@page, print-color-adjust, etc.) are applied.
+                        await page.emulateMediaType('print');
+
             const pdfBuffer = await page.pdf({
                 format: 'A4',
-                                landscape: true,
                 printBackground: true,
-                displayHeaderFooter: true,
-                headerTemplate: '<div></div>',
-                footerTemplate: `
-                  <div style="width:100%; font-size:10px; padding:0 18px; font-family: Tajawal, sans-serif; color:#64748b;">
-                    <div style="display:flex; justify-content:space-between; width:100%;">
-                      <div>تم الإنشاء بواسطة تطبيق نطق</div>
-                      <div>صفحة <span class="pageNumber"></span> من <span class="totalPages"></span></div>
-                    </div>
-                  </div>
-                `,
-                margin: { top: '12mm', right: '12mm', bottom: '14mm', left: '12mm' }
+                                landscape: true,
+                                scale: 1,
+                                margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
             });
 
             // Puppeteer may return a Uint8Array in some environments.
