@@ -555,6 +555,45 @@ function _flattenAttemptsFromProgress(progressSessions, limit = 50) {
     return attempts.slice(0, Math.max(1, Math.min(limit, 200)));
 }
 
+function _flattenAllAttemptsFromProgress(progressSessions, limit = 5000) {
+    const sessions = Array.isArray(progressSessions) ? progressSessions : [];
+    const attempts = [];
+
+    for (const s of sessions) {
+        const sessionDate = s.sessionDate ?? s.session_date;
+        const sessionAttempts = Array.isArray(s.attempts) ? s.attempts : [];
+        for (const a of sessionAttempts) {
+            const target = a.word || a.letter || a.vowel || '';
+            attempts.push({
+                sessionDate,
+                timestamp: a.timestamp,
+                target,
+                letter: a.letter,
+                word: a.word,
+                vowel: a.vowel,
+                success: !!a.success,
+                score: typeof a.score === 'number' ? a.score : undefined,
+                pronunciationScore: typeof a.pronunciationScore === 'number' ? a.pronunciationScore : undefined,
+                accuracyScore: typeof a.accuracyScore === 'number' ? a.accuracyScore : undefined,
+                fluencyScore: typeof a.fluencyScore === 'number' ? a.fluencyScore : undefined,
+                completenessScore: typeof a.completenessScore === 'number' ? a.completenessScore : undefined,
+                recognizedText: a.recognizedText,
+                referenceText: a.referenceText,
+                analysisSource: a.analysisSource,
+            });
+        }
+    }
+
+    attempts.sort((a, b) => {
+        const ta = new Date(a.timestamp || 0).getTime();
+        const tb = new Date(b.timestamp || 0).getTime();
+        return tb - ta;
+    });
+
+    const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.min(limit, 10000)) : 5000;
+    return attempts.slice(0, safeLimit);
+}
+
 // Child Analytics Page (The Unified View)
 router.get('/child/:id/analytics', async (req, res) => {
     try {
@@ -569,6 +608,7 @@ router.get('/child/:id/analytics', async (req, res) => {
         }
 
         const progress = progressResponse.data.progress;
+        const fullProgressSessions = Array.isArray(progress?.sessions) ? progress.sessions : [];
 
         // Fetch full child details to display parent/specialist emails
         let childDetails = null;
@@ -618,12 +658,15 @@ router.get('/child/:id/analytics', async (req, res) => {
             const targetLetters = Array.isArray(child.targetLetters) ? child.targetLetters : [];
             const targetWords = Array.isArray(child.targetWords) ? child.targetWords : [];
 
+            // Use all sessions attempts so target progress is accurate.
+            const attemptsForTargets = _flattenAllAttemptsFromProgress(fullProgressSessions, 5000);
+
             const computeTargetProgress = (targets, kind) => {
                 const rows = [];
                 for (const t of targets) {
                     const target = String(t || '').trim();
                     if (!target) continue;
-                    const relevant = attempts.filter(a => String(a?.[kind] || '').trim() === target);
+                    const relevant = attemptsForTargets.filter(a => String(a?.[kind] || '').trim() === target);
                     const total = relevant.length;
                     const success = relevant.reduce((sum, a) => sum + (a?.success ? 1 : 0), 0);
                     const successRate = total > 0 ? (success / total) : 0;

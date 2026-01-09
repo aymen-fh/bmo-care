@@ -159,7 +159,7 @@
                         <% } else { %>
                             <div class="empty-placeholder">
                                 <i class="fa-solid fa-font"></i>
-                                <p>لا توجد بيانات للحروف بعد</p>
+                                <p>لم يتم تحديد حروف مستهدفة بعد</p>
                             </div>
                             <% } %>
                 </div>
@@ -187,57 +187,9 @@
                         <% } else { %>
                             <div class="empty-placeholder">
                                 <i class="fa-solid fa-book"></i>
-                                <p>لا توجد بيانات للكلمات بعد</p>
+                                <p>لم يتم تحديد كلمات مستهدفة بعد</p>
                             </div>
                             <% } %>
-                </div>
-            </div>
-
-            <!-- Target Configuration -->
-            <div class="clean-card">
-                <div class="card-header-clean">
-                    <h3><i class="fa-solid fa-bullseye"></i> الأهداف المحددة</h3>
-                </div>
-                <div class="card-body-clean">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                        <!-- Letters -->
-                        <div>
-                            <h4 style="color: #334155; margin-bottom: 1rem; font-size: 1rem;">
-                                <i class="fa-solid fa-font" style="color: #3b82f6; margin-left: 0.5rem;"></i> الحروف
-                                المستهدفة
-                            </h4>
-                            <% if (child.targetLetters && child.targetLetters.length> 0) { %>
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                                    <% child.targetLetters.forEach(function(letter) { %>
-                                        <span class="badge-pill badge-primary-soft">
-                                            <%= letter %>
-                                        </span>
-                                        <% }); %>
-                                </div>
-                                <% } else { %>
-                                    <p style="color: #94a3b8; font-size: 0.9rem;">لم يتم تحديد حروف بعد</p>
-                                    <% } %>
-                        </div>
-
-                        <!-- Words -->
-                        <div>
-                            <h4 style="color: #334155; margin-bottom: 1rem; font-size: 1rem;">
-                                <i class="fa-solid fa-book" style="color: #f59e0b; margin-left: 0.5rem;"></i> الكلمات
-                                المستهدفة
-                            </h4>
-                            <% if (child.targetWords && child.targetWords.length> 0) { %>
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                                    <% child.targetWords.forEach(function(word) { %>
-                                        <span class="badge-pill badge-warning-soft">
-                                            <%= word %>
-                                        </span>
-                                        <% }); %>
-                                </div>
-                                <% } else { %>
-                                    <p style="color: #94a3b8; font-size: 0.9rem;">لم يتم تحديد كلمات بعد</p>
-                                    <% } %>
-                        </div>
-                    </div>
                 </div>
             </div>
 
