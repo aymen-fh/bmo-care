@@ -806,10 +806,30 @@ router.get('/child/:id/analytics/pdf', async (req, res) => {
 
         const childInitial = (childName || 'طفل').trim().slice(0, 1).toLowerCase();
 
-        const tajawalRegularPath = path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Regular.ttf');
-        const tajawalBoldPath = path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Bold.ttf');
-        const tajawalFontBase64 = fs.readFileSync(tajawalRegularPath).toString('base64');
-        const tajawalFontBoldBase64 = fs.readFileSync(tajawalBoldPath).toString('base64');
+        const tryReadFontBase64 = (candidates) => {
+            for (const p of candidates) {
+                try {
+                    if (p && fs.existsSync(p)) {
+                        return fs.readFileSync(p).toString('base64');
+                    }
+                } catch (e) {
+                    // try next
+                }
+            }
+            return null;
+        };
+
+        const tajawalFontBase64 = tryReadFontBase64([
+            // If fonts are packaged inside specialist-portal later
+            path.resolve(__dirname, '..', 'public', 'fonts', 'Tajawal-Regular.ttf'),
+            // Monorepo local path
+            path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Regular.ttf'),
+        ]);
+
+        const tajawalFontBoldBase64 = tryReadFontBase64([
+            path.resolve(__dirname, '..', 'public', 'fonts', 'Tajawal-Bold.ttf'),
+            path.resolve(__dirname, '..', '..', 'Child-Game', 'assets', 'fonts', 'Tajawal-Bold.ttf'),
+        ]);
 
         const html = await ejs.renderFile(
             path.join(__dirname, '..', 'views', 'specialist', 'child-analytics-pdf.ejs'),
@@ -862,7 +882,11 @@ router.get('/child/:id/analytics/pdf', async (req, res) => {
     } catch (error) {
         const status = error?.response?.status;
         const url = error?.config?.url;
-        console.error('Analytics PDF Error:', status ? `${status}` : error.message, url ? `url=${url}` : '');
+        console.error('Analytics PDF Error:', status ? `${status}` : error.message, url ? `url=${url}` : '', error?.stack || '');
+        const debug = req.query.debug === '1' || process.env.NODE_ENV !== 'production';
+        if (debug) {
+            return res.status(500).send(`Failed to generate PDF: ${error?.message || error}`);
+        }
         res.status(500).send('Failed to generate PDF');
     }
 });

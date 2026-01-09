@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    <% if (tajawalFontBase64 && tajawalFontBoldBase64) { %>
     @font-face {
       font-family: 'Tajawal';
       src: url(data:font/ttf;base64,<%= tajawalFontBase64 %>) format('truetype');
@@ -16,6 +17,7 @@
       font-weight: 700;
       font-style: normal;
     }
+    <% } %>
 
     :root {
       --blue: #2563eb;
@@ -34,7 +36,7 @@
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Tajawal', sans-serif;
+      font-family: <%= (tajawalFontBase64 && tajawalFontBoldBase64) ? "'Tajawal', sans-serif" : "system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" %>;
       color: var(--text);
       background: #fff;
     }
