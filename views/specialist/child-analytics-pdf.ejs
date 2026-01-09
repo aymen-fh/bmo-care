@@ -303,6 +303,23 @@
       font-weight: 700;
     }
 
+    .page-break {
+      break-before: page;
+      page-break-before: always;
+    }
+
+    .sessions-page .sessions-table {
+      font-size: 8.5pt;
+    }
+
+    .sessions-page th {
+      padding: 2.5mm;
+    }
+
+    .sessions-page td {
+      padding: 2.8mm;
+    }
+
     @page {
       size: A4 landscape;
       margin: 0;
@@ -413,34 +430,6 @@
           <% } %>
         </div>
       </div>
-
-      <% if (Array.isArray(lastSessions) && lastSessions.length) { %>
-        <div class="section-title" style="margin-top:2mm;">آخر الجلسات</div>
-        <table class="sessions-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>التاريخ</th>
-              <th>المحاولات</th>
-              <th>النجاح</th>
-              <th>متوسط الدرجة</th>
-              <th>المدة (د)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% lastSessions.forEach(function(s) { %>
-              <tr>
-                <td><%= s.index %></td>
-                <td><%= s.date %></td>
-                <td><%= s.attempts %></td>
-                <td><%= s.successRate %>%</td>
-                <td><%= s.averageScore %></td>
-                <td><%= s.duration %></td>
-              </tr>
-            <% }); %>
-          </tbody>
-        </table>
-      <% } %>
     </div>
 
     <div class="progress">
@@ -459,5 +448,42 @@
   </div>
 
 </div>
+
+<% if (Array.isArray(lastSessions) && lastSessions.length) { %>
+  <div class="page page-break sessions-page">
+    <div class="header">
+      <div class="app-desc">تطبيق علاج النطق للأطفال</div>
+      <div class="logo">نطق</div>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="section-title">آخر الجلسات</div>
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>التاريخ</th>
+          <th>المحاولات</th>
+          <th>النجاح</th>
+          <th>متوسط الدرجة</th>
+          <th>المدة (د)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% lastSessions.forEach(function(s) { %>
+          <tr>
+            <td><%= s.index %></td>
+            <td><%= s.date %></td>
+            <td><%= s.attempts %></td>
+            <td><%= s.successRate %>%</td>
+            <td><%= s.averageScore %></td>
+            <td><%= s.duration %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
 </body>
 </html>
