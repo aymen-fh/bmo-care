@@ -120,20 +120,11 @@
                                     </td>
                                     <td>
                                         <div class="cell-with-icon">
-                                            <% const rawAvatarId = (childObj && childObj.avatarId) ? String(childObj.avatarId) : null; %>
-                                            <% const safeAvatarId = (rawAvatarId && /^avatar_0[1-8]$/.test(rawAvatarId)) ? rawAvatarId : null; %>
-
-                                            <% if (safeAvatarId) { %>
+                                            <% const avatarUrl = childAvatarUrl(childObj); %>
+                                            <% if (avatarUrl) { %>
                                                 <img
-                                                    src="/avatars/<%= safeAvatarId %>.png"
+                                                    src="<%= avatarUrl %>"
                                                     alt="<%= (childObj && childObj.name) ? childObj.name : __('child') %>"
-                                                    class="avatar-small"
-                                                    onerror="this.onerror=null;this.src='/avatars/avatar_01.png';"
-                                                >
-                                            <% } else if (childObj && (childObj.avatar || childObj.profilePhoto)) { %>
-                                                <img
-                                                    src="<%= uploadUrl(childObj.avatar || childObj.profilePhoto) %>"
-                                                    alt="<%= childObj.name || __('child') %>"
                                                     class="avatar-small"
                                                 >
                                             <% } else { %>

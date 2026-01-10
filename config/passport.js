@@ -11,8 +11,12 @@ module.exports = function (passport) {
                     password
                 });
 
-                if (response.data.success) {
-                    const user = response.data.user;
+                const data = response.data || {};
+                const token = data.token;
+                const user = data.user;
+                const loginOk = (data.success === true) || (typeof token === 'string' && token.length > 10);
+
+                if (loginOk && user) {
                     // Check role locally as a safeguard, although backend login usually handles this
                     const validRoles = ['superadmin', 'admin', 'specialist'];
                     if (!validRoles.includes(user.role)) {
@@ -20,10 +24,10 @@ module.exports = function (passport) {
                     }
 
                     // Attach token to user object so we can use it on subsequent requests
-                    user.token = response.data.token;
+                    user.token = token;
                     return done(null, user);
                 } else {
-                    return done(null, false, { message: response.data.message || 'فشل تسجيل الدخول' });
+                    return done(null, false, { message: data.message || 'فشل تسجيل الدخول' });
                 }
             } catch (err) {
                 // Distinguish between invalid credentials and backend/network failures
@@ -74,16 +78,22 @@ module.exports = function (passport) {
             // To ensure fresh data, we SHOULD fetch from API. 
             // But we need the token. Fortunately, we attached it to userFromSession in LocalStrategy.
 
-            if (userFromSession.token) {
-                const response = await apiClient.get('/auth/me', {
-                    headers: { Authorization: `Bearer ${userFromSession.token}` }
-                });
+            const token = userFromSession?.token;
+            if (!token) {
+                return done(null, false);
+            }
 
-                if (response.data.success) {
-                    const freshUser = response.data.user;
-                    freshUser.token = userFromSession.token; // Keep the token
-                    return done(null, freshUser);
-                }
+            const response = await apiClient.get('/auth/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const data = response.data || {};
+            const freshUser = data.user;
+            const ok = (data.success === true) || (freshUser && typeof freshUser === 'object');
+
+            if (ok && freshUser) {
+                freshUser.token = token; // Keep the token
+                return done(null, freshUser);
             }
 
             // Fallback: use session data if API fails or token missing?
@@ -93,16 +103,19 @@ module.exports = function (passport) {
 
             // If we couldn't refresh, return what we have (not recommended) or log out.
             // Let's assume successful refresh for now.
-            done(null, userFromSession);
+            return done(null, false);
 
         } catch (err) {
-            // If fetching profile fails (e.g. token expired, server down),
-            // we should probably invalidate session.
+            const status = err.response?.status;
+
+            // Token invalid/expired: treat as logged out so routes redirect to /auth/login.
+            if (status === 401 || status === 403) {
+                return done(null, false);
+            }
+
+            // Backend/network issues: keep session user so the portal can render a "server down" page.
             console.error('Deserialize Error:', err.message);
-            // If server is down, we might want to return the user anyway so 
-            // the serverCheck middleware catches it nicely, or null to logout.
-            // Returning the session user is safer for "Server Down" page display logic.
-            done(null, userFromSession);
+            return done(null, userFromSession);
         }
     });
 };

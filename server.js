@@ -1,4 +1,13 @@
-require('dotenv').config();
+// Load .env only for local development. On Railway, env vars are injected by the platform.
+const isRailway = !!(
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.RAILWAY_PROJECT_ID ||
+    process.env.RAILWAY_SERVICE_ID
+);
+
+if (!isRailway && process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
@@ -8,6 +17,11 @@ const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
+
+if (isRailway) {
+    // Required so secure cookies/session work correctly behind Railway's proxy.
+    app.set('trust proxy', 1);
+}
 
 process.on('unhandledRejection', (reason) => {
     console.error('❌ Unhandled Promise Rejection:', reason);
@@ -82,7 +96,12 @@ app.use('/uploads', (req, res) => {
 const sessionOptions = {
     secret: process.env.SESSION_SECRET || 'keyboard_cat',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isRailway ? true : false
+    }
 };
 
 // Production-ready session store (optional)
@@ -154,9 +173,48 @@ const buildUploadUrl = (value) => {
     return `${BACKEND_URL}/uploads/${cleaned}`;
 };
 
+const normalizeAvatarIdToFilename = (avatarId) => {
+    if (!avatarId) return '';
+    let raw = String(avatarId).trim();
+    if (!raw) return '';
+
+    // Allow passing full paths or filenames.
+    raw = raw.replace(/\\/g, '/');
+    raw = raw.replace(/^uploads\//, '');
+    raw = raw.replace(/^avatars\//, '');
+    raw = raw.replace(/\.png$/i, '');
+
+    // Support legacy ids like avatar_01 -> avatar_1
+    const m = raw.match(/^avatar_0*(\d+)$/i);
+    if (m && m[1]) return `avatar_${m[1]}.png`;
+
+    // If it already looks like avatar_1 etc.
+    if (/^avatar_\d+$/i.test(raw)) return `${raw}.png`;
+
+    // Fallback: treat as filename stem.
+    return `${raw}.png`;
+};
+
+const buildChildAvatarUrl = (child) => {
+    if (!child) return '';
+
+    // Prefer real uploaded photo if available.
+    const uploaded = child.avatar || child.profilePhoto;
+    if (uploaded) return buildUploadUrl(uploaded);
+
+    // Fallback to shared default avatarId mapping.
+    if (child.avatarId) {
+        const filename = normalizeAvatarIdToFilename(child.avatarId);
+        return `${BACKEND_URL}/static/avatars/${filename}`;
+    }
+
+    return '';
+};
+
 app.use((req, res, next) => {
     res.locals.uploadUrl = buildUploadUrl;
     res.locals.uploadBase = `${BACKEND_URL}/uploads`;
+    res.locals.childAvatarUrl = buildChildAvatarUrl;
     next();
 });
 
