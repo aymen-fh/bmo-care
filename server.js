@@ -31,13 +31,28 @@ process.on('uncaughtException', (err) => {
     console.error('❌ Uncaught Exception:', err);
 });
 
-process.on('SIGTERM', () => {
-    console.error('⚠️ Received SIGTERM (container stopping)');
-});
+let _server;
+const shutdown = (signal) => {
+    console.error(`⚠️ Received ${signal} (container stopping)`);
 
-process.on('SIGINT', () => {
-    console.error('⚠️ Received SIGINT');
-});
+    try {
+        if (_server && typeof _server.close === 'function') {
+            _server.close(() => {
+                process.exit(0);
+            });
+        } else {
+            process.exit(0);
+        }
+    } catch (_) {
+        process.exit(0);
+    }
+
+    // Safety: force exit if something hangs.
+    setTimeout(() => process.exit(0), 10_000).unref();
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Normalize backend URL and provide a sane default for local dev.
 // IMPORTANT: Some deployments set BACKEND_URL including `/api`.
@@ -271,7 +286,7 @@ app.use((req, res) => {
 // Start server
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
+_server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Web Portal running on port ${PORT}`);
 });
 
