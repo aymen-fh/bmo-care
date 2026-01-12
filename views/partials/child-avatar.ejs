@@ -1,6 +1,9 @@
 <%
-  const requested = (child && child.avatarId) ? String(child.avatarId) : 'avatar_01';
-  const avatarId = /^avatar_0[1-8]$/.test(requested) ? requested : 'avatar_01';
+  let requested = (child && child.avatarId) ? String(child.avatarId).trim() : 'avatar_01';
+  // Accept legacy ids like avatar_1..avatar_9 and normalize to avatar_01..avatar_09
+  const legacy = /^avatar_([1-9])$/.exec(requested);
+  if (legacy) requested = `avatar_0${legacy[1]}`;
+  const avatarId = /^avatar_0[1-9]$/.test(requested) ? requested : 'avatar_01';
   const size = (typeof sizePx === 'number' && sizePx > 0) ? sizePx : 56;
 %>
 <img

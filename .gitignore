@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 
+# Runtime uploads (generated at runtime; do not commit)
+public/uploads/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
