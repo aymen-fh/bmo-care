@@ -1,7 +1,7 @@
 <%- include('../partials/layout-start', { title: __('dashboard'), activePage: 'dashboard' }) %>
 
-    <div class="dashboard">
-        <div class="stats-grid">
+    <div class="dashboard modern-admin-dashboard">
+        <div class="stats-grid enhanced-cards">
             <div class="stat-card stat-primary">
                 <div class="stat-icon">
                     <i class="fas fa-building"></i>
@@ -61,21 +61,29 @@
 
 
         <div class="quick-actions">
-            <h2><i class="fas fa-bolt"></i>
-                <%= __('quickActions') %>
-            </h2>
+            <h2><i class="fas fa-bolt"></i> <%= __('quickActions') %></h2>
             <div class="actions-grid">
+                <a href="/superadmin/centers" class="action-card">
+                    <i class="fas fa-building"></i>
+                    <span>إدارة المراكز</span>
+                    <div style="margin-top:8px;">
+                        <a href="/superadmin/centers/create" class="btn btn-sm btn-primary" style="margin:2px;">إضافة مركز</a>
+                    </div>
+                </a>
+                <a href="/superadmin/admins" class="action-card">
+                    <i class="fas fa-user-tie"></i>
+                    <span>إدارة المدراء</span>
+                    <div style="margin-top:8px;">
+                        <a href="/superadmin/admins/create" class="btn btn-sm btn-primary" style="margin:2px;">إضافة مدير</a>
+                    </div>
+                </a>
                 <a href="/superadmin/centers/create" class="action-card">
                     <i class="fas fa-plus-circle"></i>
-                    <span>
-                        <%= __('createCenter') %>
-                    </span>
+                    <span><%= __('createCenter') %></span>
                 </a>
                 <a href="/superadmin/admins/create" class="action-card">
                     <i class="fas fa-user-plus"></i>
-                    <span>
-                        <%= __('createAdmin') %>
-                    </span>
+                    <span><%= __('createAdmin') %></span>
                 </a>
             </div>
         </div>
@@ -148,4 +156,51 @@
         </div>
     </div>
 
+    <style>
+        .modern-admin-dashboard {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .enhanced-cards .stat-card {
+            box-shadow: 0 4px 24px rgba(37,99,235,0.08);
+            border-radius: 18px;
+            border: 1px solid #e0e7ff;
+            transition: transform 0.2s;
+        }
+        .enhanced-cards .stat-card:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(37,99,235,0.15);
+        }
+        .quick-actions {
+            margin-top: 32px;
+        }
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+        }
+        .action-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.07);
+            padding: 22px 12px;
+            text-align: center;
+            color: #2563eb;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: box-shadow 0.2s, color 0.2s;
+            border: 1px solid #e0e7ff;
+        }
+        .action-card i {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .action-card:hover {
+            color: #1d4ed8;
+            box-shadow: 0 6px 18px rgba(37,99,235,0.13);
+        }
+    </style>
     <%- include('../partials/layout-end') %>
