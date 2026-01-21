@@ -13,128 +13,152 @@
                 </p>
             </div>
         </div>
-    <% } else if (!selectedSessionId) { %>
-                <!-- واجهة الجلسات بعد اختيار الطفل -->
-                <div class="dashboard-container">
-                    <div class="page-header-modern">
-                        <div class="header-content">
-                            <h1><i class="fas fa-layer-group"></i> جلسات الطفل: <strong><%= child.name %></strong></h1>
-                        </div>
-                        <div class="header-actions">
-                            <a href="/specialist/words" class="btn-secondary"><i class="fas fa-arrow-right"></i> العودة للأطفال</a>
-                        </div>
+        <% } else if (!selectedSessionId) { %>
+            <!-- واجهة الجلسات بعد اختيار الطفل -->
+            <div class="dashboard-container">
+                <div class="page-header-modern">
+                    <div class="header-content">
+                        <h1><i class="fas fa-layer-group"></i> جلسات الطفل: <strong>
+                                <%= child.name %>
+                            </strong></h1>
                     </div>
-                    <div class="content-card">
-                        <div class="card-header-custom" style="display:flex; align-items:center; justify-content:space-between;">
-                            <h3><i class="fa-solid fa-layer-group"></i> جميع الجلسات</h3>
-                            <a href="#" class="btn btn-primary" onclick="document.getElementById('createSessionModal').style.display='block';return false;" style="font-size:0.95rem; padding:0.4rem 1.2rem;">+ جلسة جديدة</a>
-                        </div>
-                        <div style="padding: 1rem;">
-                            <div style="max-height: 220px; overflow:auto; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 10px;">
-                                <table class="clean-blue-table" style="margin:0;">
-                                    <thead>
+                    <div class="header-actions">
+                        <a href="/specialist/words" class="btn-secondary"><i class="fas fa-arrow-right"></i> العودة
+                            للأطفال</a>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <div class="card-header-custom"
+                        style="display:flex; align-items:center; justify-content:space-between;">
+                        <h3><i class="fa-solid fa-layer-group"></i> جميع الجلسات</h3>
+                        <a href="#" class="btn btn-primary"
+                            onclick="document.getElementById('createSessionModal').style.display='block';return false;"
+                            style="font-size:0.95rem; padding:0.4rem 1.2rem;">+ جلسة جديدة</a>
+                    </div>
+                    <div style="padding: 1rem;">
+                        <div
+                            style="max-height: 220px; overflow:auto; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 10px;">
+                            <table class="clean-blue-table" style="margin:0;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>اسم الجلسة</th>
+                                        <th>نشطة</th>
+                                        <th>إدارة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (!sessions || sessions.length===0) { %>
                                         <tr>
-                                            <th>#</th>
-                                            <th>اسم الجلسة</th>
-                                            <th>نشطة</th>
-                                            <th>إدارة</th>
+                                            <td colspan="4" style="text-align:center; color:#64748b;">لا توجد جلسات بعد
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% if (!sessions || sessions.length === 0) { %>
-                                            <tr><td colspan="4" style="text-align:center; color:#64748b;">لا توجد جلسات بعد</td></tr>
                                         <% } else { %>
-                                            <% sessions.forEach(p => { %>
+                                            <% sessions.forEach(p=> { %>
                                                 <tr>
-                                                    <td><%= p.sessionIndex != null ? p.sessionIndex : '-' %></td>
-                                                    <td><%= p.sessionName || '-' %></td>
+                                                    <td>
+                                                        <%= p.sessionIndex !=null ? p.sessionIndex : '-' %>
+                                                    </td>
+                                                    <td>
+                                                        <%= p.sessionName || '-' %>
+                                                    </td>
                                                     <td>
                                                         <% if (p.active) { %>
                                                             <span style="color:#16a34a; font-weight:600;">نعم</span>
-                                                        <% } else { %>
-                                                            <span style="color:#64748b;">لا</span>
-                                                        <% } %>
+                                                            <% } else { %>
+                                                                <span style="color:#64748b;">لا</span>
+                                                                <% } %>
                                                     </td>
                                                     <td>
-                                                        <form method="GET" action="/specialist/words" style="display:inline;">
-                                                            <input type="hidden" name="childId" value="<%= child._id %>">
+                                                        <form method="GET" action="/specialist/words"
+                                                            style="display:inline;">
+                                                            <input type="hidden" name="childId"
+                                                                value="<%= child._id %>">
                                                             <input type="hidden" name="sessionId" value="<%= p._id %>">
-                                                            <button type="submit" class="btn btn-secondary" style="font-size:0.9rem; padding:0.2rem 1.1rem;">إدارة</button>
+                                                            <button type="submit" class="btn btn-secondary"
+                                                                style="font-size:0.9rem; padding:0.2rem 1.1rem;">إدارة</button>
                                                         </form>
                                                     </td>
                                                 </tr>
-                                            <% }); %>
-                                        <% } %>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- نافذة إنشاء جلسة جديدة -->
-                    <div id="createSessionModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:1000; align-items:center; justify-content:center;">
-                        <div style="background:white; border-radius:18px; max-width:420px; margin:5vh auto; padding:2rem; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
-                            <button onclick="document.getElementById('createSessionModal').style.display='none';" style="position:absolute; left:1rem; top:1rem; background:none; border:none; font-size:1.3rem; color:#64748b; cursor:pointer;"><i class="fas fa-times"></i></button>
-                            <h3 style="margin-bottom:1.2rem;"><i class="fa-solid fa-plus"></i> إنشاء جلسة جديدة</h3>
-                            <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
-                                <div class="form-group">
-                                    <label>اسم الجلسة (اختياري)</label>
-                                    <input class="form-control" type="text" name="sessionName" placeholder="Session 1">
-                                </div>
-                                <div class="form-group" style="margin-top:0.5rem;">
-                                    <label>مدة الجلسة (دقيقة)</label>
-                                    <input class="form-control" type="number" name="targetDuration" min="1" placeholder="15">
-                                </div>
-                                <div class="form-group" style="margin-top:0.5rem;">
-                                    <label>تفعيل جدول اللعب للجلسة</label>
-                                    <input type="checkbox" name="scheduleEnabled" id="scheduleEnabledSession">
-                                </div>
-                                <div class="form-group" style="margin-top: 0.75rem;">
-                                    <label>أيام السماح للجلسة</label>
-                                    <% const daysSession = [
-                                        { v: 0, t: 'الأحد' },
-                                        { v: 1, t: 'الإثنين' },
-                                        { v: 2, t: 'الثلاثاء' },
-                                        { v: 3, t: 'الأربعاء' },
-                                        { v: 4, t: 'الخميس' },
-                                        { v: 5, t: 'الجمعة' },
-                                        { v: 6, t: 'السبت' },
-                                    ]; %>
-                                    <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
-                                        <% daysSession.forEach(d => { %>
-                                            <label style="display:flex; align-items:center; gap:0.35rem;">
-                                                <input type="checkbox" name="allowedDays" value="<%= d.v %>" />
-                                                <span><%= d.t %></span>
-                                            </label>
-                                        <% }); %>
-                                    </div>
-                                    <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار أيام، سيتم السماح بكل الأيام.</div>
-                                </div>
-                                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
-                                    <div class="form-group">
-                                        <label>وقت البداية للجلسة</label>
-                                        <input class="form-control" type="time" name="windowStart">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>وقت النهاية للجلسة</label>
-                                        <input class="form-control" type="time" name="windowEnd">
-                                    </div>
-                                </div>
-                                <button class="btn btn-primary" type="submit" style="margin-top: 0.75rem; width: 100%;">إنشاء Session جديدة</button>
-                            </form>
+                                                <% }); %>
+                                                    <% } %>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+                <!-- نافذة إنشاء جلسة جديدة -->
+                <div id="createSessionModal"
+                    style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:1000; align-items:center; justify-content:center;">
+                    <div
+                        style="background:white; border-radius:18px; max-width:420px; margin:5vh auto; padding:2rem; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
+                        <button onclick="document.getElementById('createSessionModal').style.display='none';"
+                            style="position:absolute; left:1rem; top:1rem; background:none; border:none; font-size:1.3rem; color:#64748b; cursor:pointer;"><i
+                                class="fas fa-times"></i></button>
+                        <h3 style="margin-bottom:1.2rem;"><i class="fa-solid fa-plus"></i> إنشاء جلسة جديدة</h3>
+                        <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
+                            <div class="form-group">
+                                <label>اسم الجلسة (اختياري)</label>
+                                <input class="form-control" type="text" name="sessionName" placeholder="Session 1">
+                            </div>
+                            <div class="form-group" style="margin-top:0.5rem;">
+                                <label>مدة الجلسة (دقيقة)</label>
+                                <input class="form-control" type="number" name="targetDuration" min="1"
+                                    placeholder="15">
+                            </div>
+                            <div class="form-group" style="margin-top:0.5rem;">
+                                <label>تفعيل جدول اللعب للجلسة</label>
+                                <input type="checkbox" name="scheduleEnabled" id="scheduleEnabledSession">
+                            </div>
+                            <div class="form-group" style="margin-top: 0.75rem;">
+                                <label>أيام السماح للجلسة</label>
+                                <% const daysSession=[ { v: 0, t: 'الأحد' }, { v: 1, t: 'الإثنين' }, { v: 2,
+                                    t: 'الثلاثاء' }, { v: 3, t: 'الأربعاء' }, { v: 4, t: 'الخميس' }, { v: 5, t: 'الجمعة'
+                                    }, { v: 6, t: 'السبت' }, ]; %>
+                                    <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+                                        <% daysSession.forEach(d=> { %>
+                                            <label style="display:flex; align-items:center; gap:0.35rem;">
+                                                <input type="checkbox" name="allowedDays" value="<%= d.v %>" />
+                                                <span>
+                                                    <%= d.t %>
+                                                </span>
+                                            </label>
+                                            <% }); %>
+                                    </div>
+                                    <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار
+                                        أيام، سيتم السماح بكل الأيام.</div>
+                            </div>
+                            <div class="form-row"
+                                style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                                <div class="form-group">
+                                    <label>وقت البداية للجلسة</label>
+                                    <input class="form-control" type="time" name="windowStart">
+                                </div>
+                                <div class="form-group">
+                                    <label>وقت النهاية للجلسة</label>
+                                    <input class="form-control" type="time" name="windowEnd">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" type="submit"
+                                style="margin-top: 0.75rem; width: 100%;">إنشاء Session جديدة</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <% } else { %>
                 <!-- إدارة محتوى الجلسة المحددة -->
                 <div class="dashboard-container">
                     <div class="page-header-modern">
                         <div class="header-content">
-                            <h1><i class="fas fa-layer-group"></i> محتوى الجلسة: <strong><%= (sessions.find(s => s._id == selectedSessionId)?.sessionName || 'جلسة') %></strong></h1>
+                            <h1><i class="fas fa-layer-group"></i> محتوى الجلسة: <strong>
+                                    <%= (sessions.find(s=> s._id == selectedSessionId)?.sessionName || 'جلسة') %>
+                                </strong></h1>
                         </div>
                         <div class="header-actions">
                             <form method="GET" action="/specialist/words" style="display:inline;">
                                 <input type="hidden" name="childId" value="<%= child._id %>">
-                                <button class="btn-secondary" type="submit"><i class="fas fa-arrow-right"></i> العودة للجلسات</button>
+                                <button class="btn-secondary" type="submit"><i class="fas fa-arrow-right"></i> العودة
+                                    للجلسات</button>
                             </form>
                         </div>
                     </div>
@@ -143,23 +167,29 @@
                             <h3><i class="fa-solid fa-clock"></i> إعدادات الجلسة</h3>
                         </div>
                         <div style="padding:1rem; display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem;">
-                            <div><strong>مدة الجلسة:</strong> <%= (sessions.find(s => s._id == selectedSessionId)?.targetDuration || '-') %> دقيقة</div>
-                            <div><strong>وقت اللعب:</strong> 
-                                <% const playSchedule = sessions.find(s => s._id == selectedSessionId)?.playSchedule; %>
-                                <% if (playSchedule && playSchedule.windows && playSchedule.windows.length) { %>
-                                    من <%= playSchedule.windows[0].start %> إلى <%= playSchedule.windows[0].end %>
-                                <% } else { %>
-                                    غير محدد
-                                <% } %>
+                            <div><strong>مدة الجلسة:</strong>
+                                <%= (sessions.find(s=> s._id == selectedSessionId)?.targetDuration || '-') %> دقيقة
                             </div>
-                            <div><strong>أيام السماح:</strong> 
+                            <div><strong>وقت اللعب:</strong>
+                                <% const playSchedule=sessions.find(s=> s._id == selectedSessionId)?.playSchedule; %>
+                                    <% if (playSchedule && playSchedule.windows && playSchedule.windows.length) { %>
+                                        من <%= playSchedule.windows[0].start %> إلى <%= playSchedule.windows[0].end %>
+                                                <% } else { %>
+                                                    غير محدد
+                                                    <% } %>
+                            </div>
+                            <div><strong>أيام السماح:</strong>
                                 <% if (playSchedule && playSchedule.allowedDays && playSchedule.allowedDays.length) { %>
-                                    <%= playSchedule.allowedDays.map(d => ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][d]).join('، ') %>
-                                <% } else { %>
-                                    كل الأيام
-                                <% } %>
+                                    <%= playSchedule.allowedDays.map(d=>
+                                        ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][d]).join('،
+                                        ') %>
+                                        <% } else { %>
+                                            كل الأيام
+                                            <% } %>
                             </div>
-                            <div><strong>تفعيل الجدول:</strong> <%= (playSchedule && playSchedule.enabled) ? 'نعم' : 'لا' %></div>
+                            <div><strong>تفعيل الجدول:</strong>
+                                <%= (playSchedule && playSchedule.enabled) ? 'نعم' : 'لا' %>
+                            </div>
                         </div>
                     </div>
                     <!-- واجهة إضافة/إدارة الكلمات والحروف للجلسة -->
@@ -173,8 +203,10 @@
                             <div class="form-row">
                                 <div class="form-col text-inputs">
                                     <div class="form-group" id="textGroup">
-                                        <label for="text" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">النص</label>
-                                        <input type="text" name="text" id="text" class="form-control" required placeholder="أدخل كلمة أو حرف" maxlength="20">
+                                        <label for="text"
+                                            style="display: block; margin-bottom: 0.5rem; font-weight: bold;">النص</label>
+                                        <input type="text" name="text" id="text" class="form-control" required
+                                            placeholder="أدخل كلمة أو حرف" maxlength="20">
                                     </div>
                                     <div class="form-group">
                                         <label class="label-sm">الصعوبة</label>
@@ -189,8 +221,10 @@
                                     </div>
                                 </div>
                                 <div class="form-col suggestions-box" id="suggestionsBox">
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #334155;">
-                                        <i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> مقترحات
+                                    <label
+                                        style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #334155;">
+                                        <i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i>
+                                        مقترحات
                                     </label>
                                     <div class="suggestions-grid" id="suggestionsGrid"></div>
                                 </div>
@@ -204,11 +238,13 @@
                     </div>
                     <!-- عرض الكلمات والحروف للجلسة -->
                     <div class="content-display-toggle">
-                        <input type="radio" name="displayType" id="display-words" value="words" checked onchange="toggleContentDisplay()">
+                        <input type="radio" name="displayType" id="display-words" value="words" checked
+                            onchange="toggleContentDisplay()">
                         <label for="display-words" class="display-btn">
                             <i class="fas fa-font"></i> كلمات
                         </label>
-                        <input type="radio" name="displayType" id="display-letters" value="letters" onchange="toggleContentDisplay()">
+                        <input type="radio" name="displayType" id="display-letters" value="letters"
+                            onchange="toggleContentDisplay()">
                         <label for="display-letters" class="display-btn">
                             <i class="fas fa-abc"></i> حروف
                         </label>
@@ -222,7 +258,8 @@
                                 <input type="hidden" name="contentType" id="contentTypeInput" value="word">
                                 <div class="search-box">
                                     <i class="fas fa-search"></i>
-                                    <input type="text" id="searchInput" placeholder="بحث..." onkeyup="filterClientSide()">
+                                    <input type="text" id="searchInput" placeholder="بحث..."
+                                        onkeyup="filterClientSide()">
                                 </div>
                                 <select name="difficulty" class="custom-select" onchange="this.form.submit()">
                                     <option value="">كل المستويات</option>
@@ -236,1395 +273,1410 @@
                             <% if (typeof words !=='undefined' && words && words.length> 0) { %>
                                 <% words.forEach(function(word) { %>
                                     <div class="content-card-item word-card" data-text="<%= word.text %>">
-                                        <div class="card-img-top <%= word.image === 'default-word.png' ? 'default-image' : '' %>">
+                                        <div
+                                            class="card-img-top <%= word.image === 'default-word.png' ? 'default-image' : '' %>">
                                             <% if (word.image==='default-word.png' ) { %>
                                                 <div class="default-display">
-                                                    <%= (word.text || '').charAt(0) || '؟' %>
+                                                    <%= (word.text || '' ).charAt(0) || '؟' %>
                                                 </div>
-                                            <% } else { %>
-                                                <img src="<%= uploadUrl(word.image) %>" alt="<%= word.text %>" loading="lazy">
-                                            <% } %>
-                                            <span class="badge <%= word.difficulty %>"><%= __(word.difficulty) %></span>
-                                            <div class="overlay-actions">
-                                                <button type="button" class="btn-icon speak-btn" onclick="speakContent('<%= word.text %>')">
-                                                    <i class="fas fa-volume-up"></i>
-                                                </button>
-                                            </div>
+                                                <% } else { %>
+                                                    <img src="<%= uploadUrl(word.image) %>" alt="<%= word.text %>"
+                                                        loading="lazy">
+                                                    <% } %>
+                                                        <span class="badge <%= word.difficulty %>">
+                                                            <%= __(word.difficulty) %>
+                                                        </span>
+                                                        <div class="overlay-actions">
+                                                            <button type="button" class="btn-icon speak-btn"
+                                                                onclick="speakContent('<%= word.text %>')">
+                                                                <i class="fas fa-volume-up"></i>
+                                                            </button>
+                                                        </div>
                                         </div>
                                         <div class="card-body">
-                                            <h3 class="content-title"><%= word.text %></h3>
+                                            <h3 class="content-title">
+                                                <%= word.text %>
+                                            </h3>
                                             <div class="card-actions">
-                                                <form action="/specialist/words/delete/<%= word._id %>" method="POST" data-confirm="هل أنت متأكد من الحذف؟" onsubmit="return confirm(this.getAttribute('data-confirm'));"><button type="submit" class="btn-action delete"><i class="fas fa-trash-alt"></i> حذف</button></form>
+                                                <form action="/specialist/words/delete/<%= word._id %>" method="POST"
+                                                    data-confirm="هل أنت متأكد من الحذف؟"
+                                                    onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                                                    <button type="submit" class="btn-action delete"><i
+                                                            class="fas fa-trash-alt"></i> حذف</button></form>
                                             </div>
                                         </div>
                                     </div>
-                                <% }); %>
-                            <% } else { %>
-                                <div class="empty-state">
-                                    <img src="/images/empty-box.svg" alt="No Data" onerror="this.style.display='none'">
-                                    <i class="fas fa-box-open fa-3x text-muted"></i>
-                                    <p>لا توجد كلمات مضافة حالياً لهذه الجلسة</p>
-                                </div>
-                            <% } %>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <div class="empty-state">
+                                                <img src="/images/empty-box.svg" alt="No Data"
+                                                    onerror="this.style.display='none'">
+                                                <i class="fas fa-box-open fa-3x text-muted"></i>
+                                                <p>لا توجد كلمات مضافة حالياً لهذه الجلسة</p>
+                                            </div>
+                                            <% } %>
                         </div>
                         <div class="content-grid letters-grid" id="lettersGrid" style="display: none;">
                             <% if (typeof letters !=='undefined' && letters && letters.length> 0) { %>
                                 <% letters.forEach(function(letter) { %>
                                     <div class="content-card-item letter-card" data-text="<%= letter.text %>">
                                         <div class="card-img-top default-image">
-                                            <div class="default-display letter-display"><%= letter.text %></div>
-                                            <span class="badge <%= letter.difficulty %>"><%= __(letter.difficulty) %></span>
+                                            <div class="default-display letter-display">
+                                                <%= letter.text %>
+                                            </div>
+                                            <span class="badge <%= letter.difficulty %>">
+                                                <%= __(letter.difficulty) %>
+                                            </span>
                                             <div class="overlay-actions">
-                                                <button type="button" class="btn-icon speak-btn" onclick="speakContent('<%= letter.text %>')">
+                                                <button type="button" class="btn-icon speak-btn"
+                                                    onclick="speakContent('<%= letter.text %>')">
                                                     <i class="fas fa-volume-up"></i>
                                                 </button>
                                             </div>
                                         </div>
                                         <div class="card-body">
-                                            <h3 class="content-title"><%= letter.text %></h3>
+                                            <h3 class="content-title">
+                                                <%= letter.text %>
+                                            </h3>
                                             <div class="card-actions">
-                                                <form action="/specialist/words/delete/<%= letter._id %>" method="POST" data-confirm="هل أنت متأكد من الحذف؟" onsubmit="return confirm(this.getAttribute('data-confirm'));"><button type="submit" class="btn-action delete"><i class="fas fa-trash-alt"></i> حذف</button></form>
+                                                <form action="/specialist/words/delete/<%= letter._id %>" method="POST"
+                                                    data-confirm="هل أنت متأكد من الحذف؟"
+                                                    onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                                                    <button type="submit" class="btn-action delete"><i
+                                                            class="fas fa-trash-alt"></i> حذف</button></form>
                                             </div>
                                         </div>
                                     </div>
-                                <% }); %>
-                            <% } else { %>
-                                <div class="empty-state">
-                                    <img src="/images/empty-box.svg" alt="No Data" onerror="this.style.display='none'">
-                                    <i class="fas fa-box-open fa-3x text-muted"></i>
-                                    <p>لا توجد حروف مضافة حالياً لهذه الجلسة</p>
-                                </div>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
-                justify-content: center;
-                margin-bottom: 1.5rem;
-                border: 4px solid #3b82f6;
-                color: #3b82f6;
-                transition: transform 0.4s ease;
-            }
-
-            .child-card-centered:hover .avatar-large-blue {
-                transform: scale(1.05);
-                background: #eff6ff;
-            }
-
-            .avatar-large-blue i {
-                font-size: 4rem;
-            }
-
-            .child-name-clean {
-                font-size: 1.6rem;
-                font-weight: 800;
-                color: #1e293b;
-                margin: 0 0 1rem 0;
-            }
-
-            .detail-row-clean {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-                color: #64748b;
-                font-size: 1rem;
-                margin-bottom: 0.5rem;
-                font-weight: 500;
-            }
-
-            .icon-primary,
-            .icon-secondary {
-                color: #3b82f6;
-            }
-
-            .action-hint {
-                margin-top: 2rem;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.75rem;
-                background: #3b82f6;
-                color: white;
-                padding: 0.8rem 2rem;
-                border-radius: 50px;
-                font-weight: 700;
-                font-size: 0.95rem;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            }
-
-            .child-card-centered:hover .action-hint {
-                background: #2563eb;
-                transform: translateY(-2px);
-                box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4);
-            }
-
-            .empty-state-clean {
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 4rem;
-                color: #94a3b8;
-            }
-
-            .empty-state-clean i {
-                font-size: 4rem;
-                margin-bottom: 1rem;
-                opacity: 0.3;
-            }
-        </style>
-
-        <% } else { %>
-            <!-- الخطوة 2: إعدادات اللعب وجلسات الطفل -->
-            <div class="dashboard-container">
-                <div class="page-header-modern">
-                    <div class="header-content">
-                        <h1><i class="fas fa-shapes"></i> إدارة الجلسات والمحتوى للطفل: <strong><%= child.name %></strong></h1>
-                    </div>
-                    <div class="header-actions">
-                        <a href="/specialist/words" class="btn-secondary">
-                            <i class="fas fa-arrow-right"></i> العودة للأطفال
-                        </a>
-                    </div>
-                </div>
-
-                <!-- إعدادات اللعب -->
-                <div class="content-card">
-                    <div class="card-header-custom">
-                        <h3><i class="fa-solid fa-calendar-check"></i> إعدادات اللعب</h3>
-                    </div>
-                    <form method="POST" action="/specialist/child/<%= child._id %>/plan-settings" style="padding: 1rem;">
-                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                            <div class="form-group">
-                                <label>الحد اليومي (دقيقة)</label>
-                                <input class="form-control" type="number" name="dailyPlayDuration" min="0" value="<%= (child.dailyPlayDuration != null ? child.dailyPlayDuration : '') %>">
-                            </div>
-                            <div class="form-group">
-                                <label>مدة الجلسة (دقيقة)</label>
-                                <input class="form-control" type="number" name="playDuration" min="1" value="<%= (child.sessionStructure && child.sessionStructure.playDuration != null) ? child.sessionStructure.playDuration : '' %>">
-                            </div>
-                            <div class="form-group">
-                                <label>مدة الاستراحة (دقيقة)</label>
-                                <input class="form-control" type="number" name="breakDuration" min="0" value="<%= (child.sessionStructure && child.sessionStructure.breakDuration != null) ? child.sessionStructure.breakDuration : '' %>">
-                            </div>
-                            <div class="form-group">
-                                <label>أقصى عدد محاولات للجلسة</label>
-                                <input class="form-control" type="number" name="maxAttempts" min="1" value="<%= (child.sessionStructure && child.sessionStructure.maxAttempts != null) ? child.sessionStructure.maxAttempts : '' %>">
-                            </div>
-                        </div>
-                        <hr style="margin: 1rem 0; opacity: 0.2;"/>
-                        <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
-                            <input type="checkbox" name="scheduleEnabled" id="scheduleEnabled" <%= (child.playSchedule && child.playSchedule.enabled) ? 'checked' : '' %> />
-                            <label for="scheduleEnabled" style="margin:0;">تفعيل جدول اللعب</label>
-                        </div>
-                        <div class="form-group" style="margin-top: 0.75rem;">
-                            <label>أيام السماح</label>
-                            <% const days = [
-                                { v: 0, t: 'الأحد' },
-                                { v: 1, t: 'الإثنين' },
-                                { v: 2, t: 'الثلاثاء' },
-                                { v: 3, t: 'الأربعاء' },
-                                { v: 4, t: 'الخميس' },
-                                { v: 5, t: 'الجمعة' },
-                                { v: 6, t: 'السبت' },
-                            ];
-                            const allowedRaw = (child.playSchedule && Array.isArray(child.playSchedule.allowedDays)) ? child.playSchedule.allowedDays : [];
-                            const allowed = allowedRaw.map(x => Number(x)).filter(x => Number.isFinite(x));
-                            %>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
-                                <% days.forEach(d => { %>
-                                    <label style="display:flex; align-items:center; gap:0.35rem;">
-                                        <input type="checkbox" name="allowedDays" value="<%= d.v %>" <%= allowed.includes(d.v) ? 'checked' : '' %> />
-                                        <span><%= d.t %></span>
-                                    </label>
-                                <% }); %>
-                            </div>
-                            <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار أيام، سيتم السماح بكل الأيام.</div>
-                        </div>
-                        <% const w0 = (child.playSchedule && Array.isArray(child.playSchedule.windows) && child.playSchedule.windows.length)
-                            ? child.playSchedule.windows[0]
-                            : null;
-                        %>
-                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
-                            <div class="form-group">
-                                <label>من</label>
-                                <input class="form-control" type="time" name="windowStart" value="<%= (w0 && w0.start) ? w0.start : '' %>">
-                            </div>
-                            <div class="form-group">
-                                <label>إلى</label>
-                                <input class="form-control" type="time" name="windowEnd" value="<%= (w0 && w0.end) ? w0.end : '' %>">
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" type="submit" style="margin-top: 0.75rem; width: 100%;">حفظ إعدادات اللعب</button>
-                    </form>
-                </div>
-
-                <!-- جلسات الخطة -->
-                <div class="content-card">
-                    <div class="card-header-custom">
-                        <h3><i class="fa-solid fa-layer-group"></i> جلسات الخطة</h3>
-                    </div>
-                    <div style="padding: 1rem;">
-                        <div style="margin-bottom: 0.75rem; color:#64748b; font-size:0.9rem;">
-                            الجلسة النشطة هي التي تُرسل رقمها مع كل تقدم من اللعبة.
-                        </div>
-                        <div style="max-height: 160px; overflow:auto; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 10px;">
-                            <table class="clean-blue-table" style="margin:0;">
-                                <thead>
-                                    <tr>
-                                        <th>Session</th>
-                                        <th>الاسم</th>
-                                        <th>نشطة</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% if (!sessions || sessions.length === 0) { %>
-                                        <tr><td colspan="3" style="text-align:center; color:#64748b;">لا توجد جلسات خطة بعد</td></tr>
-                                    <% } else { %>
-                                        <% sessions.forEach(p => { %>
-                                            <tr>
-                                                <td><%= p.sessionIndex != null ? p.sessionIndex : '-' %></td>
-                                                <td><%= p.sessionName || '-' %></td>
-                                                <td>
-                                                    <% if (p.active) { %>
-                                                        <span style="color:#16a34a; font-weight:600;">نعم</span>
-                                                    <% } else { %>
-                                                        <span style="color:#64748b;">لا</span>
-                                                    <% } %>
-                                                </td>
-                                            </tr>
-                                        <% }); %>
-                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-                        <hr style="margin: 1rem 0; opacity: 0.2;"/>
-                        <!-- إنشاء جلسة جديدة مع تحديد مدى ووقت اللعب -->
-                        <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
-                            <div class="form-group">
-                                <label>اسم الجلسة (اختياري)</label>
-                                <input class="form-control" type="text" name="sessionName" placeholder="Session 1">
-                            </div>
-                            <div class="form-group" style="margin-top:0.5rem;">
-                                <label>مدة الجلسة (دقيقة)</label>
-                                <input class="form-control" type="number" name="targetDuration" min="1" placeholder="15">
-                            </div>
-                            <div class="form-group" style="margin-top:0.5rem;">
-                                <label>تفعيل جدول اللعب للجلسة</label>
-                                <input type="checkbox" name="scheduleEnabled" id="scheduleEnabledSession">
-                            </div>
-                            <div class="form-group" style="margin-top: 0.75rem;">
-                                <label>أيام السماح للجلسة</label>
-                                <% const daysSession = [
-                                        { v: 0, t: 'الأحد' },
-                                        { v: 1, t: 'الإثنين' },
-                                        { v: 2, t: 'الثلاثاء' },
-                                        { v: 3, t: 'الأربعاء' },
-                                        { v: 4, t: 'الخميس' },
-                                        { v: 5, t: 'الجمعة' },
-                                        { v: 6, t: 'السبت' },
-                                    ]; %>
-                                    <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
-                                        <% daysSession.forEach(d => { %>
-                                            <label style="display:flex; align-items:center; gap:0.35rem;">
-                                                <input type="checkbox" name="allowedDays" value="<%= d.v %>" />
-                                                <span><%= d.t %></span>
-                                            </label>
-                                        <% }); %>
-                                    </div>
-                                    <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار أيام، سيتم السماح بكل الأيام.</div>
-                            </div>
-                            <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
-                                <div class="form-group">
-                                    <label>وقت البداية للجلسة</label>
-                                    <input class="form-control" type="time" name="windowStart">
-                                </div>
-                                <div class="form-group">
-                                    <label>وقت النهاية للجلسة</label>
-                                    <input class="form-control" type="time" name="windowEnd">
-                                </div>
-                            </div>
-                            <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
-                                <div class="form-group">
-                                    <label>حروف (كل سطر حرف أو مفصول بفاصلة)</label>
-                                    <textarea class="form-control" name="lettersText" rows="6" placeholder="ب\nت\nث"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>كلمات (كل سطر كلمة أو مفصول بفاصلة)</label>
-                                    <textarea class="form-control" name="wordsText" rows="6" placeholder="بابا\nماما"></textarea>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" type="submit" style="margin-top: 0.75rem; width: 100%;">إنشاء Session جديدة (وتفعيلها)</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- الخطوة 3: اختيار جلسة لإدارة محتواها -->
-                <div class="content-card session-section">
-                    <form method="GET" action="/specialist/words" class="session-form" style="margin-bottom: 1.5rem;">
-                        <input type="hidden" name="childId" value="<%= child._id %>">
-                        <input type="hidden" name="contentType" value="<%= contentType %>">
-                        <input type="hidden" name="difficulty" value="<%= difficulty %>">
-                        <label for="sessionId" style="font-weight: bold; margin-left: 0.5rem;">
-                            <i class="fas fa-layer-group"></i> اختر جلسة لإدارة محتواها:
-                        </label>
-                        <select name="sessionId" id="sessionId" onchange="this.form.submit()" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-left: 0.5rem;">
-                            <option value="" <%= !selectedSessionId ? 'selected' : '' %>>عام (مكتبة الطفل)</option>
-                            <% sessions.forEach(function(session) { %>
-                                <option value="<%= session._id %>" <%= selectedSessionId == session._id ? 'selected' : '' %>><%= session.sessionName %></option>
-                            <% }); %>
-                        </select>
-                    </form>
-                </div>
-
-                <!-- الخطوة 4: إدارة الكلمات والحروف للجلسة -->
-                <div class="content-card add-section">
-                    <div class="card-header-custom">
-                        <h3><i class="fas fa-plus-circle"></i> إضافة كلمة أو حرف</h3>
-                    </div>
-                    <form action="/specialist/words/add" method="POST" class="modern-form" id="contentForm">
-                        <input type="hidden" name="childId" value="<%= child._id %>">
-                        <% if (typeof selectedSessionId !== 'undefined' && selectedSessionId) { %>
-                        <input type="hidden" name="sessionId" value="<%= selectedSessionId %>">
-                        <% } %>
-                        <div class="form-row">
-                            <div class="form-col text-inputs">
-                                <div class="form-group" id="textGroup">
-                                    <label for="text" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">النص</label>
-                                    <input type="text" name="text" id="text" class="form-control" required placeholder="أدخل كلمة أو حرف" maxlength="20">
-                                </div>
-                                <div class="form-group">
-                                    <label class="label-sm">الصعوبة</label>
-                                    <div class="difficulty-selector">
-                                        <input type="radio" name="difficulty" id="diff_easy" value="easy" checked>
-                                        <label for="diff_easy" class="diff-btn easy">سهل</label>
-                                        <input type="radio" name="difficulty" id="diff_medium" value="medium">
-                                        <label for="diff_medium" class="diff-btn medium">متوسط</label>
-                                        <input type="radio" name="difficulty" id="diff_hard" value="hard">
-                                        <label for="diff_hard" class="diff-btn hard">صعب</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-col suggestions-box" id="suggestionsBox">
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #334155;">
-                                    <i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> مقترحات
-                                </label>
-                                <div class="suggestions-grid" id="suggestionsGrid"></div>
-                            </div>
-                        </div>
-                        <div class="form-footer">
-                            <button type="submit" class="btn-main" id="submitBtn">
-                                <i class="fas fa-plus"></i> إضافة
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- عرض الكلمات والحروف -->
-                <div class="content-display-toggle">
-                    <input type="radio" name="displayType" id="display-words" value="words" checked onchange="toggleContentDisplay()">
-                    <label for="display-words" class="display-btn">
-                        <i class="fas fa-font"></i> كلمات
-                    </label>
-                    <input type="radio" name="displayType" id="display-letters" value="letters" onchange="toggleContentDisplay()">
-                    <label for="display-letters" class="display-btn">
-                        <i class="fas fa-abc"></i> حروف
-                    </label>
-                </div>
-
-                <div class="content-card list-section">
-                    <div class="toolbar">
-                        <h2 id="libraryTitle"><i class="fas fa-layer-group"></i> مكتبة الكلمات/الحروف</h2>
-                        <form method="GET" action="/specialist/words" class="filter-group" id="filterForm">
-                            <input type="hidden" name="childId" value="<%= child._id %>">
-                            <input type="hidden" name="contentType" id="contentTypeInput" value="word">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" id="searchInput" placeholder="بحث..." onkeyup="filterClientSide()">
-                            </div>
-                            <select name="difficulty" class="custom-select" onchange="this.form.submit()">
-                                <option value="">كل المستويات</option>
-                                <option value="easy">سهل</option>
-                                <option value="medium">متوسط</option>
-                                <option value="hard">صعب</option>
-                            </select>
-                        </form>
-                    </div>
-                    <div class="content-grid words-grid" id="wordsGrid">
-                        <% if (typeof words !=='undefined' && words && words.length> 0) { %>
-                            <% words.forEach(function(word) { %>
-                                <div class="content-card-item word-card" data-text="<%= word.text %>">
-                                    <div class="card-img-top <%= word.image === 'default-word.png' ? 'default-image' : '' %>">
-                                        <% if (word.image==='default-word.png' ) { %>
-                                            <div class="default-display">
-                                                <%= (word.text || '').charAt(0) || '؟' %>
-                                            </div>
+                                    <% }); %>
                                         <% } else { %>
-                                            <img src="<%= uploadUrl(word.image) %>" alt="<%= word.text %>" loading="lazy">
-                                        <% } %>
-                                        <span class="badge <%= word.difficulty %>"><%= __(word.difficulty) %></span>
-                                        <div class="overlay-actions">
-                                            <button type="button" class="btn-icon speak-btn" onclick="speakContent('<%= word.text %>')">
-                                                <i class="fas fa-volume-up"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <h3 class="content-title"><%= word.text %></h3>
-                                        <div class="card-actions">
-                                            <form action="/specialist/words/delete/<%= word._id %>" method="POST" data-confirm="هل أنت متأكد من الحذف؟" onsubmit="return confirm(this.getAttribute('data-confirm'));"><button type="submit" class="btn-action delete"><i class="fas fa-trash-alt"></i> حذف</button></form>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% }); %>
-                        <% } else { %>
-                            <div class="empty-state">
-                                <img src="/images/empty-box.svg" alt="No Data" onerror="this.style.display='none'">
-                                <i class="fas fa-box-open fa-3x text-muted"></i>
-                                <p>لا توجد كلمات مضافة حالياً لهذا الطفل</p>
-                            </div>
-                        <% } %>
-                    </div>
-                    <div class="content-grid letters-grid" id="lettersGrid" style="display: none;">
-                        <% if (typeof letters !=='undefined' && letters && letters.length> 0) { %>
-                            <% letters.forEach(function(letter) { %>
-                                <div class="content-card-item letter-card" data-text="<%= letter.text %>">
-                                    <div class="card-img-top default-image">
-                                        <div class="default-display letter-display"><%= letter.text %></div>
-                                        <span class="badge <%= letter.difficulty %>"><%= __(letter.difficulty) %></span>
-                                        <div class="overlay-actions">
-                                            <button type="button" class="btn-icon speak-btn" onclick="speakContent('<%= letter.text %>')">
-                                                <i class="fas fa-volume-up"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <h3 class="content-title"><%= letter.text %></h3>
-                                        <div class="card-actions">
-                                            <form action="/specialist/words/delete/<%= letter._id %>" method="POST" data-confirm="هل أنت متأكد من الحذف؟" onsubmit="return confirm(this.getAttribute('data-confirm'));"><button type="submit" class="btn-action delete"><i class="fas fa-trash-alt"></i> حذف</button></form>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% }); %>
-                        <% } else { %>
-                            <div class="empty-state">
-                                <img src="/images/empty-box.svg" alt="No Data" onerror="this.style.display='none'">
-                                <i class="fas fa-box-open fa-3x text-muted"></i>
-                                <p>لا توجد حروف مضافة حالياً لهذا الطفل</p>
-                            </div>
-                        <% } %>
+                                            <div class="empty-state">
+                                                <img src="/images/empty-box.svg" alt="No Data"
+                                                    onerror="this.style.display='none'">
+                                                <i class="fas fa-box-open fa-3x text-muted"></i>
+                                                <p>لا توجد حروف مضافة حالياً لهذه الجلسة</p>
+                                            </div>
+                                            <% } %>
+                        </div>
                     </div>
                 </div>
+
+
+                <% } else { %>
+                    <!-- الخطوة 2: إعدادات اللعب وجلسات الطفل -->
+                    <div class="dashboard-container">
+                        <div class="page-header-modern">
+                            <div class="header-content">
+                                <h1><i class="fas fa-shapes"></i> إدارة الجلسات والمحتوى للطفل: <strong>
+                                        <%= child.name %>
+                                    </strong></h1>
+                            </div>
+                            <div class="header-actions">
+                                <a href="/specialist/words" class="btn-secondary">
+                                    <i class="fas fa-arrow-right"></i> العودة للأطفال
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- إعدادات اللعب -->
+                        <div class="content-card">
+                            <div class="card-header-custom">
+                                <h3><i class="fa-solid fa-calendar-check"></i> إعدادات اللعب</h3>
+                            </div>
+                            <form method="POST" action="/specialist/child/<%= child._id %>/plan-settings"
+                                style="padding: 1rem;">
+                                <div class="form-row"
+                                    style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                    <div class="form-group">
+                                        <label>الحد اليومي (دقيقة)</label>
+                                        <input class="form-control" type="number" name="dailyPlayDuration" min="0"
+                                            value="<%= (child.dailyPlayDuration != null ? child.dailyPlayDuration : '') %>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>مدة الجلسة (دقيقة)</label>
+                                        <input class="form-control" type="number" name="playDuration" min="1"
+                                            value="<%= (child.sessionStructure && child.sessionStructure.playDuration != null) ? child.sessionStructure.playDuration : '' %>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>مدة الاستراحة (دقيقة)</label>
+                                        <input class="form-control" type="number" name="breakDuration" min="0"
+                                            value="<%= (child.sessionStructure && child.sessionStructure.breakDuration != null) ? child.sessionStructure.breakDuration : '' %>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>أقصى عدد محاولات للجلسة</label>
+                                        <input class="form-control" type="number" name="maxAttempts" min="1"
+                                            value="<%= (child.sessionStructure && child.sessionStructure.maxAttempts != null) ? child.sessionStructure.maxAttempts : '' %>">
+                                    </div>
+                                </div>
+                                <hr style="margin: 1rem 0; opacity: 0.2;" />
+                                <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
+                                    <input type="checkbox" name="scheduleEnabled" id="scheduleEnabled"
+                                        <%=(child.playSchedule && child.playSchedule.enabled) ? 'checked' : '' %> />
+                                    <label for="scheduleEnabled" style="margin:0;">تفعيل جدول اللعب</label>
+                                </div>
+                                <div class="form-group" style="margin-top: 0.75rem;">
+                                    <label>أيام السماح</label>
+                                    <% const days=[ { v: 0, t: 'الأحد' }, { v: 1, t: 'الإثنين' }, { v: 2, t: 'الثلاثاء'
+                                        }, { v: 3, t: 'الأربعاء' }, { v: 4, t: 'الخميس' }, { v: 5, t: 'الجمعة' }, { v:
+                                        6, t: 'السبت' }, ]; const allowedRaw=(child.playSchedule &&
+                                        Array.isArray(child.playSchedule.allowedDays)) ? child.playSchedule.allowedDays
+                                        : []; const allowed=allowedRaw.map(x=> Number(x)).filter(x =>
+                                        Number.isFinite(x));
+                                        %>
+                                        <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+                                            <% days.forEach(d=> { %>
+                                                <label style="display:flex; align-items:center; gap:0.35rem;">
+                                                    <input type="checkbox" name="allowedDays" value="<%= d.v %>"
+                                                        <%=allowed.includes(d.v) ? 'checked' : '' %> />
+                                                    <span>
+                                                        <%= d.t %>
+                                                    </span>
+                                                </label>
+                                                <% }); %>
+                                        </div>
+                                        <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم
+                                            اختيار أيام، سيتم السماح بكل الأيام.</div>
+                                </div>
+                                <% const w0=(child.playSchedule && Array.isArray(child.playSchedule.windows) &&
+                                    child.playSchedule.windows.length) ? child.playSchedule.windows[0] : null; %>
+                                    <div class="form-row"
+                                        style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                                        <div class="form-group">
+                                            <label>من</label>
+                                            <input class="form-control" type="time" name="windowStart"
+                                                value="<%= (w0 && w0.start) ? w0.start : '' %>">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>إلى</label>
+                                            <input class="form-control" type="time" name="windowEnd"
+                                                value="<%= (w0 && w0.end) ? w0.end : '' %>">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" type="submit"
+                                        style="margin-top: 0.75rem; width: 100%;">حفظ إعدادات اللعب</button>
+                            </form>
+                        </div>
+
+                        <!-- جلسات الخطة -->
+                        <div class="content-card">
+                            <div class="card-header-custom">
+                                <h3><i class="fa-solid fa-layer-group"></i> جلسات الخطة</h3>
+                            </div>
+                            <div style="padding: 1rem;">
+                                <div style="margin-bottom: 0.75rem; color:#64748b; font-size:0.9rem;">
+                                    الجلسة النشطة هي التي تُرسل رقمها مع كل تقدم من اللعبة.
+                                </div>
+                                <div
+                                    style="max-height: 160px; overflow:auto; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 10px;">
+                                    <table class="clean-blue-table" style="margin:0;">
+                                        <thead>
+                                            <tr>
+                                                <th>Session</th>
+                                                <th>الاسم</th>
+                                                <th>نشطة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (!sessions || sessions.length===0) { %>
+                                                <tr>
+                                                    <td colspan="3" style="text-align:center; color:#64748b;">لا توجد
+                                                        جلسات خطة بعد</td>
+                                                </tr>
+                                                <% } else { %>
+                                                    <% sessions.forEach(p=> { %>
+                                                        <tr>
+                                                            <td>
+                                                                <%= p.sessionIndex !=null ? p.sessionIndex : '-' %>
+                                                            </td>
+                                                            <td>
+                                                                <%= p.sessionName || '-' %>
+                                                            </td>
+                                                            <td>
+                                                                <% if (p.active) { %>
+                                                                    <span
+                                                                        style="color:#16a34a; font-weight:600;">نعم</span>
+                                                                    <% } else { %>
+                                                                        <span style="color:#64748b;">لا</span>
+                                                                        <% } %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <hr style="margin: 1rem 0; opacity: 0.2;" />
+                                <!-- إنشاء جلسة جديدة مع تحديد مدى ووقت اللعب -->
+                                <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
+                                    <div class="form-group">
+                                        <label>اسم الجلسة (اختياري)</label>
+                                        <input class="form-control" type="text" name="sessionName"
+                                            placeholder="Session 1">
+                                    </div>
+                                    <div class="form-group" style="margin-top:0.5rem;">
+                                        <label>مدة الجلسة (دقيقة)</label>
+                                        <input class="form-control" type="number" name="targetDuration" min="1"
+                                            placeholder="15">
+                                    </div>
+                                    <div class="form-group" style="margin-top:0.5rem;">
+                                        <label>تفعيل جدول اللعب للجلسة</label>
+                                        <input type="checkbox" name="scheduleEnabled" id="scheduleEnabledSession">
+                                    </div>
+                                    <div class="form-group" style="margin-top: 0.75rem;">
+                                        <label>أيام السماح للجلسة</label>
+                                        <% const daysSession=[ { v: 0, t: 'الأحد' }, { v: 1, t: 'الإثنين' }, { v: 2,
+                                            t: 'الثلاثاء' }, { v: 3, t: 'الأربعاء' }, { v: 4, t: 'الخميس' }, { v: 5,
+                                            t: 'الجمعة' }, { v: 6, t: 'السبت' }, ]; %>
+                                            <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+                                                <% daysSession.forEach(d=> { %>
+                                                    <label style="display:flex; align-items:center; gap:0.35rem;">
+                                                        <input type="checkbox" name="allowedDays" value="<%= d.v %>" />
+                                                        <span>
+                                                            <%= d.t %>
+                                                        </span>
+                                                    </label>
+                                                    <% }); %>
+                                            </div>
+                                            <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم
+                                                اختيار أيام، سيتم السماح بكل الأيام.</div>
+                                    </div>
+                                    <div class="form-row"
+                                        style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                                        <div class="form-group">
+                                            <label>وقت البداية للجلسة</label>
+                                            <input class="form-control" type="time" name="windowStart">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>وقت النهاية للجلسة</label>
+                                            <input class="form-control" type="time" name="windowEnd">
+                                        </div>
+                                    </div>
+                                    <div class="form-row"
+                                        style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                                        <div class="form-group">
+                                            <label>حروف (كل سطر حرف أو مفصول بفاصلة)</label>
+                                            <textarea class="form-control" name="lettersText" rows="6"
+                                                placeholder="ب\nت\nث"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>كلمات (كل سطر كلمة أو مفصول بفاصلة)</label>
+                                            <textarea class="form-control" name="wordsText" rows="6"
+                                                placeholder="بابا\nماما"></textarea>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" type="submit"
+                                        style="margin-top: 0.75rem; width: 100%;">إنشاء Session جديدة
+                                        (وتفعيلها)</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- الخطوة 3: اختيار جلسة لإدارة محتواها -->
+                        <div class="content-card session-section">
+                            <form method="GET" action="/specialist/words" class="session-form"
+                                style="margin-bottom: 1.5rem;">
+                                <input type="hidden" name="childId" value="<%= child._id %>">
+                                <input type="hidden" name="contentType" value="<%= contentType %>">
+                                <input type="hidden" name="difficulty" value="<%= difficulty %>">
+                                <label for="sessionId" style="font-weight: bold; margin-left: 0.5rem;">
+                                    <i class="fas fa-layer-group"></i> اختر جلسة لإدارة محتواها:
+                                </label>
+                                <select name="sessionId" id="sessionId" onchange="this.form.submit()"
+                                    style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-left: 0.5rem;">
+                                    <option value="" <%=!selectedSessionId ? 'selected' : '' %>>عام (مكتبة الطفل)
+                                    </option>
+                                    <% sessions.forEach(function(session) { %>
+                                        <option value="<%= session._id %>" <%=selectedSessionId==session._id
+                                            ? 'selected' : '' %>><%= session.sessionName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </form>
+                        </div>
+
+                        <!-- الخطوة 4: إدارة الكلمات والحروف للجلسة -->
+                        <div class="content-card add-section">
+                            <div class="card-header-custom">
+                                <h3><i class="fas fa-plus-circle"></i> إضافة كلمة أو حرف</h3>
+                            </div>
+                            <form action="/specialist/words/add" method="POST" class="modern-form" id="contentForm">
+                                <input type="hidden" name="childId" value="<%= child._id %>">
+                                <% if (typeof selectedSessionId !=='undefined' && selectedSessionId) { %>
+                                    <input type="hidden" name="sessionId" value="<%= selectedSessionId %>">
+                                    <% } %>
+                                        <div class="form-row">
+                                            <div class="form-col text-inputs">
+                                                <div class="form-group" id="textGroup">
+                                                    <label for="text"
+                                                        style="display: block; margin-bottom: 0.5rem; font-weight: bold;">النص</label>
+                                                    <input type="text" name="text" id="text" class="form-control"
+                                                        required placeholder="أدخل كلمة أو حرف" maxlength="20">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="label-sm">الصعوبة</label>
+                                                    <div class="difficulty-selector">
+                                                        <input type="radio" name="difficulty" id="diff_easy"
+                                                            value="easy" checked>
+                                                        <label for="diff_easy" class="diff-btn easy">سهل</label>
+                                                        <input type="radio" name="difficulty" id="diff_medium"
+                                                            value="medium">
+                                                        <label for="diff_medium" class="diff-btn medium">متوسط</label>
+                                                        <input type="radio" name="difficulty" id="diff_hard"
+                                                            value="hard">
+                                                        <label for="diff_hard" class="diff-btn hard">صعب</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-col suggestions-box" id="suggestionsBox">
+                                                <label
+                                                    style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #334155;">
+                                                    <i class="fas fa-lightbulb"
+                                                        style="color: #fbbf24; margin-left: 5px;"></i> مقترحات
+                                                </label>
+                                                <div class="suggestions-grid" id="suggestionsGrid"></div>
+                                            </div>
+                                        </div>
+                                        <div class="form-footer">
+                                            <button type="submit" class="btn-main" id="submitBtn">
+                                                <i class="fas fa-plus"></i> إضافة
+                                            </button>
+                                        </div>
+                            </form>
+                        </div>
+
+                        <!-- عرض الكلمات والحروف -->
+                        <div class="content-display-toggle">
+                            <input type="radio" name="displayType" id="display-words" value="words" checked
+                                onchange="toggleContentDisplay()">
+                            <label for="display-words" class="display-btn">
+                                <i class="fas fa-font"></i> كلمات
+                            </label>
+                            <input type="radio" name="displayType" id="display-letters" value="letters"
+                                onchange="toggleContentDisplay()">
+                            <label for="display-letters" class="display-btn">
+                                <i class="fas fa-abc"></i> حروف
+                            </label>
+                        </div>
+
+                        <div class="content-card list-section">
+                            <div class="toolbar">
+                                <h2 id="libraryTitle"><i class="fas fa-layer-group"></i> مكتبة الكلمات/الحروف</h2>
+                                <form method="GET" action="/specialist/words" class="filter-group" id="filterForm">
+                                    <input type="hidden" name="childId" value="<%= child._id %>">
+                                    <input type="hidden" name="contentType" id="contentTypeInput" value="word">
+                                    <div class="search-box">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="searchInput" placeholder="بحث..."
+                                            onkeyup="filterClientSide()">
+                                    </div>
+                                    <select name="difficulty" class="custom-select" onchange="this.form.submit()">
+                                        <option value="">كل المستويات</option>
+                                        <option value="easy">سهل</option>
+                                        <option value="medium">متوسط</option>
+                                        <option value="hard">صعب</option>
+                                    </select>
+                                </form>
+                            </div>
+                            <div class="content-grid words-grid" id="wordsGrid">
+                                <% if (typeof words !=='undefined' && words && words.length> 0) { %>
+                                    <% words.forEach(function(word) { %>
+                                        <div class="content-card-item word-card" data-text="<%= word.text %>">
+                                            <div
+                                                class="card-img-top <%= word.image === 'default-word.png' ? 'default-image' : '' %>">
+                                                <% if (word.image==='default-word.png' ) { %>
+                                                    <div class="default-display">
+                                                        <%= (word.text || '' ).charAt(0) || '؟' %>
+                                                    </div>
+                                                    <% } else { %>
+                                                        <img src="<%= uploadUrl(word.image) %>" alt="<%= word.text %>"
+                                                            loading="lazy">
+                                                        <% } %>
+                                                            <span class="badge <%= word.difficulty %>">
+                                                                <%= __(word.difficulty) %>
+                                                            </span>
+                                                            <div class="overlay-actions">
+                                                                <button type="button" class="btn-icon speak-btn"
+                                                                    onclick="speakContent('<%= word.text %>')">
+                                                                    <i class="fas fa-volume-up"></i>
+                                                                </button>
+                                                            </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h3 class="content-title">
+                                                    <%= word.text %>
+                                                </h3>
+                                                <div class="card-actions">
+                                                    <form action="/specialist/words/delete/<%= word._id %>"
+                                                        method="POST" data-confirm="هل أنت متأكد من الحذف؟"
+                                                        onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                                                        <button type="submit" class="btn-action delete"><i
+                                                                class="fas fa-trash-alt"></i> حذف</button></form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <div class="empty-state">
+                                                    <img src="/images/empty-box.svg" alt="No Data"
+                                                        onerror="this.style.display='none'">
+                                                    <i class="fas fa-box-open fa-3x text-muted"></i>
+                                                    <p>لا توجد كلمات مضافة حالياً لهذا الطفل</p>
+                                                </div>
+                                                <% } %>
+                            </div>
+                            <div class="content-grid letters-grid" id="lettersGrid" style="display: none;">
+                                <% if (typeof letters !=='undefined' && letters && letters.length> 0) { %>
+                                    <% letters.forEach(function(letter) { %>
+                                        <div class="content-card-item letter-card" data-text="<%= letter.text %>">
+                                            <div class="card-img-top default-image">
+                                                <div class="default-display letter-display">
+                                                    <%= letter.text %>
+                                                </div>
+                                                <span class="badge <%= letter.difficulty %>">
+                                                    <%= __(letter.difficulty) %>
+                                                </span>
+                                                <div class="overlay-actions">
+                                                    <button type="button" class="btn-icon speak-btn"
+                                                        onclick="speakContent('<%= letter.text %>')">
+                                                        <i class="fas fa-volume-up"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h3 class="content-title">
+                                                    <%= letter.text %>
+                                                </h3>
+                                                <div class="card-actions">
+                                                    <form action="/specialist/words/delete/<%= letter._id %>"
+                                                        method="POST" data-confirm="هل أنت متأكد من الحذف؟"
+                                                        onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                                                        <button type="submit" class="btn-action delete"><i
+                                                                class="fas fa-trash-alt"></i> حذف</button></form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <div class="empty-state">
+                                                    <img src="/images/empty-box.svg" alt="No Data"
+                                                        onerror="this.style.display='none'">
+                                                    <i class="fas fa-box-open fa-3x text-muted"></i>
+                                                    <p>لا توجد حروف مضافة حالياً لهذا الطفل</p>
+                                                </div>
+                                                <% } %>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                    </div>
+                    </div>
 
-            <script>
-                // Word suggestions data
-                const wordSuggestions = [
-                    'تفاحة 🍎', 'كرة ⚽', 'سيارة 🚗', 'قطة 🐱', 'كلب 🐶',
-                    'عصفور 🐦', 'ماء 💧', 'حليب 🥛', 'خبز 🍞', 'باب 🚪',
-                    'كرسي 🪑', 'شمس ☀️', 'قمر 🌙', 'نجمة ⭐', 'زهرة 🌸'
-                ];
+                    <script>
+                        // Word suggestions data
+                        const wordSuggestions = [
+                            'تفاحة 🍎', 'كرة ⚽', 'سيارة 🚗', 'قطة 🐱', 'كلب 🐶',
+                            'عصفور 🐦', 'ماء 💧', 'حليب 🥛', 'خبز 🍞', 'باب 🚪',
+                            'كرسي 🪑', 'شمس ☀️', 'قمر 🌙', 'نجمة ⭐', 'زهرة 🌸'
+                        ];
 
-                // Letter suggestions data
-                const letterSuggestions = [
-                    'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر',
-                    'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف',
-                    'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
-                ];
+                        // Letter suggestions data
+                        const letterSuggestions = [
+                            'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر',
+                            'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف',
+                            'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
+                        ];
 
-                // Letter with vowel suggestions
-                const letterVowelSuggestions = [
-                    'بَ', 'بِ', 'بُ', 'بْ', 'تَ', 'تِ', 'تُ', 'تْ',
-                    'ثَ', 'ثِ', 'ثُ', 'ثْ', 'جَ', 'جِ', 'جُ', 'جْ',
-                    'حَ', 'حِ', 'حُ', 'حْ', 'خَ', 'خِ', 'خُ', 'خْ',
-                    'دَ', 'دِ', 'دُ', 'دْ', 'ذَ', 'ذِ', 'ذُ', 'ذْ',
-                    'رَ', 'رِ', 'رُ', 'رْ', 'زَ', 'زِ', 'زُ', 'زْ',
-                    'سَ', 'سِ', 'سُ', 'سْ', 'شَ', 'شِ', 'شُ', 'شْ',
-                    'صَ', 'صِ', 'صُ', 'صْ', 'ضَ', 'ضِ', 'ضُ', 'ضْ',
-                    'طَ', 'طِ', 'طُ', 'طْ', 'ظَ', 'ظِ', 'ظُ', 'ظْ',
-                    'عَ', 'عِ', 'عُ', 'عْ', 'غَ', 'غِ', 'غُ', 'غْ',
-                    'فَ', 'فِ', 'فُ', 'فْ', 'قَ', 'قِ', 'قُ', 'قْ',
-                    'كَ', 'كِ', 'كُ', 'كْ', 'لَ', 'لِ', 'لُ', 'لْ',
-                    'مَ', 'مِ', 'مُ', 'مْ', 'نَ', 'نِ', 'نُ', 'نْ',
-                    'هَ', 'هِ', 'هُ', 'هْ', 'وَ', 'وِ', 'وُ', 'وْ',
-                    'يَ', 'يِ', 'يُ', 'يْ'
-                ];
+                        // Letter with vowel suggestions
+                        const letterVowelSuggestions = [
+                            'بَ', 'بِ', 'بُ', 'بْ', 'تَ', 'تِ', 'تُ', 'تْ',
+                            'ثَ', 'ثِ', 'ثُ', 'ثْ', 'جَ', 'جِ', 'جُ', 'جْ',
+                            'حَ', 'حِ', 'حُ', 'حْ', 'خَ', 'خِ', 'خُ', 'خْ',
+                            'دَ', 'دِ', 'دُ', 'دْ', 'ذَ', 'ذِ', 'ذُ', 'ذْ',
+                            'رَ', 'رِ', 'رُ', 'رْ', 'زَ', 'زِ', 'زُ', 'زْ',
+                            'سَ', 'سِ', 'سُ', 'سْ', 'شَ', 'شِ', 'شُ', 'شْ',
+                            'صَ', 'صِ', 'صُ', 'صْ', 'ضَ', 'ضِ', 'ضُ', 'ضْ',
+                            'طَ', 'طِ', 'طُ', 'طْ', 'ظَ', 'ظِ', 'ظُ', 'ظْ',
+                            'عَ', 'عِ', 'عُ', 'عْ', 'غَ', 'غِ', 'غُ', 'غْ',
+                            'فَ', 'فِ', 'فُ', 'فْ', 'قَ', 'قِ', 'قُ', 'قْ',
+                            'كَ', 'كِ', 'كُ', 'كْ', 'لَ', 'لِ', 'لُ', 'لْ',
+                            'مَ', 'مِ', 'مُ', 'مْ', 'نَ', 'نِ', 'نُ', 'نْ',
+                            'هَ', 'هِ', 'هُ', 'هْ', 'وَ', 'وِ', 'وُ', 'وْ',
+                            'يَ', 'يِ', 'يُ', 'يْ'
+                        ];
 
-                // Initialize suggestions and vowel buttons on page load
-                document.addEventListener('DOMContentLoaded', function() {
-                    loadSuggestions();
-                    initializeVowelButtons();
-                });
+                        // Initialize suggestions and vowel buttons on page load
+                        document.addEventListener('DOMContentLoaded', function () {
+                            loadSuggestions();
+                            initializeVowelButtons();
+                        });
 
-                // Initialize vowel button functionality
-                function initializeVowelButtons() {
-                    const vowelButtons = document.querySelectorAll('.vowel-btn');
-                    vowelButtons.forEach(button => {
-                        button.addEventListener('click', function() {
-                            const vowel = this.getAttribute('data-vowel');
+                        // Initialize vowel button functionality
+                        function initializeVowelButtons() {
+                            const vowelButtons = document.querySelectorAll('.vowel-btn');
+                            vowelButtons.forEach(button => {
+                                button.addEventListener('click', function () {
+                                    const vowel = this.getAttribute('data-vowel');
+                                    const textInput = document.getElementById('text');
+                                    const currentValue = textInput.value;
+
+                                    // If input is empty, start with the base letter
+                                    if (currentValue.length === 0) {
+                                        textInput.value = '';
+                                        textInput.focus();
+                                    }
+                                    // If input has 1 character (letter only), append vowel
+                                    else if (currentValue.length === 1) {
+                                        textInput.value = currentValue + vowel;
+                                        textInput.focus();
+                                        textInput.setSelectionRange(textInput.value.length, textInput.value.length);
+                                    }
+                                    // If input has 2 characters (letter + vowel), replace vowel
+                                    else if (currentValue.length === 2) {
+                                        const baseText = currentValue.charAt(0);
+                                        textInput.value = baseText + vowel;
+                                        textInput.focus();
+                                        textInput.setSelectionRange(textInput.value.length, textInput.value.length);
+                                    }
+                                });
+                            });
+
+                            // Add input validation and clear button functionality
                             const textInput = document.getElementById('text');
-                            const currentValue = textInput.value;
-                            
-                            // If input is empty, start with the base letter
-                            if (currentValue.length === 0) {
+                            const clearBtn = document.getElementById('clearBtn');
+
+                            textInput.addEventListener('input', function () {
+                                const isLetter = document.getElementById('type-letter').checked;
+
+                                // Show/hide clear button based on input content
+                                clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+
+                                if (isLetter) {
+                                    // Allow only Arabic letters and the 4 vowels
+                                    const arabicVowels = ['َ', 'ِ', 'ُ', 'ْ'];
+                                    const arabicLetters = 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي';
+
+                                    let filteredValue = '';
+                                    for (let char of this.value) {
+                                        if (arabicLetters.includes(char) || arabicVowels.includes(char)) {
+                                            filteredValue += char;
+                                        }
+                                    }
+
+                                    // Limit to 2 characters for letters
+                                    if (filteredValue.length > 2) {
+                                        filteredValue = filteredValue.substring(0, 2);
+                                    }
+
+                                    this.value = filteredValue;
+
+                                    // Update clear button visibility after filtering
+                                    clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+                                }
+                            });
+
+                            // Clear button click handler
+                            clearBtn.addEventListener('click', function () {
                                 textInput.value = '';
                                 textInput.focus();
-                            }
-                            // If input has 1 character (letter only), append vowel
-                            else if (currentValue.length === 1) {
-                                textInput.value = currentValue + vowel;
-                                textInput.focus();
-                                textInput.setSelectionRange(textInput.value.length, textInput.value.length);
-                            }
-                            // If input has 2 characters (letter + vowel), replace vowel
-                            else if (currentValue.length === 2) {
-                                const baseText = currentValue.charAt(0);
-                                textInput.value = baseText + vowel;
-                                textInput.focus();
-                                textInput.setSelectionRange(textInput.value.length, textInput.value.length);
-                            }
-                        });
-                    });
+                                this.style.display = 'none';
+                            });
+                        }
 
-                    // Add input validation and clear button functionality
-                    const textInput = document.getElementById('text');
-                    const clearBtn = document.getElementById('clearBtn');
-                    
-                    textInput.addEventListener('input', function() {
-                        const isLetter = document.getElementById('type-letter').checked;
-                        
-                        // Show/hide clear button based on input content
-                        clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
-                        
-                        if (isLetter) {
-                            // Allow only Arabic letters and the 4 vowels
-                            const arabicVowels = ['َ', 'ِ', 'ُ', 'ْ'];
-                            const arabicLetters = 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي';
-                            
-                            let filteredValue = '';
-                            for (let char of this.value) {
-                                if (arabicLetters.includes(char) || arabicVowels.includes(char)) {
-                                    filteredValue += char;
+                        // 1. Content Type Toggle Function
+                        function toggleContentType() {
+                            const isWord = document.getElementById('type-word').checked;
+                            const textInput = document.getElementById('text');
+                            const textLabel = document.getElementById('textLabel');
+                            const suggestionsLabel = document.getElementById('suggestionsLabel');
+                            const submitBtn = document.getElementById('submitBtn');
+                            const form = document.getElementById('contentForm');
+                            const vowelButtons = document.getElementById('vowelButtons');
+                            const clearBtn = document.getElementById('clearBtn');
+
+                            if (isWord) {
+                                // Word mode
+                                textLabel.textContent = '<%= __("wordText") %>';
+                                textInput.placeholder = '<%= __("enterWord") %>';
+                                textInput.maxLength = 20;
+                                suggestionsLabel.innerHTML = '<i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> <%= __("suggestedWords") || "كلمات مقترحة" %>';
+                                submitBtn.innerHTML = '<i class="fas fa-save"></i> <%= __("saveWord") || "حفظ الكلمة" %>';
+                                vowelButtons.style.display = 'none'; // Hide vowel buttons for words
+                                clearBtn.style.display = 'none'; // Hide clear button for empty input
+                                form.action = '/specialist/words/add';
+                                // Add content type hidden input
+                                let contentTypeInput = document.getElementById('contentTypeHidden');
+                                if (!contentTypeInput) {
+                                    contentTypeInput = document.createElement('input');
+                                    contentTypeInput.type = 'hidden';
+                                    contentTypeInput.name = 'contentType';
+                                    contentTypeInput.id = 'contentTypeHidden';
+                                    form.appendChild(contentTypeInput);
+                                }
+                                contentTypeInput.value = 'word';
+                            } else {
+                                // Letter mode
+                                textLabel.textContent = '<%= __("letterText") || "حرف" %>';
+                                textInput.placeholder = '<%= __("enterLetter") || "أدخل حرفاً" %>';
+                                textInput.maxLength = 2; // Allow for letter + vowel combinations
+                                suggestionsLabel.innerHTML = '<i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> <%= __("suggestedLetters") || "حروف مقترحة" %>';
+                                submitBtn.innerHTML = '<i class="fas fa-save"></i> <%= __("saveLetter") || "حفظ الحرف" %>';
+                                vowelButtons.style.display = 'flex'; // Show vowel buttons for letters
+                                clearBtn.style.display = textInput.value.length > 0 ? 'flex' : 'none'; // Show clear button if input has content
+                                form.action = '/specialist/words/add';
+                                // Add content type hidden input
+                                let contentTypeInput = document.getElementById('contentTypeHidden');
+                                if (!contentTypeInput) {
+                                    contentTypeInput = document.createElement('input');
+                                    contentTypeInput.type = 'hidden';
+                                    contentTypeInput.name = 'contentType';
+                                    contentTypeInput.id = 'contentTypeHidden';
+                                    form.appendChild(contentTypeInput);
+                                }
+                                contentTypeInput.value = 'letter';
+                            }
+
+                            loadSuggestions();
+                        }
+
+                        // 2. Content Display Toggle Function
+                        function toggleContentDisplay() {
+                            const showWords = document.getElementById('display-words').checked;
+                            const wordsGrid = document.getElementById('wordsGrid');
+                            const lettersGrid = document.getElementById('lettersGrid');
+                            const libraryTitle = document.getElementById('libraryTitle');
+                            const contentTypeInput = document.getElementById('contentTypeInput');
+
+                            if (showWords) {
+                                wordsGrid.style.display = 'grid';
+                                lettersGrid.style.display = 'none';
+                                libraryTitle.innerHTML = '<i class="fas fa-layer-group"></i> <%= __("wordLibrary") || "مكتبة الكلمات" %>';
+                                contentTypeInput.value = 'word';
+                                // Only update UI, don't submit form to prevent recursive calls
+                            } else {
+                                wordsGrid.style.display = 'none';
+                                lettersGrid.style.display = 'grid';
+                                libraryTitle.innerHTML = '<i class="fas fa-layer-group"></i> <%= __("letterLibrary") || "مكتبة الحروف" %>';
+                                contentTypeInput.value = 'letter';
+                                // Only update UI, don't submit form to prevent recursive calls
+                            }
+                        }
+
+                        // 3. Load Suggestions Function
+                        function loadSuggestions() {
+                            const isWord = document.getElementById('type-word').checked;
+                            const suggestionsGrid = document.getElementById('suggestionsGrid');
+                            const suggestions = isWord ? wordSuggestions : letterVowelSuggestions;
+
+                            suggestionsGrid.innerHTML = '';
+                            suggestions.forEach(function (suggestion) {
+                                const button = document.createElement('button');
+                                button.type = 'button';
+                                button.className = 'suggestion-tag';
+                                button.textContent = suggestion;
+                                button.onclick = function () { selectSuggestion(suggestion); };
+                                suggestionsGrid.appendChild(button);
+                            });
+                        }
+
+                        // 4. Select Suggestion Function
+                        function selectSuggestion(suggestion) {
+                            document.getElementById('text').value = suggestion;
+                        }
+
+                        // 5. Text to Speech Logic (Browser Native)
+                        function speakContent(text) {
+                            if ('speechSynthesis' in window) {
+                                const utterance = new SpeechSynthesisUtterance(text);
+                                utterance.lang = 'ar-SA'; // Set to Arabic
+                                window.speechSynthesis.speak(utterance);
+                            } else {
+                                alert("Browser does not support Text-to-Speech");
+                            }
+                        }
+
+                        // 6. Enhanced Client Side Filter
+                        function filterClientSide() {
+                            const input = document.getElementById('searchInput');
+                            const filter = input.value.toUpperCase();
+                            const showWords = document.getElementById('display-words').checked;
+                            const activeGrid = showWords ? document.getElementById('wordsGrid') : document.getElementById('lettersGrid');
+                            const cards = activeGrid.getElementsByClassName('content-card-item');
+
+                            for (let i = 0; i < cards.length; i++) {
+                                const txtValue = cards[i].getAttribute('data-text');
+                                if (!txtValue) {
+                                    cards[i].style.display = "none";
+                                } else if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                                    cards[i].style.display = "";
+                                } else {
+                                    cards[i].style.display = "none";
                                 }
                             }
-                            
-                            // Limit to 2 characters for letters
-                            if (filteredValue.length > 2) {
-                                filteredValue = filteredValue.substring(0, 2);
+                        }
+
+                        // 7. Image Preview Logic (for future use)
+                        function previewImage(input) {
+                            const preview = document.getElementById('img-preview');
+                            const placeholder = document.getElementById('preview-container');
+
+                            if (input.files && input.files[0]) {
+                                const reader = new FileReader();
+                                reader.onload = function (e) {
+                                    preview.src = e.target.result;
+                                    preview.style.display = 'block';
+                                    placeholder.style.display = 'none';
+                                }
+                                reader.readAsDataURL(input.files[0]);
                             }
-                            
-                            this.value = filteredValue;
-                            
-                            // Update clear button visibility after filtering
-                            clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
                         }
-                    });
-                    
-                    // Clear button click handler
-                    clearBtn.addEventListener('click', function() {
-                        textInput.value = '';
-                        textInput.focus();
-                        this.style.display = 'none';
-                    });
-                }
+                    </script>
 
-                // 1. Content Type Toggle Function
-                function toggleContentType() {
-                    const isWord = document.getElementById('type-word').checked;
-                    const textInput = document.getElementById('text');
-                    const textLabel = document.getElementById('textLabel');
-                    const suggestionsLabel = document.getElementById('suggestionsLabel');
-                    const submitBtn = document.getElementById('submitBtn');
-                    const form = document.getElementById('contentForm');
-                    const vowelButtons = document.getElementById('vowelButtons');
-                    const clearBtn = document.getElementById('clearBtn');
-
-                    if (isWord) {
-                        // Word mode
-                        textLabel.textContent = '<%= __("wordText") %>';
-                        textInput.placeholder = '<%= __("enterWord") %>';
-                        textInput.maxLength = 20;
-                        suggestionsLabel.innerHTML = '<i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> <%= __("suggestedWords") || "كلمات مقترحة" %>';
-                        submitBtn.innerHTML = '<i class="fas fa-save"></i> <%= __("saveWord") || "حفظ الكلمة" %>';
-                        vowelButtons.style.display = 'none'; // Hide vowel buttons for words
-                        clearBtn.style.display = 'none'; // Hide clear button for empty input
-                        form.action = '/specialist/words/add';
-                        // Add content type hidden input
-                        let contentTypeInput = document.getElementById('contentTypeHidden');
-                        if (!contentTypeInput) {
-                            contentTypeInput = document.createElement('input');
-                            contentTypeInput.type = 'hidden';
-                            contentTypeInput.name = 'contentType';
-                            contentTypeInput.id = 'contentTypeHidden';
-                            form.appendChild(contentTypeInput);
+                    <style>
+                        /* Copied & Adapted CSS */
+                        :root {
+                            --primary-color: #4f46e5;
+                            --secondary-color: #818cf8;
+                            --bg-color: #f3f4f6;
+                            --card-bg: #ffffff;
+                            --text-dark: #1f2937;
+                            --text-light: #6b7280;
+                            --danger: #ef4444;
+                            --success: #10b981;
+                            --warning: #f59e0b;
+                            --radius: 16px;
+                            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
                         }
-                        contentTypeInput.value = 'word';
-                    } else {
-                        // Letter mode
-                        textLabel.textContent = '<%= __("letterText") || "حرف" %>';
-                        textInput.placeholder = '<%= __("enterLetter") || "أدخل حرفاً" %>';
-                        textInput.maxLength = 2; // Allow for letter + vowel combinations
-                        suggestionsLabel.innerHTML = '<i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> <%= __("suggestedLetters") || "حروف مقترحة" %>';
-                        submitBtn.innerHTML = '<i class="fas fa-save"></i> <%= __("saveLetter") || "حفظ الحرف" %>';
-                        vowelButtons.style.display = 'flex'; // Show vowel buttons for letters
-                        clearBtn.style.display = textInput.value.length > 0 ? 'flex' : 'none'; // Show clear button if input has content
-                        form.action = '/specialist/words/add';
-                        // Add content type hidden input
-                        let contentTypeInput = document.getElementById('contentTypeHidden');
-                        if (!contentTypeInput) {
-                            contentTypeInput = document.createElement('input');
-                            contentTypeInput.type = 'hidden';
-                            contentTypeInput.name = 'contentType';
-                            contentTypeInput.id = 'contentTypeHidden';
-                            form.appendChild(contentTypeInput);
+
+                        .dashboard-container {
+                            max-width: 1200px;
+                            margin: 0 auto;
+                            padding: 2rem 1rem;
+                            background-color: var(--bg-color);
+                            min-height: 100vh;
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                         }
-                        contentTypeInput.value = 'letter';
-                    }
 
-                    loadSuggestions();
-                }
-
-                // 2. Content Display Toggle Function
-                function toggleContentDisplay() {
-                    const showWords = document.getElementById('display-words').checked;
-                    const wordsGrid = document.getElementById('wordsGrid');
-                    const lettersGrid = document.getElementById('lettersGrid');
-                    const libraryTitle = document.getElementById('libraryTitle');
-                    const contentTypeInput = document.getElementById('contentTypeInput');
-
-                    if (showWords) {
-                        wordsGrid.style.display = 'grid';
-                        lettersGrid.style.display = 'none';
-                        libraryTitle.innerHTML = '<i class="fas fa-layer-group"></i> <%= __("wordLibrary") || "مكتبة الكلمات" %>';
-                        contentTypeInput.value = 'word';
-                        // Only update UI, don't submit form to prevent recursive calls
-                    } else {
-                        wordsGrid.style.display = 'none';
-                        lettersGrid.style.display = 'grid';
-                        libraryTitle.innerHTML = '<i class="fas fa-layer-group"></i> <%= __("letterLibrary") || "مكتبة الحروف" %>';
-                        contentTypeInput.value = 'letter';
-                        // Only update UI, don't submit form to prevent recursive calls
-                    }
-                }
-
-                // 3. Load Suggestions Function
-                function loadSuggestions() {
-                    const isWord = document.getElementById('type-word').checked;
-                    const suggestionsGrid = document.getElementById('suggestionsGrid');
-                    const suggestions = isWord ? wordSuggestions : letterVowelSuggestions;
-
-                    suggestionsGrid.innerHTML = '';
-                    suggestions.forEach(function(suggestion) {
-                        const button = document.createElement('button');
-                        button.type = 'button';
-                        button.className = 'suggestion-tag';
-                        button.textContent = suggestion;
-                        button.onclick = function() { selectSuggestion(suggestion); };
-                        suggestionsGrid.appendChild(button);
-                    });
-                }
-
-                // 4. Select Suggestion Function
-                function selectSuggestion(suggestion) {
-                    document.getElementById('text').value = suggestion;
-                }
-
-                // 5. Text to Speech Logic (Browser Native)
-                function speakContent(text) {
-                    if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = 'ar-SA'; // Set to Arabic
-                        window.speechSynthesis.speak(utterance);
-                    } else {
-                        alert("Browser does not support Text-to-Speech");
-                    }
-                }
-
-                // 6. Enhanced Client Side Filter
-                function filterClientSide() {
-                    const input = document.getElementById('searchInput');
-                    const filter = input.value.toUpperCase();
-                    const showWords = document.getElementById('display-words').checked;
-                    const activeGrid = showWords ? document.getElementById('wordsGrid') : document.getElementById('lettersGrid');
-                    const cards = activeGrid.getElementsByClassName('content-card-item');
-
-                    for (let i = 0; i < cards.length; i++) {
-                        const txtValue = cards[i].getAttribute('data-text');
-                        if (!txtValue) {
-                            cards[i].style.display = "none";
-                        } else if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            cards[i].style.display = "";
-                        } else {
-                            cards[i].style.display = "none";
+                        .page-header-modern {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 2rem;
                         }
-                    }
-                }
 
-                // 7. Image Preview Logic (for future use)
-                function previewImage(input) {
-                    const preview = document.getElementById('img-preview');
-                    const placeholder = document.getElementById('preview-container');
-
-                    if (input.files && input.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                            placeholder.style.display = 'none';
+                        .page-header-modern h1 {
+                            font-size: 1.8rem;
+                            color: var(--text-dark);
+                            margin: 0;
                         }
-                        reader.readAsDataURL(input.files[0]);
-                    }
-                }
-            </script>
-
-            <style>
-                /* Copied & Adapted CSS */
-                :root {
-                    --primary-color: #4f46e5;
-                    --secondary-color: #818cf8;
-                    --bg-color: #f3f4f6;
-                    --card-bg: #ffffff;
-                    --text-dark: #1f2937;
-                    --text-light: #6b7280;
-                    --danger: #ef4444;
-                    --success: #10b981;
-                    --warning: #f59e0b;
-                    --radius: 16px;
-                    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                }
-
-                .dashboard-container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: 2rem 1rem;
-                    background-color: var(--bg-color);
-                    min-height: 100vh;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                }
-
-                .page-header-modern {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 2rem;
-                }
-
-                .page-header-modern h1 {
-                    font-size: 1.8rem;
-                    color: var(--text-dark);
-                    margin: 0;
-                }
-
-                .btn-secondary {
-                    background: white;
-                    border: 1px solid #e5e7eb;
-                    color: var(--text-dark);
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
-                    text-decoration: none;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    transition: 0.2s;
-                }
-
-                .btn-secondary:hover {
-                    background: #f9fafb;
-                }
-
-                .content-card {
-                    background: var(--card-bg);
-                    border-radius: var(--radius);
-                    box-shadow: var(--shadow);
-                    padding: 1.5rem;
-                    margin-bottom: 2rem;
-                }
-
-                .form-row {
-                    display: flex;
-                    gap: 2rem;
-                    flex-wrap: wrap;
-                }
-
-                .form-col {
-                    flex: 1;
-                    min-width: 300px;
-                }
-
-                .form-control {
-                    width: 100%;
-                    padding: 0.8rem;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 12px;
-                    transition: 0.3s;
-                }
-
-                .input-with-vowels {
-                    position: relative;
-                }
-
-                .input-row {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                }
-
-                .clear-btn {
-                    position: absolute;
-                    right: 10px;
-                    background: #ef4444;
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 30px;
-                    height: 30px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    z-index: 10;
-                }
-
-                .clear-btn:hover {
-                    background: #dc2626;
-                    transform: scale(1.1);
-                }
-
-                .clear-btn i {
-                    font-size: 0.8rem;
-                }
-
-                .vowel-buttons {
-                    display: flex;
-                    gap: 0.5rem;
-                    margin-top: 0.75rem;
-                    justify-content: center;
-                    padding: 0.75rem;
-                    background: #f8fafc;
-                    border-radius: 12px;
-                    border: 1px solid #e2e8f0;
-                }
-
-                .vowel-btn {
-                    background: white;
-                    border: 2px solid #e2e8f0;
-                    border-radius: 8px;
-                    padding: 0.5rem 0.75rem;
-                    font-size: 1.2rem;
-                    font-weight: bold;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    color: #374151;
-                    min-width: 45px;
-                }
-
-                .vowel-btn:hover {
-                    background: #3b82f6;
-                    border-color: #3b82f6;
-                    color: white;
-                    transform: translateY(-2px);
-                }
-
-                .vowel-btn:active {
-                    transform: scale(0.95);
-                }
-
-                .form-control:focus {
-                    border-color: var(--primary-color);
-                    outline: none;
-                }
-
-                .difficulty-selector {
-                    display: flex;
-                    gap: 0.5rem;
-                    margin-top: 0.5rem;
-                }
-
-                .difficulty-selector input {
-                    display: none;
-                }
-
-                .diff-btn {
-                    padding: 0.5rem 1.5rem;
-                    border-radius: 20px;
-                    border: 2px solid #e5e7eb;
-                    cursor: pointer;
-                    font-weight: bold;
-                    color: var(--text-light);
-                    transition: 0.3s;
-                }
-
-                input:checked+.diff-btn.easy {
-                    background: #d1fae5;
-                    border-color: var(--success);
-                    color: var(--success);
-                }
-
-                input:checked+.diff-btn.medium {
-                    background: #fef3c7;
-                    border-color: var(--warning);
-                    color: var(--warning);
-                }
-
-                input:checked+.diff-btn.hard {
-                    background: #fee2e2;
-                    border-color: var(--danger);
-                    color: var(--danger);
-                }
-
-                .upload-area {
-                    border: 2px dashed #cbd5e1;
-                    border-radius: var(--radius);
-                    height: 150px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    position: relative;
-                    overflow: hidden;
-                    transition: 0.3s;
-                    background: #f8fafc;
-                }
-
-                .upload-area:hover {
-                    border-color: var(--primary-color);
-                    background: #eef2ff;
-                }
-
-                .suggestions-grid {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 0.75rem;
-                    background: white;
-                    padding: 1rem;
-                    border: 2px solid #e2e8f0;
-                    border-radius: 12px;
-                    min-height: 150px;
-                    align-content: flex-start;
-                }
-
-                .suggestion-tag {
-                    background: #f1f5f9;
-                    border: 1px solid #cbd5e1;
-                    padding: 0.5rem 1rem;
-                    border-radius: 50px;
-                    cursor: pointer;
-                    font-size: 0.95rem;
-                    color: #475569;
-                    transition: all 0.2s;
-                    font-family: inherit;
-                }
-
-                .suggestion-tag:hover {
-                    background: #3b82f6;
-                    color: white;
-                    border-color: #3b82f6;
-                    transform: translateY(-2px);
-                }
-
-                .suggestion-tag:active {
-                    transform: scale(0.95);
-                }
-
-                #img-preview {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-
-                .preview-placeholder {
-                    text-align: center;
-                    color: var(--text-light);
-                }
-
-                .preview-placeholder i {
-                    font-size: 2rem;
-                    margin-bottom: 0.5rem;
-                    display: block;
-                }
-
-                .btn-main {
-                    width: 100%;
-                    padding: 1rem;
-                    background: var(--primary-color);
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    font-size: 1rem;
-                    cursor: pointer;
-                    margin-top: 1.5rem;
-                    transition: 0.3s;
-                }
-
-                .btn-main:hover {
-                    background: #4338ca;
-                }
-
-                .toolbar {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    flex-wrap: wrap;
-                    gap: 1rem;
-                    margin-bottom: 1.5rem;
-                    border-bottom: 1px solid #f3f4f6;
-                    padding-bottom: 1rem;
-                }
-
-
-                .filter-group {
-                    display: flex;
-                    gap: 1rem;
-                    align-items: center;
-                }
-
-                .search-box {
-                    position: relative;
-                }
-
-                .search-box input {
-                    padding: 0.5rem 2rem 0.5rem 1rem;
-                    border-radius: 20px;
-                    border: 1px solid #e5e7eb;
-                }
-
-                .search-box i {
-                    position: absolute;
-                    right: 10px;
-                    top: 10px;
-                    color: var(--text-light);
-                }
-
-                .custom-select {
-                    padding: 0.5rem;
-                    border-radius: 10px;
-                    border: 1px solid #e5e7eb;
-                }
-
-                .words-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                    gap: 1.5rem;
-                }
-
-                .word-card {
-                    background: white;
-                    border-radius: 20px;
-                    overflow: hidden;
-                    border: 1px solid rgba(0, 0, 0, 0.05);
-                    /* Softer border */
-                    transition: all 0.3s ease;
-                    position: relative;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-                }
-
-                .word-card:hover {
-                    transform: translateY(-5px) scale(1.02);
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-                }
-
-                .word-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: var(--shadow);
-                }
-
-                .card-img-top {
-                    height: 180px;
-                    position: relative;
-                }
-
-                .card-img-top img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-
-                .badge {
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    color: white;
-                    font-size: 0.75rem;
-                    font-weight: bold;
-                    z-index: 2;
-                }
-
-                .badge.easy {
-                    background: var(--success);
-                }
-
-                .badge.medium {
-                    background: var(--warning);
-                }
-
-                .badge.hard {
-                    background: var(--danger);
-                }
-
-                .overlay-actions {
-                    position: absolute;
-                    bottom: 10px;
-                    left: 10px;
-                    z-index: 2;
-                    opacity: 0.8;
-                    transition: 0.3s;
-                }
-
-                .word-card:hover .overlay-actions {
-                    opacity: 1;
-                }
-
-                .btn-icon {
-                    width: 35px;
-                    height: 35px;
-                    border-radius: 50%;
-                    border: none;
-                    background: rgba(255, 255, 255, 0.9);
-                    color: var(--primary-color);
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-                }
-
-                .btn-icon:hover {
-                    background: white;
-                    transform: scale(1.1);
-                }
-
-                .card-body {
-                    padding: 1rem;
-                    text-align: center;
-                }
-
-                .word-title {
-                    margin: 0.5rem 0 1rem 0;
-                    font-size: 1.4rem;
-                    font-weight: 800;
-                    color: var(--text-dark);
-                    letter-spacing: -0.025em;
-                }
-
-                .btn-action.delete {
-                    background: #fee2e2;
-                    color: var(--danger);
-                    border: none;
-                    padding: 0.4rem 1rem;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 0.9rem;
-                    width: 100%;
-                    transition: 0.2s;
-                }
-
-                .btn-action.delete:hover {
-                    background: var(--danger);
-                    color: white;
-                }
-
-                .empty-state {
-                    text-align: center;
-                    padding: 3rem;
-                    color: var(--text-light);
-                    width: 100%;
-                    grid-column: 1 / -1;
-                }
-
-                /* Content Type Toggle Styles */
-                .content-type-toggle {
-                    display: flex;
-                    gap: 1rem;
-                    margin-bottom: 2rem;
-                    justify-content: center;
-                }
-
-                .content-type-toggle input[type="radio"] {
-                    display: none;
-                }
-
-                .toggle-btn {
-                    padding: 1rem 2rem;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    color: var(--text-light);
-                    transition: all 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    background: white;
-                    min-width: 120px;
-                    justify-content: center;
-                }
-
-                .toggle-btn i {
-                    font-size: 1.2rem;
-                }
-
-                input:checked + .word-toggle {
-                    background: #eff6ff;
-                    border-color: #3b82f6;
-                    color: #3b82f6;
-                }
-
-                input:checked + .letter-toggle {
-                    background: #f0fdf4;
-                    border-color: #10b981;
-                    color: #10b981;
-                }
-
-                /* Content Display Toggle Styles */
-                .content-display-toggle {
-                    display: flex;
-                    gap: 1rem;
-                    margin-bottom: 1.5rem;
-                    justify-content: center;
-                }
-
-                .content-display-toggle input[type="radio"] {
-                    display: none;
-                }
-
-                .display-btn {
-                    padding: 0.75rem 1.5rem;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    color: var(--text-light);
-                    transition: all 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    background: white;
-                }
-
-                .display-btn:hover {
-                    border-color: var(--primary-color);
-                    color: var(--primary-color);
-                }
-
-                #display-words:checked + .display-btn {
-                    background: var(--primary-color);
-                    border-color: var(--primary-color);
-                    color: white;
-                }
-
-                #display-letters:checked + .display-btn {
-                    background: var(--success);
-                    border-color: var(--success);
-                    color: white;
-                }
-
-                /* Enhanced Grid Layouts */
-                .content-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                    gap: 1.5rem;
-                }
-
-                .letters-grid {
-                    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                }
-
-                /* Enhanced Card Styles */
-                .content-card-item {
-                    background: white;
-                    border-radius: 20px;
-                    overflow: hidden;
-                    border: 1px solid rgba(0, 0, 0, 0.05);
-                    transition: all 0.3s ease;
-                    position: relative;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-                }
-
-                .content-card-item:hover {
-                    transform: translateY(-5px) scale(1.02);
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-                }
-
-                .word-card:hover,
-                .letter-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: var(--shadow);
-                }
-
-                /* Default Image Styles */
-                .default-image {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-                }
-
-                .default-display {
-                    font-size: 4rem;
-                    font-weight: bold;
-                    color: #3b82f6;
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-
-                .letter-display {
-                    font-size: 5rem;
-                    color: #10b981;
-                    font-family: 'Arial', sans-serif;
-                }
-
-                /* Enhanced Title Styles */
-                .content-title {
-                    margin: 0.5rem 0 1rem 0;
-                    font-size: 1.4rem;
-                    font-weight: 800;
-                    color: var(--text-dark);
-                    letter-spacing: -0.025em;
-                }
-
-                .letter-card .content-title {
-                    font-size: 2rem;
-                    color: #10b981;
-                }
-
-                /* Responsive Design */
-                @media (max-width: 768px) {
-                    .content-type-toggle {
-                        flex-direction: column;
-                        align-items: center;
-                    }
-
-                    .toggle-btn {
-                        width: 200px;
-                    }
-
-                    .content-display-toggle {
-                        flex-direction: column;
-                        align-items: center;
-                        gap: 0.5rem;
-                    }
-
-                    .display-btn {
-                        width: 150px;
-                        justify-content: center;
-                    }
-
-                    .form-row {
-                        flex-direction: column;
-                    }
-
-                    .content-grid {
-                        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                        gap: 1rem;
-                    }
-
-                    .letters-grid {
-                        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                    }
-                }
-            </style>
-
-            <% } %>
-                <%- include('../partials/layout-end') %>
+
+                        .btn-secondary {
+                            background: white;
+                            border: 1px solid #e5e7eb;
+                            color: var(--text-dark);
+                            padding: 0.5rem 1rem;
+                            border-radius: 8px;
+                            text-decoration: none;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            transition: 0.2s;
+                        }
+
+                        .btn-secondary:hover {
+                            background: #f9fafb;
+                        }
+
+                        .content-card {
+                            background: var(--card-bg);
+                            border-radius: var(--radius);
+                            box-shadow: var(--shadow);
+                            padding: 1.5rem;
+                            margin-bottom: 2rem;
+                        }
+
+                        .form-row {
+                            display: flex;
+                            gap: 2rem;
+                            flex-wrap: wrap;
+                        }
+
+                        .form-col {
+                            flex: 1;
+                            min-width: 300px;
+                        }
+
+                        .form-control {
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 12px;
+                            transition: 0.3s;
+                        }
+
+                        .input-with-vowels {
+                            position: relative;
+                        }
+
+                        .input-row {
+                            position: relative;
+                            display: flex;
+                            align-items: center;
+                        }
+
+                        .clear-btn {
+                            position: absolute;
+                            right: 10px;
+                            background: #ef4444;
+                            color: white;
+                            border: none;
+                            border-radius: 50%;
+                            width: 30px;
+                            height: 30px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            z-index: 10;
+                        }
+
+                        .clear-btn:hover {
+                            background: #dc2626;
+                            transform: scale(1.1);
+                        }
+
+                        .clear-btn i {
+                            font-size: 0.8rem;
+                        }
+
+                        .vowel-buttons {
+                            display: flex;
+                            gap: 0.5rem;
+                            margin-top: 0.75rem;
+                            justify-content: center;
+                            padding: 0.75rem;
+                            background: #f8fafc;
+                            border-radius: 12px;
+                            border: 1px solid #e2e8f0;
+                        }
+
+                        .vowel-btn {
+                            background: white;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 8px;
+                            padding: 0.5rem 0.75rem;
+                            font-size: 1.2rem;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            color: #374151;
+                            min-width: 45px;
+                        }
+
+                        .vowel-btn:hover {
+                            background: #3b82f6;
+                            border-color: #3b82f6;
+                            color: white;
+                            transform: translateY(-2px);
+                        }
+
+                        .vowel-btn:active {
+                            transform: scale(0.95);
+                        }
+
+                        .form-control:focus {
+                            border-color: var(--primary-color);
+                            outline: none;
+                        }
+
+                        .difficulty-selector {
+                            display: flex;
+                            gap: 0.5rem;
+                            margin-top: 0.5rem;
+                        }
+
+                        .difficulty-selector input {
+                            display: none;
+                        }
+
+                        .diff-btn {
+                            padding: 0.5rem 1.5rem;
+                            border-radius: 20px;
+                            border: 2px solid #e5e7eb;
+                            cursor: pointer;
+                            font-weight: bold;
+                            color: var(--text-light);
+                            transition: 0.3s;
+                        }
+
+                        input:checked+.diff-btn.easy {
+                            background: #d1fae5;
+                            border-color: var(--success);
+                            color: var(--success);
+                        }
+
+                        input:checked+.diff-btn.medium {
+                            background: #fef3c7;
+                            border-color: var(--warning);
+                            color: var(--warning);
+                        }
+
+                        input:checked+.diff-btn.hard {
+                            background: #fee2e2;
+                            border-color: var(--danger);
+                            color: var(--danger);
+                        }
+
+                        .upload-area {
+                            border: 2px dashed #cbd5e1;
+                            border-radius: var(--radius);
+                            height: 150px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            position: relative;
+                            overflow: hidden;
+                            transition: 0.3s;
+                            background: #f8fafc;
+                        }
+
+                        .upload-area:hover {
+                            border-color: var(--primary-color);
+                            background: #eef2ff;
+                        }
+
+                        .suggestions-grid {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 0.75rem;
+                            background: white;
+                            padding: 1rem;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 12px;
+                            min-height: 150px;
+                            align-content: flex-start;
+                        }
+
+                        .suggestion-tag {
+                            background: #f1f5f9;
+                            border: 1px solid #cbd5e1;
+                            padding: 0.5rem 1rem;
+                            border-radius: 50px;
+                            cursor: pointer;
+                            font-size: 0.95rem;
+                            color: #475569;
+                            transition: all 0.2s;
+                            font-family: inherit;
+                        }
+
+                        .suggestion-tag:hover {
+                            background: #3b82f6;
+                            color: white;
+                            border-color: #3b82f6;
+                            transform: translateY(-2px);
+                        }
+
+                        .suggestion-tag:active {
+                            transform: scale(0.95);
+                        }
+
+                        #img-preview {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+
+                        .preview-placeholder {
+                            text-align: center;
+                            color: var(--text-light);
+                        }
+
+                        .preview-placeholder i {
+                            font-size: 2rem;
+                            margin-bottom: 0.5rem;
+                            display: block;
+                        }
+
+                        .btn-main {
+                            width: 100%;
+                            padding: 1rem;
+                            background: var(--primary-color);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            font-size: 1rem;
+                            cursor: pointer;
+                            margin-top: 1.5rem;
+                            transition: 0.3s;
+                        }
+
+                        .btn-main:hover {
+                            background: #4338ca;
+                        }
+
+                        .toolbar {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            flex-wrap: wrap;
+                            gap: 1rem;
+                            margin-bottom: 1.5rem;
+                            border-bottom: 1px solid #f3f4f6;
+                            padding-bottom: 1rem;
+                        }
+
+
+                        .filter-group {
+                            display: flex;
+                            gap: 1rem;
+                            align-items: center;
+                        }
+
+                        .search-box {
+                            position: relative;
+                        }
+
+                        .search-box input {
+                            padding: 0.5rem 2rem 0.5rem 1rem;
+                            border-radius: 20px;
+                            border: 1px solid #e5e7eb;
+                        }
+
+                        .search-box i {
+                            position: absolute;
+                            right: 10px;
+                            top: 10px;
+                            color: var(--text-light);
+                        }
+
+                        .custom-select {
+                            padding: 0.5rem;
+                            border-radius: 10px;
+                            border: 1px solid #e5e7eb;
+                        }
+
+                        .words-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                            gap: 1.5rem;
+                        }
+
+                        .word-card {
+                            background: white;
+                            border-radius: 20px;
+                            overflow: hidden;
+                            border: 1px solid rgba(0, 0, 0, 0.05);
+                            /* Softer border */
+                            transition: all 0.3s ease;
+                            position: relative;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                        }
+
+                        .word-card:hover {
+                            transform: translateY(-5px) scale(1.02);
+                            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                        }
+
+                        .word-card:hover {
+                            transform: translateY(-5px);
+                            box-shadow: var(--shadow);
+                        }
+
+                        .card-img-top {
+                            height: 180px;
+                            position: relative;
+                        }
+
+                        .card-img-top img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+
+                        .badge {
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            padding: 4px 12px;
+                            border-radius: 20px;
+                            color: white;
+                            font-size: 0.75rem;
+                            font-weight: bold;
+                            z-index: 2;
+                        }
+
+                        .badge.easy {
+                            background: var(--success);
+                        }
+
+                        .badge.medium {
+                            background: var(--warning);
+                        }
+
+                        .badge.hard {
+                            background: var(--danger);
+                        }
+
+                        .overlay-actions {
+                            position: absolute;
+                            bottom: 10px;
+                            left: 10px;
+                            z-index: 2;
+                            opacity: 0.8;
+                            transition: 0.3s;
+                        }
+
+                        .word-card:hover .overlay-actions {
+                            opacity: 1;
+                        }
+
+                        .btn-icon {
+                            width: 35px;
+                            height: 35px;
+                            border-radius: 50%;
+                            border: none;
+                            background: rgba(255, 255, 255, 0.9);
+                            color: var(--primary-color);
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                        }
+
+                        .btn-icon:hover {
+                            background: white;
+                            transform: scale(1.1);
+                        }
+
+                        .card-body {
+                            padding: 1rem;
+                            text-align: center;
+                        }
+
+                        .word-title {
+                            margin: 0.5rem 0 1rem 0;
+                            font-size: 1.4rem;
+                            font-weight: 800;
+                            color: var(--text-dark);
+                            letter-spacing: -0.025em;
+                        }
+
+                        .btn-action.delete {
+                            background: #fee2e2;
+                            color: var(--danger);
+                            border: none;
+                            padding: 0.4rem 1rem;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 0.9rem;
+                            width: 100%;
+                            transition: 0.2s;
+                        }
+
+                        .btn-action.delete:hover {
+                            background: var(--danger);
+                            color: white;
+                        }
+
+                        .empty-state {
+                            text-align: center;
+                            padding: 3rem;
+                            color: var(--text-light);
+                            width: 100%;
+                            grid-column: 1 / -1;
+                        }
+
+                        /* Content Type Toggle Styles */
+                        .content-type-toggle {
+                            display: flex;
+                            gap: 1rem;
+                            margin-bottom: 2rem;
+                            justify-content: center;
+                        }
+
+                        .content-type-toggle input[type="radio"] {
+                            display: none;
+                        }
+
+                        .toggle-btn {
+                            padding: 1rem 2rem;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            color: var(--text-light);
+                            transition: all 0.3s ease;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            background: white;
+                            min-width: 120px;
+                            justify-content: center;
+                        }
+
+                        .toggle-btn i {
+                            font-size: 1.2rem;
+                        }
+
+                        input:checked+.word-toggle {
+                            background: #eff6ff;
+                            border-color: #3b82f6;
+                            color: #3b82f6;
+                        }
+
+                        input:checked+.letter-toggle {
+                            background: #f0fdf4;
+                            border-color: #10b981;
+                            color: #10b981;
+                        }
+
+                        /* Content Display Toggle Styles */
+                        .content-display-toggle {
+                            display: flex;
+                            gap: 1rem;
+                            margin-bottom: 1.5rem;
+                            justify-content: center;
+                        }
+
+                        .content-display-toggle input[type="radio"] {
+                            display: none;
+                        }
+
+                        .display-btn {
+                            padding: 0.75rem 1.5rem;
+                            border: 2px solid #e5e7eb;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            color: var(--text-light);
+                            transition: all 0.3s ease;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            background: white;
+                        }
+
+                        .display-btn:hover {
+                            border-color: var(--primary-color);
+                            color: var(--primary-color);
+                        }
+
+                        #display-words:checked+.display-btn {
+                            background: var(--primary-color);
+                            border-color: var(--primary-color);
+                            color: white;
+                        }
+
+                        #display-letters:checked+.display-btn {
+                            background: var(--success);
+                            border-color: var(--success);
+                            color: white;
+                        }
+
+                        /* Enhanced Grid Layouts */
+                        .content-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                            gap: 1.5rem;
+                        }
+
+                        .letters-grid {
+                            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                        }
+
+                        /* Enhanced Card Styles */
+                        .content-card-item {
+                            background: white;
+                            border-radius: 20px;
+                            overflow: hidden;
+                            border: 1px solid rgba(0, 0, 0, 0.05);
+                            transition: all 0.3s ease;
+                            position: relative;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                        }
+
+                        .content-card-item:hover {
+                            transform: translateY(-5px) scale(1.02);
+                            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                        }
+
+                        .word-card:hover,
+                        .letter-card:hover {
+                            transform: translateY(-5px);
+                            box-shadow: var(--shadow);
+                        }
+
+                        /* Default Image Styles */
+                        .default-image {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                        }
+
+                        .default-display {
+                            font-size: 4rem;
+                            font-weight: bold;
+                            color: #3b82f6;
+                            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        }
+
+                        .letter-display {
+                            font-size: 5rem;
+                            color: #10b981;
+                            font-family: 'Arial', sans-serif;
+                        }
+
+                        /* Enhanced Title Styles */
+                        .content-title {
+                            margin: 0.5rem 0 1rem 0;
+                            font-size: 1.4rem;
+                            font-weight: 800;
+                            color: var(--text-dark);
+                            letter-spacing: -0.025em;
+                        }
+
+                        .letter-card .content-title {
+                            font-size: 2rem;
+                            color: #10b981;
+                        }
+
+                        /* Responsive Design */
+                        @media (max-width: 768px) {
+                            .content-type-toggle {
+                                flex-direction: column;
+                                align-items: center;
+                            }
+
+                            .toggle-btn {
+                                width: 200px;
+                            }
+
+                            .content-display-toggle {
+                                flex-direction: column;
+                                align-items: center;
+                                gap: 0.5rem;
+                            }
+
+                            .display-btn {
+                                width: 150px;
+                                justify-content: center;
+                            }
+
+                            .form-row {
+                                flex-direction: column;
+                            }
+
+                            .content-grid {
+                                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                                gap: 1rem;
+                            }
+
+                            .letters-grid {
+                                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                            }
+                        }
+                    </style>
+
+                    <% } %>
+                        <%- include('../partials/layout-end') %>
