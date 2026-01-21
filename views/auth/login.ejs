@@ -4,80 +4,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= __('loginTitle') %> | <%= __('appName') %>
-    </title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <title><%= __('loginTitle') %> | <%= __('appName') %></title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <script>
         (function () {
             try {
                 var savedTheme = localStorage.getItem('theme');
                 if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
-            } catch (e) { }
+            } catch (e) {}
         })();
     </script>
+
     <link rel="stylesheet" href="/css/style.css?v=13">
+
+    <!-- ✅ تعديل الأيقونة -->
+    <style>
+        .mobile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .mobile-header .mobile-icon {
+            font-size: 64px; /* حجم الأيقونة */
+            color: var(--primary-color, #4f46e5);
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 
 <body class="auth-page <%= isRTL ? 'rtl' : 'ltr' %>">
-    <!-- Split Layout Container -->
+
     <div class="auth-split-layout">
 
-        <!-- Left Side: Visual/Branding -->
+        <!-- Left Side -->
         <div class="auth-visual-side">
             <div class="visual-content">
                 <div class="visual-logo">
-                    <img src="\images\bmo_care_logo.png" alt="BMO_CARE Logo" style="max-width: 850px; max-height: 250px; display: block; margin: 0 auto;" />
+                    <img src="/images/bmo_care_logo.png" alt="BMO_CARE Logo"
+                        style="max-width: 850px; max-height: 250px; display: block; margin: 0 auto;" />
                 </div>
 
-                <!-- Animated Feature Carousel -->
                 <div class="feature-carousel">
                     <div class="carousel-track">
-                        <!-- Slide 1 -->
+
                         <div class="carousel-slide">
                             <i class="fas fa-chart-line"></i>
-                            <h3>
-                                <%= __('loginFeatureTrackTitle') %>
-                            </h3>
-                            <p>
-                                <%= __('loginFeatureTrackDesc') %>
-                            </p>
+                            <h3><%= __('loginFeatureTrackTitle') %></h3>
+                            <p><%= __('loginFeatureTrackDesc') %></p>
                         </div>
-                        <!-- Slide 2 -->
+
                         <div class="carousel-slide">
                             <i class="fas fa-users"></i>
-                            <h3>
-                                <%= __('loginFeatureCasesTitle') %>
-                            </h3>
-                            <p>
-                                <%= __('loginFeatureCasesDesc') %>
-                            </p>
+                            <h3><%= __('loginFeatureCasesTitle') %></h3>
+                            <p><%= __('loginFeatureCasesDesc') %></p>
                         </div>
-                        <!-- Slide 3 -->
+
                         <div class="carousel-slide">
                             <i class="fas fa-gamepad"></i>
-                            <h3>
-                                <%= __('loginFeatureSessionsTitle') %>
-                            </h3>
-                            <p>
-                                <%= __('loginFeatureSessionsDesc') %>
-                            </p>
+                            <h3><%= __('loginFeatureSessionsTitle') %></h3>
+                            <p><%= __('loginFeatureSessionsDesc') %></p>
                         </div>
-                        <!-- Slide 4 -->
+
                         <div class="carousel-slide">
                             <i class="fas fa-bell"></i>
-                            <h3>
-                                <%= __('loginFeatureNotificationsTitle') %>
-                            </h3>
-                            <p>
-                                <%= __('loginFeatureNotificationsDesc') %>
-                            </p>
+                            <h3><%= __('loginFeatureNotificationsTitle') %></h3>
+                            <p><%= __('loginFeatureNotificationsDesc') %></p>
                         </div>
+
                     </div>
-                    <!-- Carousel Dots -->
+
                     <div class="carousel-dots">
                         <span class="dot active"></span>
                         <span class="dot"></span>
@@ -86,98 +86,83 @@
                     </div>
                 </div>
             </div>
+
             <div class="visual-overlay"></div>
-            <!-- Animated shapes -->
             <div class="bg-shape shape-1"></div>
             <div class="bg-shape shape-2"></div>
             <div class="bg-shape shape-3"></div>
         </div>
 
-        <!-- Right Side: Login Form -->
+        <!-- Right Side -->
         <div class="auth-form-side">
             <div class="form-content">
+
+                <!-- ✅ الأيقونة المعدلة -->
                 <div class="mobile-header">
-                    <i class="fas fa-robot"></i>
-                    <h2>
-                        <%= __('appName') %>
-                    </h2>
+                    <i class="fas fa-robot mobile-icon"></i>
+                    <h2><%= __('appName') %></h2>
                 </div>
 
                 <div class="form-header">
-                    <h2>
-                        <%= __('loginTitle') %>
-                    </h2>
-                    <p>
-                        <%= __('loginSubtitle') %>
-                    </p>
+                    <h2><%= __('loginTitle') %></h2>
+                    <p><%= __('loginSubtitle') %></p>
                 </div>
 
-                <% if (typeof error !=='undefined' && error.length> 0) { %>
-                    <div class="alert alert-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <%= error %>
+                <% if (typeof error !== 'undefined' && error.length > 0) { %>
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+                <% } %>
+
+                <% if (typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <%= success_msg %>
+                </div>
+                <% } %>
+
+                <% if (typeof error_msg !== 'undefined' && error_msg.length > 0) { %>
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i> <%= error_msg %>
+                </div>
+                <% } %>
+
+                <form action="/auth/login" method="POST" class="auth-form">
+
+                    <div class="form-group">
+                        <label for="email"><%= __('email') %></label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" required placeholder="example@email.com">
+                        </div>
                     </div>
-                    <% } %>
 
-                        <% if (typeof success_msg !=='undefined' && success_msg.length> 0) { %>
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle"></i>
-                                <%= success_msg %>
-                            </div>
-                            <% } %>
+                    <div class="form-group">
+                        <label for="password"><%= __('password') %></label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" required placeholder="••••••••">
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
 
-                                <% if (typeof error_msg !=='undefined' && error_msg.length> 0) { %>
-                                    <div class="alert alert-error">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        <%= error_msg %>
-                                    </div>
-                                    <% } %>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <%= __('login') %> <i class="fas fa-arrow-left"></i>
+                    </button>
+                </form>
 
-                                        <form action="/auth/login" method="POST" class="auth-form">
-                                            <div class="form-group">
-                                                <label for="email">
-                                                    <%= __('email') %>
-                                                </label>
-                                                <div class="input-with-icon">
-                                                    <i class="fas fa-envelope"></i>
-                                                    <input type="email" id="email" name="email" required
-                                                        placeholder="example@email.com" autocomplete="email">
-                                                </div>
-                                            </div>
+                <div class="auth-footer">
+                    <button class="theme-toggle-simple" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="divider"></div>
+                    <div class="lang-links">
+                        <a href="/lang/ar" class="<%= currentLang === 'ar' ? 'active' : '' %>">العربية</a>
+                        <a href="/lang/en" class="<%= currentLang === 'en' ? 'active' : '' %>">English</a>
+                    </div>
+                </div>
 
-                                            <div class="form-group">
-                                                <label for="password">
-                                                    <%= __('password') %>
-                                                </label>
-                                                <div class="input-with-icon">
-                                                    <i class="fas fa-lock"></i>
-                                                    <input type="password" id="password" name="password" required
-                                                        placeholder="••••••••" autocomplete="current-password">
-                                                    <button type="button" class="password-toggle"
-                                                        onclick="togglePassword()">
-                                                        <i class="fas fa-eye" id="passwordIcon"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <button type="submit" class="btn btn-primary btn-block">
-                                                <%= __('login') %> <i class="fas fa-arrow-left"></i>
-                                            </button>
-                                        </form>
-
-                                        <div class="auth-footer">
-                                            <button class="theme-toggle-simple" id="themeToggle"
-                                                title="<%= __('toggleTheme') %>">
-                                                <i class="fas fa-moon"></i>
-                                            </button>
-                                            <div class="divider"></div>
-                                            <div class="lang-links">
-                                                <a href="/lang/ar"
-                                                    class="<%= currentLang === 'ar' ? 'active' : '' %>">العربية</a>
-                                                <a href="/lang/en"
-                                                    class="<%= currentLang === 'en' ? 'active' : '' %>">English</a>
-                                            </div>
-                                        </div>
             </div>
         </div>
     </div>
@@ -189,15 +174,13 @@
             const icon = document.getElementById('passwordIcon');
             if (password.type === 'password') {
                 password.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
                 password.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
     </script>
-</body>
 
+</body>
 </html>
