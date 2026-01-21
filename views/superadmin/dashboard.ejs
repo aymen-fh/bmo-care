@@ -1,206 +1,192 @@
 <%- include('../partials/layout-start', { title: __('dashboard'), activePage: 'dashboard' }) %>
 
-    <div class="dashboard modern-admin-dashboard">
-        <div class="stats-grid enhanced-cards">
-            <div class="stat-card stat-primary">
-                <div class="stat-icon">
-                    <i class="fas fa-building"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>
-                        <%= (typeof stats !=='undefined' && stats.centers) ? stats.centers : 0 %>
-                    </h3>
-                    <p>
-                        <%= __('totalCenters') %>
-                    </p>
-                </div>
-            </div>
+<div class="dashboard modern-admin-dashboard">
 
-            <div class="stat-card stat-success">
-                <div class="stat-icon">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>
-                        <%= (typeof stats !=='undefined' && stats.admins) ? stats.admins : 0 %>
-                    </h3>
-                    <p>
-                        <%= __('totalAdmins') %>
-                    </p>
-                </div>
+    <!-- ===== Statistics ===== -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-building"></i>
             </div>
-
-            <div class="stat-card stat-info">
-                <div class="stat-icon">
-                    <i class="fas fa-user-md"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>
-                        <%= (typeof stats !=='undefined' && stats.specialists) ? stats.specialists : 0 %>
-                    </h3>
-                    <p>
-                        <%= __('totalSpecialists') %>
-                    </p>
-                </div>
-            </div>
-
-            <div class="stat-card stat-warning">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>
-                        <%= (typeof stats !=='undefined' && stats.parents) ? stats.parents : 0 %>
-                    </h3>
-                    <p>
-                        <%= __('totalParents') %>
-                    </p>
-                </div>
+            <div class="stat-content">
+                <h3><%= (typeof stats !== 'undefined' && stats.centers) ? stats.centers : 0 %></h3>
+                <p><%= __('totalCenters') %></p>
             </div>
         </div>
 
-
-        <div class="quick-actions">
-            <h2><i class="fas fa-bolt"></i> <%= __('quickActions') %></h2>
-            <div class="actions-grid">
-                <a href="/superadmin/centers" class="action-card">
-                    <i class="fas fa-building"></i>
-                    <span>إدارة المراكز</span>
-                    <div style="margin-top:8px;">
-                        <a href="/superadmin/centers/create" class="btn btn-sm btn-primary" style="margin:2px;">إضافة مركز</a>
-                    </div>
-                </a>
-                <a href="/superadmin/admins" class="action-card">
-                    <i class="fas fa-user-tie"></i>
-                    <span>إدارة المدراء</span>
-                    <div style="margin-top:8px;">
-                        <a href="/superadmin/admins/create" class="btn btn-sm btn-primary" style="margin:2px;">إضافة مدير</a>
-                    </div>
-                </a>
-                <a href="/superadmin/centers/create" class="action-card">
-                    <i class="fas fa-plus-circle"></i>
-                    <span><%= __('createCenter') %></span>
-                </a>
-                <a href="/superadmin/admins/create" class="action-card">
-                    <i class="fas fa-user-plus"></i>
-                    <span><%= __('createAdmin') %></span>
-                </a>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="stat-content">
+                <h3><%= (typeof stats !== 'undefined' && stats.admins) ? stats.admins : 0 %></h3>
+                <p><%= __('totalAdmins') %></p>
             </div>
         </div>
 
-        <div class="data-section">
-            <div class="section-header">
-                <h2><i class="fas fa-history"></i>
-                    <%= __('recentCenters') %>
-                </h2>
-                <a href="/superadmin/centers" class="btn btn-link">
-                    <%= __('viewAll') %>
-                </a>
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-user-md"></i>
             </div>
+            <div class="stat-content">
+                <h3><%= (typeof stats !== 'undefined' && stats.specialists) ? stats.specialists : 0 %></h3>
+                <p><%= __('totalSpecialists') %></p>
+            </div>
+        </div>
 
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>
-                                <%= __('centerName') %>
-                            </th>
-                            <th>
-                                <%= __('admin') %>
-                            </th>
-                            <th>
-                                <%= __('centerPhone') %>
-                            </th>
-                            <th>
-                                <%= __('status') %>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (typeof recentCenters !=='undefined' && recentCenters && recentCenters.length> 0) { %>
-                            <% recentCenters.forEach(function (center) { %>
-                                <tr>
-                                    <td>
-                                        <div class="cell-with-icon">
-                                            <div class="avatar-circle">
-                                                <i class="fas fa-building"></i>
-                                            </div>
-                                            <span>
-                                                <%= center.name %>
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <%= center.admin ? center.admin.name : __('notAssigned') %>
-                                    </td>
-                                    <td>
-                                        <%= center.phone || '-' %>
-                                    </td>
-                                    <td>
-                                        <span class="badge <%= center.isActive ? 'badge-success' : 'badge-danger' %>">
-                                            <%= center.isActive ? __('active') : __('inactive') %>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <% }); %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="4" class="text-center text-muted">
-                                                <%= __('noData') %>
-                                            </td>
-                                        </tr>
-                                        <% } %>
-                    </tbody>
-                </table>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3><%= (typeof stats !== 'undefined' && stats.parents) ? stats.parents : 0 %></h3>
+                <p><%= __('totalParents') %></p>
             </div>
         </div>
     </div>
 
-    <style>
-        .modern-admin-dashboard {
-            font-family: 'Cairo', 'Inter', sans-serif;
-            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
-            min-height: 100vh;
-        }
-        .enhanced-cards .stat-card {
-            box-shadow: 0 4px 24px rgba(37,99,235,0.08);
-            border-radius: 18px;
-            border: 1px solid #e0e7ff;
-            transition: transform 0.2s;
-        }
-        .enhanced-cards .stat-card:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 8px 32px rgba(37,99,235,0.15);
-        }
-        .quick-actions {
-            margin-top: 32px;
-        }
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 18px;
-        }
-        .action-card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.07);
-            padding: 22px 12px;
-            text-align: center;
-            color: #2563eb;
-            font-weight: 600;
-            font-size: 1.1em;
-            text-decoration: none;
-            transition: box-shadow 0.2s, color 0.2s;
-            border: 1px solid #e0e7ff;
-        }
-        .action-card i {
-            font-size: 2.2em;
-            margin-bottom: 8px;
-            display: block;
-        }
-        .action-card:hover {
-            color: #1d4ed8;
-            box-shadow: 0 6px 18px rgba(37,99,235,0.13);
-        }
-    </style>
-    <%- include('../partials/layout-end') %>
+    <!-- ===== Quick Actions ===== -->
+    <div class="quick-actions">
+        <h2><i class="fas fa-bolt"></i> <%= __('quickActions') %></h2>
+
+        <div class="actions-grid">
+            <a href="/superadmin/centers/create" class="action-card">
+                <i class="fas fa-plus-circle"></i>
+                <span><%= __('createCenter') %></span>
+            </a>
+
+            <a href="/superadmin/admins/create" class="action-card">
+                <i class="fas fa-user-plus"></i>
+                <span><%= __('createAdmin') %></span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== Recent Centers ===== -->
+    <div class="data-section">
+        <div class="section-header">
+            <h2><i class="fas fa-history"></i> <%= __('recentCenters') %></h2>
+            <a href="/superadmin/centers" class="btn btn-link"><%= __('viewAll') %></a>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><%= __('centerName') %></th>
+                        <th><%= __('admin') %></th>
+                        <th><%= __('centerPhone') %></th>
+                        <th><%= __('status') %></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% if (typeof recentCenters !== 'undefined' && recentCenters.length > 0) { %>
+                        <% recentCenters.forEach(function(center){ %>
+                            <tr>
+                                <td>
+                                    <div class="cell-with-icon">
+                                        <div class="avatar-circle">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <span><%= center.name %></span>
+                                    </div>
+                                </td>
+
+                                <td><%= center.admin ? center.admin.name : __('notAssigned') %></td>
+                                <td><%= center.phone || '-' %></td>
+                                <td>
+                                    <span class="badge <%= center.isActive ? 'badge-success' : 'badge-danger' %>">
+                                        <%= center.isActive ? __('active') : __('inactive') %>
+                                    </span>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted"><%= __('noData') %></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== Styles ===== -->
+<style>
+:root {
+    --primary:#4f7cff;
+    --success:#6da8ff;
+    --info:#7bb5ff;
+    --warning:#5f8cff;
+    --text-dark:#0f172a;
+    --text-muted:#334155;
+    --bg:#f5f7fb;
+    --border:#e5e7eb;
+    --radius-lg:22px;
+    --transition:all .2s ease;
+}
+
+body {
+    background: var(--bg);
+}
+
+.modern-admin-dashboard {
+    font-family: 'Cairo','Inter',sans-serif;
+    padding: 26px;
+}
+
+.stats-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:22px;
+}
+
+.stat-card {
+    border-radius:var(--radius-lg);
+    padding:22px 26px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 10px 25px rgba(0,0,0,.06);
+    transition:var(--transition);
+}
+
+.stat-card:hover {
+    transform:translateY(-4px);
+}
+
+.stat-primary { background:#a9c4ff; }
+.stat-success { background:#bcd4ff; }
+.stat-info    { background:#cfe2ff; }
+.stat-warning { background:#d6e6ff; }
+
+.stat-content h3 {
+    margin:0;
+    font-size:2.1em;
+    font-weight:800;
+    color:var(--text-dark);
+}
+
+.stat-content p {
+    margin-top:6px;
+    font-size:.95em;
+    color:var(--text-muted);
+}
+
+.stat-icon {
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    background:rgba(255,255,255,.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.6em;
+    color:#0f172a;
+}
+</style>
+
+<%- include('../partials/layout-end') %>
