@@ -30,6 +30,10 @@ router.get('/', async (req, res) => {
     try {
         const { childId, difficulty, contentType, sessionId } = req.query;
 
+        // DEBUG: Log user details
+        // console.log('DEBUG WORDS: User Role:', req.user?.role);
+        // console.log('DEBUG WORDS: Token exists:', !!req.user?.token);
+
         // Fetch children list first (needed for both views)
         const childrenResponse = await apiClient.authGet(req, '/specialists/my-children');
         const children = childrenResponse.data.success ? childrenResponse.data.children : [];
