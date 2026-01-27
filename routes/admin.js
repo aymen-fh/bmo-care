@@ -404,5 +404,63 @@ router.get('/children', async (req, res) => {
     }
 });
 
+// Activity Log
+// Activity Log
+router.get('/activity', async (req, res) => {
+    try {
+        const searchQuery = req.query.search ? req.query.search.toLowerCase() : '';
+
+        // 1. Fetch Specialists in Center
+        const specialistsRes = await apiClient.authGet(req, '/admin/specialists');
+        let specialists = specialistsRes.data.success ? specialistsRes.data.specialists : [];
+
+        // 2. Filter Specialists if search query exists
+        if (searchQuery) {
+            specialists = specialists.filter(s => 
+                s.name.toLowerCase().includes(searchQuery) || 
+                s.email.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        // 3. Fetch logs (Link Requests as proxy)
+        const requestsRes = await apiClient.authGet(req, '/admin/link-requests');
+        const requests = requestsRes.data.success ? requestsRes.data.requests : [];
+
+        // 4. Group logs by Specialist
+        // First, map specialists to include an 'activities' array
+        const specialistsWithLogs = specialists.map(specialist => {
+            // Find requests where this specialist is the 'from' user
+            // (Assuming admin is 'to', specialist asking for link is the activity)
+            // Note: LinkRequests populate 'from', so we check from._id
+            const specialistLogs = requests
+                .filter(r => r.from && r.from._id === specialist._id)
+                .map(r => ({
+                    action: `Link Request (${r.status})`,
+                    createdAt: r.createdAt,
+                    details: `Status: ${r.status}`,
+                    type: r.status === 'pending' ? 'update' : (r.status === 'approved' ? 'create' : 'delete')
+                }));
+
+            return {
+                ...specialist,
+                activities: specialistLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            };
+        });
+
+        res.render('admin/activity-log', {
+            title: res.locals.__('activityLog'),
+            specialists: specialistsWithLogs,
+            searchQuery: req.query.search || ''
+        });
+    } catch (error) {
+        console.error('Activity Log Error:', error.message);
+        res.render('admin/activity-log', {
+            title: res.locals.__('activityLog'),
+            specialists: [],
+            searchQuery: req.query.search || ''
+        });
+    }
+});
+
 module.exports = router;
 

@@ -13,8 +13,120 @@
                 </p>
             </div>
 
-            <div
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem;">
+            <style>
+                .page-container-clean {
+                    padding: 2rem;
+                    max-width: 1400px;
+                    margin: 0 auto;
+                }
+
+                .page-header-clean {
+                    margin-bottom: 3rem;
+                    text-align: right;
+                }
+
+                .page-header-clean h2 {
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                    color: #0f172a;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 0.75rem;
+                }
+
+                .children-grid-centered {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 3rem;
+                    padding: 1rem 0;
+                }
+
+                .child-card-centered {
+                    background: #ffffff;
+                    border-radius: 28px;
+                    border: 1px solid #f1f5f9;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    padding: 3rem 2rem 2.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    text-decoration: none;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .child-card-centered:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+                    border-color: #3b82f6;
+                }
+
+                .avatar-large-blue {
+                    width: 150px;
+                    height: 150px;
+                    background: transparent;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 1.5rem;
+                    border: 4px solid #3b82f6;
+                    color: #3b82f6;
+                    transition: transform 0.4s ease;
+                }
+
+                .child-card-centered:hover .avatar-large-blue {
+                    transform: scale(1.05);
+                    background: #eff6ff;
+                }
+
+                .child-name-clean {
+                    font-size: 1.6rem;
+                    font-weight: 800;
+                    color: #1e293b;
+                    margin: 0 0 1rem 0;
+                }
+
+                .detail-row-clean {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    color: #64748b;
+                    font-size: 1rem;
+                    margin-bottom: 0.5rem;
+                    font-weight: 500;
+                }
+
+                .icon-primary,
+                .icon-secondary {
+                    color: #3b82f6;
+                }
+
+                .action-hint {
+                    margin-top: 2rem;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    background: #3b82f6;
+                    color: white;
+                    padding: 0.8rem 2rem;
+                    border-radius: 50px;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                }
+
+                .child-card-centered:hover .action-hint {
+                    background: #2563eb;
+                }
+            </style>
+
+            <div class="children-grid-centered">
                 <% if (!children || children.length===0) { %>
                     <div class="empty-state-clean" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
                         <i class="fas fa-child" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
@@ -25,39 +137,26 @@
                     </div>
                     <% } else { %>
                         <% children.forEach(function(child) { %>
-                            <div class="child-card-centered"
-                                onclick="window.location.href='/specialist/words?childId=<%= child._id %>'"
-                                style="cursor: pointer; background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center; transition: all 0.3s ease; border: 1px solid #f1f5f9;">
-                                <div class="avatar-large-blue"
-                                    style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 2rem;">
-                                    <% if (child.profilePhoto) { %>
-                                        <img src="<%= child.profilePhoto %>" alt="<%= child.name %>"
-                                            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                                        <% } else { %>
-                                            <% if (child.gender==='female' ) { %>
-                                                <i class="fas fa-girl"></i>
-                                                <% } else { %>
-                                                    <i class="fas fa-child"></i>
-                                                    <% } %>
-                                                        <% } %>
+                            <a href="/specialist/words/child/<%= child._id %>/sessions" class="child-card-centered">
+                                <div class="avatar-large-blue">
+                                    <%- include('../partials/child-avatar', { child: child, sizePx: 142 }) %>
                                 </div>
-                                <h3 class="child-name-clean"
-                                    style="font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
-                                    <%= child.name %>
-                                </h3>
-                                <div class="detail-row-clean"
-                                    style="justify-content: center; color: #64748b; font-size: 0.9rem;">
+                                <h3 class="child-name-clean"><%= child.name %></h3>
+                                <div class="detail-row-clean">
+                                    <span><%= child.age ? child.age + ' سنوات' : 'العمر غير محدد' %></span>
+                                    <i class="fas fa-birthday-cake icon-secondary"></i>
+                                </div>
+                                <div class="detail-row-clean">
                                     <span>
-                                        <%= child.age ? child.age + ' سنوات' : 'العمر غير محدد' %>
+                                        <%= (child.parent && child.parent.name) ? child.parent.name : (child.parentName || 'غير محدد') %>
                                     </span>
+                                    <i class="fas fa-user icon-primary"></i>
                                 </div>
-                                <div style="margin-top: 1.5rem;">
-                                    <span
-                                        style="background: #e0f2fe; color: #0284c7; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
-                                        إدارة المحتوى <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
-                                    </span>
+                                <div class="action-hint">
+                                    <span class="btn-action-text">سجل الجلسات</span>
+                                    <i class="fas fa-arrow-left"></i>
                                 </div>
-                            </div>
+                            </a>
                             <% }); %>
                                 <% } %>
             </div>
@@ -158,8 +257,11 @@
 
                 <!-- جلسات الخطة -->
                 <div class="content-card">
-                    <div class="card-header-custom">
-                        <h3><i class="fa-solid fa-layer-group"></i> جلسات الخطة</h3>
+                    <div class="card-header-custom" style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                        <h3 style="margin:0;"><i class="fa-solid fa-layer-group"></i> جلسات الطفل</h3>
+                        <a href="#create-plan-session" class="btn btn-primary" style="white-space:nowrap;">
+                            <i class="fas fa-plus"></i> إنشاء جلسة جديدة
+                        </a>
                     </div>
                     <div style="padding: 1rem;">
                         <div style="margin-bottom: 0.75rem; color:#64748b; font-size:0.9rem;">
@@ -172,14 +274,14 @@
                                     <tr>
                                         <th>Session</th>
                                         <th>الاسم</th>
-                                        <th>نشطة</th>
+                                        <th>الحالة</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <% if (!sessions || sessions.length===0) { %>
                                         <tr>
                                             <td colspan="3" style="text-align:center; color:#64748b;">لا توجد
-                                                جلسات خطة بعد</td>
+                                                جلسات بعد لهذا الطفل</td>
                                         </tr>
                                         <% } else { %>
                                             <% sessions.forEach(p=> { %>
@@ -192,9 +294,9 @@
                                                     </td>
                                                     <td>
                                                         <% if (p.active) { %>
-                                                            <span style="color:#16a34a; font-weight:600;">نعم</span>
+                                                            <span style="color:#f97316; font-weight:600;">غير منجزة</span>
                                                             <% } else { %>
-                                                                <span style="color:#64748b;">لا</span>
+                                                                <span style="color:#16a34a; font-weight:600;">منجزة</span>
                                                                 <% } %>
                                                     </td>
                                                 </tr>
@@ -205,7 +307,7 @@
                         </div>
                         <hr style="margin: 1rem 0; opacity: 0.2;" />
                         <!-- إنشاء جلسة جديدة مع تحديد مدى ووقت اللعب -->
-                        <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
+                        <form id="create-plan-session" method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
                             <div class="form-group">
                                 <label>اسم الجلسة (اختياري)</label>
                                 <input class="form-control" type="text" name="sessionName" placeholder="Session 1">
@@ -214,6 +316,32 @@
                                 <label>مدة الجلسة (دقيقة)</label>
                                 <input class="form-control" type="number" name="targetDuration" min="1"
                                     placeholder="15">
+                            </div>
+                            <div class="form-row"
+                                style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                                <div class="form-group">
+                                    <label>مدة اللعب (دقيقة)</label>
+                                    <input class="form-control" type="number" name="playDuration" min="1"
+                                        placeholder="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>مدة الراحة (دقيقة)</label>
+                                    <input class="form-control" type="number" name="breakDuration" min="0"
+                                        placeholder="5">
+                                </div>
+                            </div>
+                            <div class="form-row"
+                                style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                                <div class="form-group">
+                                    <label>مدة الجلسة الواحدة (دقيقة)</label>
+                                    <input class="form-control" type="number" name="sessionDuration" min="1"
+                                        placeholder="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>مدة الجلسة كاملة (دقيقة)</label>
+                                    <input class="form-control" type="number" name="totalDuration" min="1"
+                                        placeholder="30">
+                                </div>
                             </div>
                             <div class="form-group" style="margin-top:0.5rem;">
                                 <label>تفعيل جدول اللعب للجلسة</label>
@@ -262,8 +390,7 @@
                                 </div>
                             </div>
                             <button class="btn btn-primary" type="submit"
-                                style="margin-top: 0.75rem; width: 100%;">إنشاء Session جديدة
-                                (وتفعيلها)</button>
+                                style="margin-top: 0.75rem; width: 100%;">إنشاء جلسة جديدة (وتفعيلها)</button>
                         </form>
                     </div>
                 </div>
@@ -726,6 +853,118 @@
             </script>
 
             <style>
+                /* Children selection cards (match /specialist/children) */
+                .page-container-clean {
+                    padding: 2rem;
+                    max-width: 1400px;
+                    margin: 0 auto;
+                }
+
+                .page-header-clean {
+                    margin-bottom: 3rem;
+                    text-align: right;
+                }
+
+                .page-header-clean h2 {
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                    color: #0f172a;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 0.75rem;
+                }
+
+                .children-grid-centered {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 3rem;
+                    padding: 1rem 0;
+                }
+
+                .child-card-centered {
+                    background: #ffffff;
+                    border-radius: 28px;
+                    border: 1px solid #f1f5f9;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    padding: 3rem 2rem 2.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    text-decoration: none;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .child-card-centered:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+                    border-color: #3b82f6;
+                }
+
+                .avatar-large-blue {
+                    width: 150px;
+                    height: 150px;
+                    background: transparent;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 1.5rem;
+                    border: 4px solid #3b82f6;
+                    color: #3b82f6;
+                    transition: transform 0.4s ease;
+                }
+
+                .child-card-centered:hover .avatar-large-blue {
+                    transform: scale(1.05);
+                    background: #eff6ff;
+                }
+
+                .child-name-clean {
+                    font-size: 1.6rem;
+                    font-weight: 800;
+                    color: #1e293b;
+                    margin: 0 0 1rem 0;
+                }
+
+                .detail-row-clean {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    color: #64748b;
+                    font-size: 1rem;
+                    margin-bottom: 0.5rem;
+                    font-weight: 500;
+                }
+
+                .icon-primary,
+                .icon-secondary {
+                    color: #3b82f6;
+                }
+
+                .action-hint {
+                    margin-top: 2rem;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    background: #3b82f6;
+                    color: white;
+                    padding: 0.8rem 2rem;
+                    border-radius: 50px;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                }
+
+                .child-card-centered:hover .action-hint {
+                    background: #2563eb;
+                }
+
                 /* Copied & Adapted CSS */
                 :root {
                     --primary-color: #4f46e5;

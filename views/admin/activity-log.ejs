@@ -1,107 +1,309 @@
 <%- include('../partials/layout-start', { title: title, activePage: 'activity' }) %>
 
-    <div class="page-header">
-        <h2><i class="fas fa-history"></i>
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h2 style="font-weight: 700; color: var(--primary-color);">
+            <i class="fas fa-history" style="margin-left: 10px; color: var(--secondary-color);"></i>
             <%= title %>
         </h2>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+            متابعة نشاطات الأخصائيين في المركز
+        </p>
     </div>
 
-    <div class="data-section">
-        <div class="table-container">
-            <div class="timeline">
-                <% if (logs && logs.length > 0) { %>
-                    <% logs.forEach(function(log) { 
-                        // Determine type for styling
-                        let type = 'info';
-                        let icon = 'fa-info';
-                        const action = log.action.toLowerCase();
-                        
-                        if (action.includes('login') || action.includes('sign in')) { type = 'login'; icon = 'fa-sign-in-alt'; }
-                        else if (action.includes('logout') || action.includes('sign out')) { type = 'logout'; icon = 'fa-sign-out-alt'; }
-                        else if (action.includes('create') || action.includes('add')) { type = 'create'; icon = 'fa-plus'; }
-                        else if (action.includes('delete') || action.includes('remove')) { type = 'delete'; icon = 'fa-trash'; }
-                        else if (action.includes('update') || action.includes('edit')) { type = 'update'; icon = 'fa-pen'; }
-                    %>
-                    <div class="timeline-item">
-                        <div class="timeline-marker <%= type %>">
-                            <i class="fas <%= icon %>"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <div class="timeline-header">
-                                <div class="timeline-user">
-                                    <div class="timeline-user-avatar">
-                                        <%= log.user ? log.user.name.charAt(0).toUpperCase() : '?' %>
+    <!-- Search Bar -->
+    <div class="search-section" style="margin-bottom: 2rem;">
+        <form action="/admin/activity" method="GET" style="max-width: 600px; position: relative;">
+            <i class="fas fa-search"
+                style="position: absolute; top: 50%; right: 15px; transform: translateY(-50%); color: var(--gray-400);"></i>
+            <input type="text" name="search" value="<%= searchQuery %>" placeholder="ابحث باسم الأخصائي..."
+                style="width: 100%; padding: 12px 45px 12px 15px; border-radius: 12px; border: 1px solid var(--gray-300); background: white; box-shadow: var(--shadow-sm); outline: none; transition: all 0.3s;">
+        </form>
+    </div>
+
+    <div class="data-section" style="background: transparent; box-shadow: none; padding: 0;">
+        <div class="specialists-activity-container">
+            <% if (specialists && specialists.length> 0) { %>
+                <div class="specialist-grid">
+                    <% specialists.forEach(function(specialist, index) { %>
+                        <div class="specialist-activity-card" style="animation-delay: <%= index * 0.1 %>s">
+                            <!-- Specialist Header -->
+                            <div class="card-header-user">
+                                <div class="user-main-info">
+                                    <div class="avatar-large">
+                                        <% if (specialist.profilePhoto) { %>
+                                            <img src="<%= specialist.profilePhoto %>" alt="<%= specialist.name %>">
+                                            <% } else { %>
+                                                <%= specialist.name.charAt(0).toUpperCase() %>
+                                                    <% } %>
                                     </div>
-                                    <div>
-                                        <div style="font-weight: 700; color: var(--gray-800);">
-                                            <%= log.user ? log.user.name : __('unknown') %>
-                                        </div>
-                                        <div style="font-size: 0.8rem; color: var(--gray-500);">
-                                            <%= log.user ? __(log.user.role) : '-' %>
-                                        </div>
+                                    <div class="info-text">
+                                        <h3>
+                                            <%= specialist.name %>
+                                        </h3>
+                                        <span class="badge-specialization">
+                                            <%= specialist.specialization || 'عام' %>
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="timeline-meta">
-                                    <span dir="ltr" style="font-weight: 500;">
-                                        <%= new Date(log.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                <div class="activity-counter">
+                                    <span class="count">
+                                        <%= specialist.activities.length %>
                                     </span>
-                                    <span style="font-size: 0.75rem;">
-                                        <%= new Date(log.createdAt).toLocaleDateString() %>
-                                    </span>
+                                    <span class="label">نشاط</span>
                                 </div>
                             </div>
-                            <div class="timeline-body">
-                                <span class="badge badge-<%= type === 'login' ? 'success' : (type === 'delete' ? 'danger' : 'secondary') %>" style="margin-bottom: 0.5rem; display: inline-block;">
-                                    <%= log.action %>
-                                </span>
-                                <div style="color: var(--gray-600);">
-                                    <%= log.details %>
-                                </div>
-                                <% if (log.ipAddress) { %>
-                                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--gray-400);">
-                                        <i class="fas fa-globe"></i> IP: <%= log.ipAddress %>
+
+                            <!-- Activities Timeline -->
+                            <div class="card-body-activities">
+                                <% if (specialist.activities && specialist.activities.length> 0) { %>
+                                    <div class="mini-timeline">
+                                        <% specialist.activities.forEach(function(activity) { let
+                                            typeColor='var(--primary-color)' ; if (activity.type==='create' )
+                                            typeColor='#4cc9f0' ; if (activity.type==='delete' ) typeColor='#ef233c' ;
+                                            if (activity.type==='update' ) typeColor='#fca311' ; %>
+                                            <div class="mini-timeline-item">
+                                                <div class="dot" style="background: <%= typeColor %>;"></div>
+                                                <div class="content">
+                                                    <div class="top-row">
+                                                        <span class="act-title">
+                                                            <%= activity.action %>
+                                                        </span>
+                                                        <span class="act-time">
+                                                            <%= new Date(activity.createdAt).toLocaleDateString() %>
+                                                        </span>
+                                                    </div>
+                                                    <div class="act-details">
+                                                        <%= activity.details %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% }); %>
                                     </div>
-                                <% } %>
+                                    <% } else { %>
+                                        <div class="no-activity-state">
+                                            <i class="far fa-clock"></i>
+                                            <p>لا توجد نشاطات حديثة</p>
+                                        </div>
+                                        <% } %>
                             </div>
                         </div>
-                    </div>
-                    <% }); %>
+                        <% }); %>
+                </div>
                 <% } else { %>
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <p><%= __('noData') %></p>
+                    <div class="empty-state-card">
+                        <div class="empty-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>لا توجد نتائج</h3>
+                        <p>لم يتم العثور على أخصائيين مطابقين للبحث</p>
                     </div>
-                <% } %>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <% if (pages> 1) { %>
-            <div class="pagination">
-                <% if (currentPage> 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>" class="btn btn-outline btn-sm">&laquo; <%= __('prev') %></a>
                     <% } %>
-
-                        <span class="current-page">
-                            <%= __('pageOf').replace('{current}', currentPage).replace('{total}', pages) %>
-                        </span>
-
-                        <% if (currentPage < pages) { %>
-                            <a href="?page=<%= currentPage + 1 %>" class="btn btn-outline btn-sm">
-                                <%= __('next') %> &raquo;
-                            </a>
-                            <% } %>
-            </div>
-            <% } %>
+        </div>
     </div>
 
     <style>
-        .pagination {
+        .specialist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 25px;
+        }
+
+        .specialist-activity-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .specialist-activity-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header-user {
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
+            position: relative;
+        }
+
+        .user-main-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.25);
+            overflow: hidden;
+            border: 3px solid white;
+        }
+
+        .avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .info-text h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .badge-specialization {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            background: rgba(67, 97, 238, 0.08);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .activity-counter {
+            text-align: center;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .activity-counter .count {
+            display: block;
+            font-weight: 800;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .activity-counter .label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        .card-body-activities {
+            padding: 1.5rem;
+            flex-grow: 1;
+            background: #fff;
+        }
+
+        .mini-timeline {
+            position: relative;
+            padding-right: 15px;
+            border-right: 2px solid #f0f0f0;
+        }
+
+        .mini-timeline-item {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .mini-timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .mini-timeline-item .dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            right: -21px;
+            /* Center on line */
+            top: 5px;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .mini-timeline-item .content {
+            background: #fdfdfd;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .mini-timeline-item:hover .content {
+            background: #f8f9fa;
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+
+        .act-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .act-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .act-details {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .no-activity-state {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--gray-400);
+        }
+
+        .no-activity-state i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        .no-activity-state p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Search Input Focus */
+        input[name="search"]:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15) !important;
         }
     </style>
 

@@ -25,6 +25,77 @@ const upload = multer({
 // Apply middleware
 router.use(ensureSpecialist);
 
+// Child Sessions List
+router.get('/child/:childId/sessions', async (req, res) => {
+    try {
+        const { childId } = req.params;
+
+        const childrenResponse = await apiClient.authGet(req, '/specialists/my-children');
+        const children = childrenResponse.data.success ? childrenResponse.data.children : [];
+        const selectedChild = children.find(c => c._id === childId || c.id === childId);
+
+        if (!selectedChild) {
+            req.flash('error_msg', 'Child not found or not assigned to you');
+            return res.redirect('/specialist/words');
+        }
+
+        let sessions = [];
+        try {
+            const plansRes = await apiClient.authGet(req, `/exercises/child/${childId}?includeInactive=1`);
+            sessions = (plansRes.data.success && Array.isArray(plansRes.data.exercises))
+                ? plansRes.data.exercises
+                    .filter(plan => (plan?.kind || 'plan') === 'plan')
+                    .map(plan => ({
+                        _id: plan._id,
+                        sessionName: plan.sessionName || `Session ${plan.sessionIndex || ''}`,
+                        sessionIndex: plan.sessionIndex,
+                        targetDuration: plan.targetDuration,
+                        active: plan.active !== false,
+                        createdAt: plan.createdAt
+                    }))
+                : [];
+        } catch (planError) {
+            console.warn('Plans fetch failed in child sessions view:', planError?.response?.status || planError?.message);
+        }
+
+        return res.render('specialist/child-sessions', {
+            title: `جلسات الطفل - ${selectedChild.name}`,
+            activePage: 'words',
+            child: selectedChild,
+            sessions
+        });
+    } catch (error) {
+        console.error('Child Sessions View Error:', error.message);
+        req.flash('error_msg', 'Error loading sessions');
+        res.redirect('/specialist/words');
+    }
+});
+
+// New Session Form
+router.get('/child/:childId/sessions/new', async (req, res) => {
+    try {
+        const { childId } = req.params;
+        const childrenResponse = await apiClient.authGet(req, '/specialists/my-children');
+        const children = childrenResponse.data.success ? childrenResponse.data.children : [];
+        const selectedChild = children.find(c => c._id === childId || c.id === childId);
+
+        if (!selectedChild) {
+            req.flash('error_msg', 'Child not found or not assigned to you');
+            return res.redirect('/specialist/words');
+        }
+
+        return res.render('specialist/child-session-new', {
+            title: `إنشاء جلسة جديدة - ${selectedChild.name}`,
+            activePage: 'words',
+            child: selectedChild
+        });
+    } catch (error) {
+        console.error('New Session View Error:', error.message);
+        req.flash('error_msg', 'Error loading page');
+        res.redirect('/specialist/words');
+    }
+});
+
 // List Words/Letters (or Select Child)
 router.get('/', async (req, res) => {
     try {
@@ -49,13 +120,22 @@ router.get('/', async (req, res) => {
             }
 
             // جلب قائمة الجلسات (خطط الطفل)
-            const plansRes = await apiClient.authGet(req, `/exercises/child/${childId}`);
-            const sessions = (plansRes.data.success && Array.isArray(plansRes.data.exercises))
-                ? plansRes.data.exercises.map(plan => ({
-                    _id: plan._id,
-                    sessionName: plan.sessionName || `Session ${plan.sessionIndex || ''}`,
-                    sessionIndex: plan.sessionIndex
-                })) : [];
+            let sessions = [];
+            try {
+                const plansRes = await apiClient.authGet(req, `/exercises/child/${childId}?includeInactive=1`);
+                sessions = (plansRes.data.success && Array.isArray(plansRes.data.exercises))
+                    ? plansRes.data.exercises
+                        .filter(plan => (plan?.kind || 'plan') === 'plan')
+                        .map(plan => ({
+                            _id: plan._id,
+                            sessionName: plan.sessionName || `Session ${plan.sessionIndex || ''}`,
+                            sessionIndex: plan.sessionIndex,
+                            active: plan.active !== false
+                        }))
+                    : [];
+            } catch (planError) {
+                console.warn('Plans fetch failed in words view:', planError?.response?.status || planError?.message);
+            }
 
             // Fetch words/letters for this child, مع sessionId إذا وُجد
             const response = await apiClient.authGet(req, `/words/child/${childId}`, {

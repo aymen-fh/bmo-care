@@ -1,0 +1,484 @@
+<%- include('../partials/layout-start', { title: `إنشاء جلسة جديدة - ${child.name}`, activePage: 'words' }) %>
+
+<div class="page-container-clean">
+    <div class="page-header-clean" style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+        <div>
+            <h2 style="margin:0;">
+                إنشاء جلسة جديدة للطفل: <strong><%= child.name %></strong>
+                <i class="fas fa-plus-circle" style="color:#3b82f6;"></i>
+            </h2>
+            <p class="text-muted" style="margin:0.5rem 0 0;">حدد خصائص الجلسة ثم الكلمات والحروف، وبعدها احفظ</p>
+        </div>
+        <a href="/specialist/words/child/<%= child._id %>/sessions" class="btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة لسجل الجلسات
+        </a>
+    </div>
+
+    <div class="content-card">
+        <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
+            <div class="form-group">
+                <label>اسم الجلسة (اختياري)</label>
+                <input class="form-control" type="text" name="sessionName" placeholder="Session 1">
+            </div>
+
+            <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                <div class="form-group">
+                    <label>مدة الجلسة كاملة (دقيقة)</label>
+                    <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30">
+                </div>
+                <div class="form-group">
+                    <label>مدة اللعب كل مرة (دقيقة)</label>
+                    <input class="form-control" type="number" name="playDuration" min="1" placeholder="10">
+                </div>
+            </div>
+
+            <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                <div class="form-group">
+                    <label>مدة الراحة (دقيقة)</label>
+                    <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5">
+                </div>
+                <div class="form-group">
+                    <label>عدد المحاولات إجمالاً</label>
+                    <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.75rem;">
+                <label>أيام السماح للجلسة</label>
+                <% const daysSession=[ { v: 0, t: 'الأحد' }, { v: 1, t: 'الإثنين' }, { v: 2, t: 'الثلاثاء' }, { v: 3, t: 'الأربعاء' }, { v: 4, t: 'الخميس' }, { v: 5, t: 'الجمعة' }, { v: 6, t: 'السبت' }, ]; %>
+                <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+                    <% daysSession.forEach(d=> { %>
+                        <label style="display:flex; align-items:center; gap:0.35rem;">
+                            <input type="checkbox" name="allowedDays" value="<%= d.v %>" />
+                            <span><%= d.t %></span>
+                        </label>
+                    <% }); %>
+                </div>
+                <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار أيام، سيتم السماح بكل الأيام.</div>
+            </div>
+
+            <div class="content-card" style="margin-top: 1rem;">
+                <h3 style="margin:0 0 0.75rem 0;">الكلمات والحروف الخاصة بالجلسة</h3>
+
+                <div class="content-type-toggle">
+                    <input type="radio" name="sessionItemType" id="type-word" value="word" checked>
+                    <label for="type-word" class="toggle-btn word-toggle">
+                        <i class="fas fa-font"></i> كلمات
+                    </label>
+
+                    <input type="radio" name="sessionItemType" id="type-letter" value="letter">
+                    <label for="type-letter" class="toggle-btn letter-toggle">
+                        <i class="fas fa-abc"></i> حروف
+                    </label>
+                </div>
+
+                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-col">
+                        <label id="sessionInputLabel" style="display:block; margin-bottom:0.5rem; font-weight:700;">إضافة كلمة</label>
+                        <div class="input-with-vowels">
+                            <div class="input-row">
+                                <input type="text" id="sessionItemInput" class="form-control" placeholder="أدخل كلمة أو حرف">
+                                <button type="button" class="clear-btn" id="sessionClearBtn" style="display:none;" title="مسح النص">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="vowel-buttons" id="sessionVowelButtons" style="display:none;">
+                                <button type="button" class="vowel-btn" data-vowel="َ">َ</button>
+                                <button type="button" class="vowel-btn" data-vowel="ِ">ِ</button>
+                                <button type="button" class="vowel-btn" data-vowel="ُ">ُ</button>
+                                <button type="button" class="vowel-btn" data-vowel="ْ">ْ</button>
+                            </div>
+                        </div>
+                        <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+                            <button type="button" class="btn btn-primary" id="addSessionItemBtn" style="flex:1;">
+                                <i class="fas fa-plus"></i> إضافة
+                            </button>
+                            <button type="button" class="btn-secondary" id="clearSessionListBtn" style="flex:1;">
+                                مسح القائمة
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-col">
+                        <label id="sessionSuggestionsLabel" style="display:block; margin-bottom:0.5rem; font-weight:700; color:#334155;">
+                            <i class="fas fa-lightbulb" style="color:#fbbf24; margin-left:5px;"></i>
+                            كلمات مقترحة
+                        </label>
+                        <div class="suggestions-grid" id="sessionSuggestionsGrid"></div>
+                    </div>
+                </div>
+
+                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top:1rem;">
+                    <div class="form-group">
+                        <label>قائمة الحروف</label>
+                        <div class="chips-container" id="lettersChips"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>قائمة الكلمات</label>
+                        <div class="chips-container" id="wordsChips"></div>
+                    </div>
+                </div>
+
+                <textarea name="lettersText" id="lettersText" style="display:none;"></textarea>
+                <textarea name="wordsText" id="wordsText" style="display:none;"></textarea>
+            </div>
+
+            <button class="btn btn-primary" type="submit" style="margin-top: 1rem; width: 100%;">تأكيد وإنشاء الجلسة</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const wordSuggestions = [
+        'تفاحة 🍎', 'كرة ⚽', 'سيارة 🚗', 'قطة 🐱', 'كلب 🐶',
+        'عصفور 🐦', 'ماء 💧', 'حليب 🥛', 'خبز 🍞', 'باب 🚪',
+        'كرسي 🪑', 'شمس ☀️', 'قمر 🌙', 'نجمة ⭐', 'زهرة 🌸'
+    ];
+
+    const letterVowelSuggestions = [
+        'بَ', 'بِ', 'بُ', 'بْ', 'تَ', 'تِ', 'تُ', 'تْ',
+        'ثَ', 'ثِ', 'ثُ', 'ثْ', 'جَ', 'جِ', 'جُ', 'جْ',
+        'حَ', 'حِ', 'حُ', 'حْ', 'خَ', 'خِ', 'خُ', 'خْ',
+        'دَ', 'دِ', 'دُ', 'دْ', 'ذَ', 'ذِ', 'ذُ', 'ذْ',
+        'رَ', 'رِ', 'رُ', 'رْ', 'زَ', 'زِ', 'زُ', 'زْ',
+        'سَ', 'سِ', 'سُ', 'سْ', 'شَ', 'شِ', 'شُ', 'شْ',
+        'صَ', 'صِ', 'صُ', 'صْ', 'ضَ', 'ضِ', 'ضُ', 'ضْ',
+        'طَ', 'طِ', 'طُ', 'طْ', 'ظَ', 'ظِ', 'ظُ', 'ظْ',
+        'عَ', 'عِ', 'عُ', 'عْ', 'غَ', 'غِ', 'غُ', 'غْ',
+        'فَ', 'فِ', 'فُ', 'فْ', 'قَ', 'قِ', 'قُ', 'قْ',
+        'كَ', 'كِ', 'كُ', 'كْ', 'لَ', 'لِ', 'لُ', 'لْ',
+        'مَ', 'مِ', 'مُ', 'مْ', 'نَ', 'نِ', 'نُ', 'نْ',
+        'هَ', 'هِ', 'هُ', 'هْ', 'وَ', 'وِ', 'وُ', 'وْ',
+        'يَ', 'يِ', 'يُ', 'يْ'
+    ];
+
+    const letters = [];
+    const words = [];
+
+    const input = document.getElementById('sessionItemInput');
+    const typeWord = document.getElementById('type-word');
+    const typeLetter = document.getElementById('type-letter');
+    const inputLabel = document.getElementById('sessionInputLabel');
+    const suggestionsLabel = document.getElementById('sessionSuggestionsLabel');
+    const suggestionsGrid = document.getElementById('sessionSuggestionsGrid');
+    const vowelButtons = document.getElementById('sessionVowelButtons');
+    const clearBtn = document.getElementById('sessionClearBtn');
+    const lettersChips = document.getElementById('lettersChips');
+    const wordsChips = document.getElementById('wordsChips');
+    const lettersText = document.getElementById('lettersText');
+    const wordsText = document.getElementById('wordsText');
+
+    function syncHiddenFields() {
+        lettersText.value = letters.join('\n');
+        wordsText.value = words.join('\n');
+    }
+
+    function renderChips() {
+        lettersChips.innerHTML = letters.map((l, idx) => `
+            <span class="chip">
+                ${l}
+                <button type="button" class="chip-remove" data-type="letter" data-idx="${idx}">×</button>
+            </span>
+        `).join('');
+
+        wordsChips.innerHTML = words.map((w, idx) => `
+            <span class="chip">
+                ${w}
+                <button type="button" class="chip-remove" data-type="word" data-idx="${idx}">×</button>
+            </span>
+        `).join('');
+
+        syncHiddenFields();
+    }
+
+    function addItem(value) {
+        const trimmed = String(value || '').trim();
+        if (!trimmed) return;
+        if (typeLetter.checked) {
+            if (!letters.includes(trimmed)) letters.push(trimmed);
+        } else {
+            if (!words.includes(trimmed)) words.push(trimmed);
+        }
+        input.value = '';
+        clearBtn.style.display = 'none';
+        renderChips();
+    }
+
+    function loadSuggestions() {
+        const isWord = typeWord.checked;
+        inputLabel.textContent = isWord ? 'إضافة كلمة' : 'إضافة حرف';
+        suggestionsLabel.innerHTML = `<i class="fas fa-lightbulb" style="color:#fbbf24; margin-left:5px;"></i> ${isWord ? 'كلمات مقترحة' : 'حروف مقترحة'}`;
+        vowelButtons.style.display = isWord ? 'none' : 'flex';
+        input.placeholder = isWord ? 'أدخل كلمة' : 'أدخل حرفاً';
+        input.maxLength = isWord ? 20 : 2;
+        const suggestions = isWord ? wordSuggestions : letterVowelSuggestions;
+        suggestionsGrid.innerHTML = '';
+        suggestions.forEach(s => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'suggestion-tag';
+            btn.textContent = s;
+            btn.onclick = () => addItem(s);
+            suggestionsGrid.appendChild(btn);
+        });
+    }
+
+    document.getElementById('addSessionItemBtn').addEventListener('click', () => addItem(input.value));
+    document.getElementById('clearSessionListBtn').addEventListener('click', () => {
+        letters.length = 0;
+        words.length = 0;
+        renderChips();
+    });
+
+    input.addEventListener('input', () => {
+        clearBtn.style.display = input.value.length ? 'flex' : 'none';
+    });
+
+    clearBtn.addEventListener('click', () => {
+        input.value = '';
+        input.focus();
+        clearBtn.style.display = 'none';
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addItem(input.value);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.chip-remove');
+        if (!btn) return;
+        const type = btn.getAttribute('data-type');
+        const idx = Number(btn.getAttribute('data-idx'));
+        if (type === 'letter') letters.splice(idx, 1);
+        if (type === 'word') words.splice(idx, 1);
+        renderChips();
+    });
+
+    document.querySelectorAll('.vowel-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const vowel = this.getAttribute('data-vowel');
+            const currentValue = input.value;
+            if (currentValue.length === 1) {
+                input.value = currentValue + vowel;
+            } else if (currentValue.length === 2) {
+                input.value = currentValue.charAt(0) + vowel;
+            }
+            input.focus();
+        });
+    });
+
+    typeWord.addEventListener('change', loadSuggestions);
+    typeLetter.addEventListener('change', loadSuggestions);
+
+    document.addEventListener('DOMContentLoaded', loadSuggestions);
+</script>
+
+<style>
+    .page-container-clean {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header-clean h2 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+        padding: 1.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+
+    .content-type-toggle {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        justify-content: center;
+    }
+
+    .content-type-toggle input[type="radio"] {
+        display: none;
+    }
+
+    .toggle-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #6b7280;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+    }
+
+    input:checked + .word-toggle {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    input:checked + .letter-toggle {
+        background: #f0fdf4;
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    .input-with-vowels {
+        position: relative;
+    }
+
+    .input-row {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .clear-btn {
+        position: absolute;
+        right: 10px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        z-index: 10;
+    }
+
+    .vowel-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        justify-content: center;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .vowel-btn {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #374151;
+        min-width: 45px;
+    }
+
+    .vowel-btn:hover {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .suggestions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        background: white;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        min-height: 120px;
+        align-content: flex-start;
+    }
+
+    .suggestion-tag {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #475569;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .suggestion-tag:hover {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+    }
+
+    .chips-container {
+        min-height: 90px;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .chip {
+        background: #e0f2fe;
+        color: #0284c7;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chip-remove {
+        border: none;
+        background: transparent;
+        color: #0284c7;
+        cursor: pointer;
+        font-weight: 700;
+    }
+</style>
+
+<%- include('../partials/layout-end') %>

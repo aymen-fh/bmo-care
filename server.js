@@ -285,8 +285,13 @@ app.use((req, res) => {
 
 // Start server
 
-const PORT = process.env.PORT || 3000;
-_server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Web Portal running on port ${PORT}`);
-});
+const isTestEnv = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
+if (!isTestEnv) {
+    const PORT = process.env.PORT || 3000;
+    _server = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Web Portal running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
 

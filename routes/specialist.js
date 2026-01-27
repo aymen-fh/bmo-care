@@ -802,13 +802,26 @@ router.post('/child/:id/create-plan-session', async (req, res) => {
     try {
         const childId = req.params.id;
 
-        const targetDuration = req.body.targetDuration ? Number(req.body.targetDuration) : undefined;
+        const toNumber = (value) => {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : undefined;
+        };
+
+        const targetDuration = toNumber(req.body.targetDuration);
+        const playDuration = toNumber(req.body.playDuration);
+        const breakDuration = toNumber(req.body.breakDuration);
+        const sessionDuration = toNumber(req.body.sessionDuration);
+        const totalDuration = toNumber(req.body.totalDuration);
+        const maxAttempts = toNumber(req.body.maxAttempts);
         const sessionName = String(req.body.sessionName || '').trim();
 
-        const scheduleEnabled = req.body.scheduleEnabled === 'on' || req.body.scheduleEnabled === true;
+        let scheduleEnabled = req.body.scheduleEnabled === 'on' || req.body.scheduleEnabled === true;
         const allowedDays = Array.isArray(req.body.allowedDays)
             ? req.body.allowedDays.map(Number).filter(x => Number.isFinite(x))
             : req.body.allowedDays ? [Number(req.body.allowedDays)] : [];
+        if (!scheduleEnabled && allowedDays.length > 0) {
+            scheduleEnabled = true;
+        }
         const windowStart = req.body.windowStart || '';
         const windowEnd = req.body.windowEnd || '';
 
@@ -832,16 +845,21 @@ router.post('/child/:id/create-plan-session', async (req, res) => {
             letters,
             words,
             ...(typeof targetDuration === 'number' ? { targetDuration } : {}),
+            ...(typeof playDuration === 'number' ? { playDuration } : {}),
+            ...(typeof breakDuration === 'number' ? { breakDuration } : {}),
+            ...(typeof sessionDuration === 'number' ? { sessionDuration } : {}),
+            ...(typeof totalDuration === 'number' ? { totalDuration } : {}),
+            ...(typeof maxAttempts === 'number' ? { maxAttempts } : {}),
             ...(sessionName ? { sessionName } : {}),
             playSchedule,
         });
 
-        req.flash('success_msg', 'تم إنشاء جلسة جديدة للخطة.');
-        res.redirect(`/specialist/child/${childId}/analytics`);
+        req.flash('success_msg', 'تم إنشاء جلسة جديدة للطفل.');
+        res.redirect(`/specialist/words/child/${childId}/sessions`);
     } catch (error) {
         console.error('Create plan session failed:', error?.message);
         req.flash('error_msg', res.locals.__('errorOccurred'));
-        res.redirect(`/specialist/child/${req.params.id}/analytics`);
+        res.redirect(`/specialist/words/child/${req.params.id}/sessions`);
     }
 });
 

@@ -1,0 +1,100 @@
+<%- include('../partials/layout-start', { title: `جلسات الطفل - ${child.name}`, activePage: 'words' }) %>
+
+<div class="page-container-clean">
+    <div class="page-header-clean" style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+        <div>
+            <h2 style="margin:0;">
+                جلسات الطفل: <strong><%= child.name %></strong>
+                <i class="fas fa-layer-group" style="color:#3b82f6;"></i>
+            </h2>
+            <p class="text-muted" style="margin:0.5rem 0 0;">جميع الجلسات المخصصة لهذا الطفل (منجزة أو غير منجزة)</p>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+            <a href="/specialist/words" class="btn-secondary">
+                <i class="fas fa-arrow-right"></i> العودة للأطفال
+            </a>
+            <a href="/specialist/words/child/<%= child._id %>/sessions/new" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إنشاء جلسة جديدة
+            </a>
+        </div>
+    </div>
+
+    <div class="content-card" style="padding:0; overflow:hidden;">
+        <table class="clean-blue-table" style="margin:0; width:100%;">
+            <thead>
+                <tr>
+                    <th>Session</th>
+                    <th>الاسم</th>
+                    <th>مدة الجلسة (دقيقة)</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الإنشاء</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (!sessions || sessions.length === 0) { %>
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:#64748b; padding:1rem;">لا توجد جلسات بعد لهذا الطفل</td>
+                    </tr>
+                <% } else { %>
+                    <% sessions.forEach(s => { %>
+                        <tr>
+                            <td><%= s.sessionIndex != null ? s.sessionIndex : '-' %></td>
+                            <td><%= s.sessionName || '-' %></td>
+                            <td><%= (typeof s.targetDuration === 'number') ? s.targetDuration : '-' %></td>
+                            <td>
+                                <% if (s.active) { %>
+                                    <span style="color:#f97316; font-weight:600;">غير منجزة</span>
+                                <% } else { %>
+                                    <span style="color:#16a34a; font-weight:600;">منجزة</span>
+                                <% } %>
+                            </td>
+                            <td><%= s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-SA') : '-' %></td>
+                        </tr>
+                    <% }); %>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .page-container-clean {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header-clean h2 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+    }
+
+    .content-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    }
+</style>
+
+<%- include('../partials/layout-end') %>
