@@ -51,12 +51,35 @@ router.get('/child/:childId/sessions', async (req, res) => {
                         sessionIndex: plan.sessionIndex,
                         targetDuration: plan.targetDuration,
                         active: plan.active !== false,
-                        createdAt: plan.createdAt
+                        createdAt: plan.createdAt,
+                        letters: plan.letters || [],
+                        words: plan.words || []
                     }))
                 : [];
         } catch (planError) {
             console.warn('Plans fetch failed in child sessions view:', planError?.response?.status || planError?.message);
         }
+
+        // Fetch progress data to determine actual completion status
+        let progressSessions = [];
+        try {
+            const progressRes = await apiClient.authGet(req, `/progress/child/${childId}`);
+            if (progressRes.data.success && progressRes.data.progress) {
+                progressSessions = Array.isArray(progressRes.data.progress.sessions) ? progressRes.data.progress.sessions : [];
+            }
+        } catch (progressError) {
+            console.warn('Progress fetch failed (sessions will show without completion data):', progressError?.message);
+        }
+
+        // Enrich sessions with completion status from progress
+        sessions = sessions.map(session => {
+            // Find matching progress sessions by planExerciseId or sessionIndex
+            const completed = progressSessions.some(ps =>
+                (ps.planExerciseId && ps.planExerciseId.toString() === session._id.toString()) ||
+                (ps.status === 'completed' && ps.planExerciseId && ps.planExerciseId.toString() === session._id.toString())
+            );
+            return { ...session, isCompleted: completed };
+        });
 
         return res.render('specialist/child-sessions', {
             title: `جلسات الطفل - ${selectedChild.name}`,
@@ -259,6 +282,29 @@ router.post('/delete/:id', async (req, res) => {
         console.error('Delete Word Error:', error.message);
         req.flash('error_msg', 'Error deleting content');
         res.redirect('/specialist/words');
+    }
+});
+
+// Reset Session (Clear Progress Data)
+router.post('/child/:childId/sessions/:sessionId/reset', async (req, res) => {
+    try {
+        const { childId, sessionId } = req.params;
+
+        // Call backend API to reset session progress
+        // This will delete all progress sessions linked to this planExerciseId
+        const response = await apiClient.authPost(req, `/exercises/${sessionId}/reset`, { childId });
+
+        if (response.data.success) {
+            req.flash('success_msg', 'تم إعادة تعيين الجلسة بنجاح. يمكن للطفل اللعب بها مرة أخرى.');
+        } else {
+            req.flash('error_msg', response.data.message || 'فشل إعادة التعيين');
+        }
+
+        res.redirect(`/specialist/words/child/${childId}/sessions`);
+    } catch (error) {
+        console.error('Reset Session Error:', error?.response?.data || error.message);
+        req.flash('error_msg', 'حدث خطأ أثناء إعادة تعيين الجلسة');
+        res.redirect(`/specialist/words/child/${req.params.childId}/sessions`);
     }
 });
 
