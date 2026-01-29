@@ -167,6 +167,11 @@ router.get('/', async (req, res) => {
 
             const { words, letters } = response.data.success ? response.data : { words: [], letters: [] };
 
+            console.log('DEBUG BACKEND: ChildId:', childId);
+            console.log('DEBUG BACKEND: SessionId:', sessionId);
+            console.log('DEBUG BACKEND: Words Count:', words ? words.length : 'null');
+            console.log('DEBUG BACKEND: Letters Count:', letters ? letters.length : 'null');
+
             return res.render('specialist/words', {
                 title: `${res.locals.__('wordsManagement') || 'إدارة المحتوى'} - ${selectedChild.name}`,
                 activePage: 'words',

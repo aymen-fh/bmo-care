@@ -331,20 +331,45 @@
                 let addedWords = [];
                 let addedLetters = [];
 
-                // Initialize from Server Data (CRITICALLY IMPORTANT FOR EDIT MODE)
-                <% if (words && words.length > 0) { %>
+                // Initialize from Server Data - DEBUG VERSION
+                <% if (typeof words !== 'undefined') { %>
                     try {
-                        const serverWords = <% - JSON.stringify(words) %>;
-                        addedWords = serverWords.map(w => w.text || w); // Handle object or string
+                        const serverWords = <% - JSON.stringify(words || []) %>;
+                        console.log('DEBUG: Raw server words:', serverWords);
+                        if (Array.isArray(serverWords)) {
+                            addedWords = serverWords.map(w => {
+                                console.log('DEBUG: Processing word item:', w);
+                                if (typeof w === 'string') return w;
+                                if (typeof w === 'object' && w && w.text) return w.text;
+                                return '';
+                            }).filter(w => w !== '');
+                        }
+                        console.log('DEBUG: Final addedWords:', addedWords);
                     } catch (e) { console.error('Error parsing words:', e); }
+                <% } else { %>
+                    console.log('DEBUG: No words variable detected from server');
                 <% } %>
 
-                <% if (letters && letters.length > 0) { %>
+                <% if (typeof letters !== 'undefined') { %>
                     try {
-                        const serverLetters = <% - JSON.stringify(letters) %>;
-                        addedLetters = serverLetters.map(l => l.text || l); // Handle object or string
+                        const serverLetters = <% - JSON.stringify(letters || []) %>;
+                        console.log('DEBUG: Raw server letters:', serverLetters);
+                        if (Array.isArray(serverLetters)) {
+                            addedLetters = serverLetters.map(l => {
+                                console.log('DEBUG: Processing letter item:', l);
+                                if (typeof l === 'string') return l;
+                                if (typeof l === 'object' && l && l.text) return l.text;
+                                return '';
+                            }).filter(l => l !== '');
+                        }
+                        console.log('DEBUG: Final addedLetters:', addedLetters);
                     } catch (e) { console.error('Error parsing letters:', e); }
+                <% } else { %>
+                    console.log('DEBUG: No letters variable detected from server');
                 <% } %>
+
+                    // Temporary Alert for Debugging
+                    alert('DEBUG INFO:\nWords Loaded: ' + addedWords.length + '\nLetters Loaded: ' + addedLetters.length);
 
 
                 // Suggestions Data
