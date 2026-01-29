@@ -1283,6 +1283,82 @@
                         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
                     }
                 }
+
+                /* Chips Styles */
+                .chips-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.8rem;
+                    padding: 1rem;
+                    min-height: 60px;
+                    border: 2px dashed #e2e8f0;
+                    border-radius: 16px;
+                    background: #f8fafc;
+                    align-items: flex-start;
+                    transition: all 0.3s ease;
+                }
+
+                .chips-container:focus-within {
+                    border-color: var(--primary-color);
+                    background: #eff6ff;
+                }
+
+                .chip {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.6rem;
+                    padding: 0.6rem 1.2rem;
+                    background: white;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 50px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #334155;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+                    transition: all 0.2s ease;
+                    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    user-select: none;
+                }
+
+                .chip:hover {
+                    border-color: var(--primary-color);
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+                    color: var(--primary-color);
+                }
+
+                .chip span {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 24px;
+                    height: 24px;
+                    background: #fee2e2;
+                    color: #ef4444;
+                    border-radius: 50%;
+                    font-size: 1.1rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    margin-left: -0.2rem;
+                }
+
+                .chip span:hover {
+                    background: #ef4444;
+                    color: white;
+                    transform: rotate(90deg);
+                }
+
+                @keyframes popIn {
+                    from {
+                        transform: scale(0.8);
+                        opacity: 0;
+                    }
+
+                    to {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
             </style>
 
             <% } %>
