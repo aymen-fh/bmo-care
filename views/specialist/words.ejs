@@ -327,262 +327,182 @@
 
 
             <script>
-                // Word suggestions data
+                // Data Arrays
+                let addedWords = [];
+                let addedLetters = [];
+
+                // Initialize from Server Data (CRITICALLY IMPORTANT FOR EDIT MODE)
+                <% if (words && words.length > 0) { %>
+                    try {
+                        const serverWords = <% - JSON.stringify(words) %>;
+                        addedWords = serverWords.map(w => w.text || w); // Handle object or string
+                    } catch (e) { console.error('Error parsing words:', e); }
+                <% } %>
+
+                <% if (letters && letters.length > 0) { %>
+                    try {
+                        const serverLetters = <% - JSON.stringify(letters) %>;
+                        addedLetters = serverLetters.map(l => l.text || l); // Handle object or string
+                    } catch (e) { console.error('Error parsing letters:', e); }
+                <% } %>
+
+
+                // Suggestions Data
                 const wordSuggestions = [
                     'تفاحة 🍎', 'كرة ⚽', 'سيارة 🚗', 'قطة 🐱', 'كلب 🐶',
                     'عصفور 🐦', 'ماء 💧', 'حليب 🥛', 'خبز 🍞', 'باب 🚪',
                     'كرسي 🪑', 'شمس ☀️', 'قمر 🌙', 'نجمة ⭐', 'زهرة 🌸'
                 ];
 
-                // Letter suggestions data
-                const letterSuggestions = [
-                    'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر',
-                    'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف',
-                    'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
-                ];
-
-                // Letter with vowel suggestions
                 const letterVowelSuggestions = [
                     'بَ', 'بِ', 'بُ', 'بْ', 'تَ', 'تِ', 'تُ', 'تْ',
-                    'ثَ', 'ثِ', 'ثُ', 'ثْ', 'جَ', 'جِ', 'جُ', 'جْ',
-                    'حَ', 'حِ', 'حُ', 'حْ', 'خَ', 'خِ', 'خُ', 'خْ',
-                    'دَ', 'دِ', 'دُ', 'دْ', 'ذَ', 'ذِ', 'ذُ', 'ذْ',
-                    'رَ', 'رِ', 'رُ', 'رْ', 'زَ', 'زِ', 'زُ', 'زْ',
-                    'سَ', 'سِ', 'سُ', 'سْ', 'شَ', 'شِ', 'شُ', 'شْ',
-                    'صَ', 'صِ', 'صُ', 'صْ', 'ضَ', 'ضِ', 'ضُ', 'ضْ',
-                    'طَ', 'طِ', 'طُ', 'طْ', 'ظَ', 'ظِ', 'ظُ', 'ظْ',
-                    'عَ', 'عِ', 'عُ', 'عْ', 'غَ', 'غِ', 'غُ', 'غْ',
-                    'فَ', 'فِ', 'فُ', 'فْ', 'قَ', 'قِ', 'قُ', 'قْ',
-                    'كَ', 'كِ', 'كُ', 'كْ', 'لَ', 'لِ', 'لُ', 'لْ',
-                    'مَ', 'مِ', 'مُ', 'مْ', 'نَ', 'نِ', 'نُ', 'نْ',
-                    'هَ', 'هِ', 'هُ', 'هْ', 'وَ', 'وِ', 'وُ', 'وْ',
-                    'يَ', 'يِ', 'يُ', 'يْ'
+                    'جَ', 'جِ', 'جُ', 'جْ', 'دَ', 'دِ', 'دُ', 'دْ',
+                    'رَ', 'رِ', 'رُ', 'رْ', 'سَ', 'سِ', 'سُ', 'سْ',
+                    'مَ', 'مِ', 'مُ', 'مْ', 'لَ', 'لِ', 'لُ', 'لْ'
                 ];
 
-                // Initialize suggestions and vowel buttons on page load
                 document.addEventListener('DOMContentLoaded', function () {
-                    loadSuggestions();
-                    initializeVowelButtons();
-                });
+                    // Initialize Chips from Data
+                    updateChips();
 
-                // Initialize vowel button functionality
-                function initializeVowelButtons() {
-                    const vowelButtons = document.querySelectorAll('.vowel-btn');
-                    vowelButtons.forEach(button => {
-                        button.addEventListener('click', function () {
+                    // Event Listeners for Type Toggle
+                    const typeRadios = document.getElementsByName('sessionItemType');
+                    typeRadios.forEach(radio => {
+                        radio.addEventListener('change', updateInputInterface);
+                    });
+
+                    // Initial Interface Setup
+                    updateInputInterface();
+
+                    // Add Button Listener
+                    document.getElementById('addSessionItemBtn').addEventListener('click', addSessionItem);
+
+                    // Clear List Button Listener
+                    document.getElementById('clearSessionListBtn').addEventListener('click', clearSessionList);
+
+                    // Load Suggestions
+                    loadSessionSuggestions();
+
+                    // Vowel Buttons Logic
+                    document.querySelectorAll('.vowel-btn').forEach(btn => {
+                        btn.addEventListener('click', function () {
                             const vowel = this.getAttribute('data-vowel');
-                            const textInput = document.getElementById('text');
-                            const currentValue = textInput.value;
-
-                            // If input is empty, start with the base letter
-                            if (currentValue.length === 0) {
-                                textInput.value = '';
-                                textInput.focus();
-                            }
-                            // If input has 1 character (letter only), append vowel
-                            else if (currentValue.length === 1) {
-                                textInput.value = currentValue + vowel;
-                                textInput.focus();
-                                textInput.setSelectionRange(textInput.value.length, textInput.value.length);
-                            }
-                            // If input has 2 characters (letter + vowel), replace vowel
-                            else if (currentValue.length === 2) {
-                                const baseText = currentValue.charAt(0);
-                                textInput.value = baseText + vowel;
-                                textInput.focus();
-                                textInput.setSelectionRange(textInput.value.length, textInput.value.length);
-                            }
+                            const input = document.getElementById('sessionItemInput');
+                            input.value += vowel;
+                            input.focus();
                         });
                     });
 
-                    // Add input validation and clear button functionality
-                    const textInput = document.getElementById('text');
-                    const clearBtn = document.getElementById('clearBtn');
+                    // Clear Input Button logic
+                    const sessionItemInput = document.getElementById('sessionItemInput');
+                    const sessionClearBtn = document.getElementById('sessionClearBtn');
 
-                    textInput.addEventListener('input', function () {
-                        const isLetter = document.getElementById('type-letter').checked;
-
-                        // Show/hide clear button based on input content
-                        clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
-
-                        if (isLetter) {
-                            // Allow only Arabic letters and the 4 vowels
-                            const arabicVowels = ['َ', 'ِ', 'ُ', 'ْ'];
-                            const arabicLetters = 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي';
-
-                            let filteredValue = '';
-                            for (let char of this.value) {
-                                if (arabicLetters.includes(char) || arabicVowels.includes(char)) {
-                                    filteredValue += char;
-                                }
-                            }
-
-                            // Limit to 2 characters for letters
-                            if (filteredValue.length > 2) {
-                                filteredValue = filteredValue.substring(0, 2);
-                            }
-
-                            this.value = filteredValue;
-
-                            // Update clear button visibility after filtering
-                            clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
-                        }
+                    sessionItemInput.addEventListener('input', function () {
+                        sessionClearBtn.style.display = this.value ? 'flex' : 'none';
                     });
 
-                    // Clear button click handler
-                    clearBtn.addEventListener('click', function () {
-                        textInput.value = '';
-                        textInput.focus();
+                    sessionClearBtn.addEventListener('click', function () {
+                        sessionItemInput.value = '';
                         this.style.display = 'none';
+                        sessionItemInput.focus();
+                    });
+                });
+
+                function updateInputInterface() {
+                    const type = document.querySelector('input[name="sessionItemType"]:checked').value;
+                    const input = document.getElementById('sessionItemInput');
+                    const vowelButtons = document.getElementById('sessionVowelButtons');
+
+                    if (type === 'word') {
+                        input.placeholder = 'أدخل كلمة (مثال: تفاحة)';
+                        vowelButtons.style.display = 'none';
+                    } else {
+                        input.placeholder = 'أدخل حرفاً (مثال: أ)';
+                        vowelButtons.style.display = 'flex';
+                    }
+                    loadSessionSuggestions();
+                }
+
+                function loadSessionSuggestions() {
+                    const type = document.querySelector('input[name="sessionItemType"]:checked').value;
+                    const container = document.getElementById('sessionSuggestionsGrid');
+                    const suggestions = type === 'word' ? wordSuggestions : letterVowelSuggestions;
+
+                    container.innerHTML = '';
+                    suggestions.forEach(text => {
+                        const btn = document.createElement('div');
+                        btn.className = 'suggestion-tag';
+                        btn.textContent = text;
+                        btn.onclick = () => {
+                            document.getElementById('sessionItemInput').value = text;
+                            document.getElementById('sessionClearBtn').style.display = 'flex';
+                        };
+                        container.appendChild(btn);
                     });
                 }
 
-                // 1. Content Type Toggle Function
-                function toggleContentType() {
-                    const isWord = document.getElementById('type-word').checked;
-                    const textInput = document.getElementById('text');
-                    const textLabel = document.getElementById('textLabel');
-                    const suggestionsLabel = document.getElementById('suggestionsLabel');
-                    const submitBtn = document.getElementById('submitBtn');
-                    const form = document.getElementById('contentForm');
-                    const vowelButtons = document.getElementById('vowelButtons');
-                    const clearBtn = document.getElementById('clearBtn');
+                function addSessionItem() {
+                    const input = document.getElementById('sessionItemInput');
+                    const text = input.value.trim();
+                    const type = document.querySelector('input[name="sessionItemType"]:checked').value;
 
-                    if (isWord) {
-                        // Word mode
-                        textLabel.textContent = '<%= __("wordText") %>';
-                        textInput.placeholder = '<%= __("enterWord") %>';
-                        textInput.maxLength = 20;
-                        suggestionsLabel.innerHTML = '<i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> <%= __("suggestedWords") || "كلمات مقترحة" %>';
-                        submitBtn.innerHTML = '<i class="fas fa-save"></i> <%= __("saveWord") || "حفظ الكلمة" %>';
-                        vowelButtons.style.display = 'none'; // Hide vowel buttons for words
-                        clearBtn.style.display = 'none'; // Hide clear button for empty input
-                        form.action = '/specialist/words/add';
-                        // Add content type hidden input
-                        let contentTypeInput = document.getElementById('contentTypeHidden');
-                        if (!contentTypeInput) {
-                            contentTypeInput = document.createElement('input');
-                            contentTypeInput.type = 'hidden';
-                            contentTypeInput.name = 'contentType';
-                            contentTypeInput.id = 'contentTypeHidden';
-                            form.appendChild(contentTypeInput);
-                        }
-                        contentTypeInput.value = 'word';
+                    if (!text) return;
+
+                    if (type === 'word') {
+                        if (!addedWords.includes(text)) addedWords.push(text);
                     } else {
-                        // Letter mode
-                        textLabel.textContent = '<%= __("letterText") || "حرف" %>';
-                        textInput.placeholder = '<%= __("enterLetter") || "أدخل حرفاً" %>';
-                        textInput.maxLength = 2; // Allow for letter + vowel combinations
-                        suggestionsLabel.innerHTML = '<i class="fas fa-lightbulb" style="color: #fbbf24; margin-left: 5px;"></i> <%= __("suggestedLetters") || "حروف مقترحة" %>';
-                        submitBtn.innerHTML = '<i class="fas fa-save"></i> <%= __("saveLetter") || "حفظ الحرف" %>';
-                        vowelButtons.style.display = 'flex'; // Show vowel buttons for letters
-                        clearBtn.style.display = textInput.value.length > 0 ? 'flex' : 'none'; // Show clear button if input has content
-                        form.action = '/specialist/words/add';
-                        // Add content type hidden input
-                        let contentTypeInput = document.getElementById('contentTypeHidden');
-                        if (!contentTypeInput) {
-                            contentTypeInput = document.createElement('input');
-                            contentTypeInput.type = 'hidden';
-                            contentTypeInput.name = 'contentType';
-                            contentTypeInput.id = 'contentTypeHidden';
-                            form.appendChild(contentTypeInput);
-                        }
-                        contentTypeInput.value = 'letter';
+                        if (!addedLetters.includes(text)) addedLetters.push(text);
                     }
 
-                    loadSuggestions();
+                    input.value = '';
+                    document.getElementById('sessionClearBtn').style.display = 'none';
+                    updateChips();
                 }
 
-                // 2. Content Display Toggle Function
-                function toggleContentDisplay() {
-                    const showWords = document.getElementById('display-words').checked;
-                    const wordsGrid = document.getElementById('wordsGrid');
-                    const lettersGrid = document.getElementById('lettersGrid');
-                    const libraryTitle = document.getElementById('libraryTitle');
-                    const contentTypeInput = document.getElementById('contentTypeInput');
-
-                    if (showWords) {
-                        wordsGrid.style.display = 'grid';
-                        lettersGrid.style.display = 'none';
-                        libraryTitle.innerHTML = '<i class="fas fa-layer-group"></i> <%= __("wordLibrary") || "مكتبة الكلمات" %>';
-                        contentTypeInput.value = 'word';
-                        // Only update UI, don't submit form to prevent recursive calls
+                function removeSessionItem(type, index) {
+                    if (type === 'word') {
+                        addedWords.splice(index, 1);
                     } else {
-                        wordsGrid.style.display = 'none';
-                        lettersGrid.style.display = 'grid';
-                        libraryTitle.innerHTML = '<i class="fas fa-layer-group"></i> <%= __("letterLibrary") || "مكتبة الحروف" %>';
-                        contentTypeInput.value = 'letter';
-                        // Only update UI, don't submit form to prevent recursive calls
+                        addedLetters.splice(index, 1);
+                    }
+                    updateChips();
+                }
+
+                function clearSessionList() {
+                    if (confirm('هل أنت متأكد من مسح جميع الكلمات والحروف في القائمة؟')) {
+                        addedWords = [];
+                        addedLetters = [];
+                        updateChips();
                     }
                 }
 
-                // 3. Load Suggestions Function
-                function loadSuggestions() {
-                    const isWord = document.getElementById('type-word').checked;
-                    const suggestionsGrid = document.getElementById('suggestionsGrid');
-                    const suggestions = isWord ? wordSuggestions : letterVowelSuggestions;
+                function updateChips() {
+                    const wordsContainer = document.getElementById('wordsChips');
+                    const lettersContainer = document.getElementById('lettersChips');
+                    const wordsTextarea = document.getElementById('wordsText');
+                    const lettersTextarea = document.getElementById('lettersText');
 
-                    suggestionsGrid.innerHTML = '';
-                    suggestions.forEach(function (suggestion) {
-                        const button = document.createElement('button');
-                        button.type = 'button';
-                        button.className = 'suggestion-tag';
-                        button.textContent = suggestion;
-                        button.onclick = function () { selectSuggestion(suggestion); };
-                        suggestionsGrid.appendChild(button);
+                    // Update Words
+                    wordsContainer.innerHTML = '';
+                    addedWords.forEach((word, index) => {
+                        const chip = document.createElement('div');
+                        chip.className = 'chip';
+                        chip.innerHTML = `${word} <i class="fas fa-times" onclick="removeSessionItem('word', ${index})"></i>`;
+                        wordsContainer.appendChild(chip);
                     });
-                }
 
-                // 4. Select Suggestion Function
-                function selectSuggestion(suggestion) {
-                    document.getElementById('text').value = suggestion;
-                }
+                    // Update Letters
+                    lettersContainer.innerHTML = '';
+                    addedLetters.forEach((letter, index) => {
+                        const chip = document.createElement('div');
+                        chip.className = 'chip';
+                        chip.innerHTML = `${letter} <i class="fas fa-times" onclick="removeSessionItem('letter', ${index})"></i>`;
+                        lettersContainer.appendChild(chip);
+                    });
 
-                // 5. Text to Speech Logic (Browser Native)
-                function speakContent(text) {
-                    if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = 'ar-SA'; // Set to Arabic
-                        window.speechSynthesis.speak(utterance);
-                    } else {
-                        alert("Browser does not support Text-to-Speech");
-                    }
-                }
-
-                // 6. Enhanced Client Side Filter
-                function filterClientSide() {
-                    const input = document.getElementById('searchInput');
-                    const filter = input.value.toUpperCase();
-                    const showWords = document.getElementById('display-words').checked;
-                    const activeGrid = showWords ? document.getElementById('wordsGrid') : document.getElementById('lettersGrid');
-                    const cards = activeGrid.getElementsByClassName('content-card-item');
-
-                    for (let i = 0; i < cards.length; i++) {
-                        const txtValue = cards[i].getAttribute('data-text');
-                        if (!txtValue) {
-                            cards[i].style.display = "none";
-                        } else if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            cards[i].style.display = "";
-                        } else {
-                            cards[i].style.display = "none";
-                        }
-                    }
-                }
-
-                // 7. Image Preview Logic (for future use)
-                function previewImage(input) {
-                    const preview = document.getElementById('img-preview');
-                    const placeholder = document.getElementById('preview-container');
-
-                    if (input.files && input.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                            placeholder.style.display = 'none';
-                        }
-                        reader.readAsDataURL(input.files[0]);
-                    }
+                    // Update Hidden Textareas for Form Submission
+                    wordsTextarea.value = JSON.stringify(addedWords);
+                    lettersTextarea.value = JSON.stringify(addedLetters);
                 }
             </script>
 
