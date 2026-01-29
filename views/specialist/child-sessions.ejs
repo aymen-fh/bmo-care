@@ -5,12 +5,12 @@
             style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
             <div>
                 <h2 style="margin:0;">
-                    جلسات الطفل: <strong>
+                    إدارة جلسات الطفل: <strong>
                         <%= child.name %>
                     </strong>
                     <i class="fas fa-layer-group" style="color:#3b82f6;"></i>
                 </h2>
-                <p class="text-muted" style="margin:0.5rem 0 0;">جميع الجلسات المخصصة لهذا الطفل (منجزة أو غير منجزة)
+                <p class="text-muted" style="margin:0.5rem 0 0;">جميع الجلسات المخصصة لهذا الطفل (منجزة أو قيد التنفيذ)
                 </p>
             </div>
             <div style="display:flex; gap:0.5rem;">
@@ -24,61 +24,62 @@
         </div>
 
         <div class="content-card" style="padding:0; overflow:hidden;">
-            <table class="clean-blue-table" style="margin:0; width:100%;">
-                <thead>
-                    <tr>
-                        <th>Session</th>
-                        <th>الاسم</th>
-                        <th>مدة الجلسة (دقيقة)</th>
-                        <th>الحالة</th>
-                        <th>تاريخ الإنشاء</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (!sessions || sessions.length===0) { %>
-                        <tr>
-                            <td colspan="6" style="text-align:center; color:#64748b; padding:1rem;">لا توجد جلسات بعد
-                                لهذا الطفل</td>
-                        </tr>
-                        <% } else { %>
+            <% if (!sessions || sessions.length===0) { %>
+                <div class="empty-state">
+                    <i class="fas fa-layer-group" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                    <p style="color:#64748b; font-size:1.1rem; margin:0;">لا توجد جلسات بعد لهذا الطفل</p>
+                    <a href="/specialist/words/child/<%= child._id %>/sessions/new" class="btn btn-primary"
+                        style="margin-top:1rem;">
+                        <i class="fas fa-plus"></i> إنشاء جلسة جديدة
+                    </a>
+                </div>
+                <% } else { %>
+                    <table class="sessions-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i> Session</th>
+                                <th><i class="fas fa-tag"></i> الاسم</th>
+                                <th><i class="fas fa-clock"></i> المدة (دقيقة)</th>
+                                <th><i class="fas fa-info-circle"></i> الحالة</th>
+                                <th><i class="fas fa-calendar"></i> تاريخ الإنشاء</th>
+                                <th><i class="fas fa-cog"></i> الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             <% sessions.forEach(s=> { %>
-                                <tr>
-                                    <td>
+                                <tr class="session-row">
+                                    <td class="session-index">
                                         <%= s.sessionIndex !=null ? s.sessionIndex : '-' %>
                                     </td>
-                                    <td>
+                                    <td class="session-name">
                                         <%= s.sessionName || '-' %>
                                     </td>
-                                    <td>
+                                    <td class="session-duration">
                                         <%= (typeof s.targetDuration==='number' ) ? s.targetDuration : '-' %>
                                     </td>
-                                    <td>
+                                    <td class="session-status">
                                         <% if (s.isCompleted) { %>
-                                            <span
-                                                style="display:inline-flex; align-items:center; gap:0.4rem; color:#16a34a; font-weight:600;">
+                                            <span class="status-badge status-completed">
                                                 <i class="fas fa-check-circle"></i> منجزة
                                             </span>
                                             <% } else if (!s.active) { %>
-                                                <span
-                                                    style="display:inline-flex; align-items:center; gap:0.4rem; color:#94a3b8; font-weight:600;">
+                                                <span class="status-badge status-inactive">
                                                     <i class="fas fa-pause-circle"></i> معطلة
                                                 </span>
                                                 <% } else { %>
-                                                    <span
-                                                        style="display:inline-flex; align-items:center; gap:0.4rem; color:#f97316; font-weight:600;">
-                                                        <i class="fas fa-clock"></i> قيد التنفيذ
+                                                    <span class="status-badge status-active">
+                                                        <i class="fas fa-play-circle"></i> قيد التنفيذ
                                                     </span>
                                                     <% } %>
                                     </td>
-                                    <td>
+                                    <td class="session-date">
                                         <%= s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-SA') : '-' %>
                                     </td>
-                                    <td>
-                                        <div style="display:flex; gap:0.4rem; justify-content:center;">
+                                    <td class="session-actions">
+                                        <div class="action-buttons">
                                             <!-- View/Edit Content Button -->
                                             <a href="/specialist/words?childId=<%= child._id %>&sessionId=<%= s._id %>"
-                                                class="btn-action btn-info" title="عرض/تعديل المحتوى">
+                                                class="action-btn view-btn" title="عرض/تعديل المحتوى">
                                                 <i class="fas fa-eye"></i>
                                             </a>
 
@@ -87,8 +88,8 @@
                                                 <form method="POST"
                                                     action="/specialist/words/child/<%= child._id %>/sessions/<%= s._id %>/reset"
                                                     style="display:inline; margin:0;"
-                                                    onsubmit="return confirm('هل أنت متأكد من إعادة تعيين هذه الجلسة؟ سيتم حذف جميع البيانات المرتبطة بها.')">
-                                                    <button type="submit" class="btn-action btn-warning"
+                                                    onsubmit="return confirm('هل أنت متأكد من إعادة تعيين هذه الجلسة؟\nسيتم حذف جميع البيانات المرتبطة بها.')">
+                                                    <button type="submit" class="action-btn reset-btn"
                                                         title="إعادة تعيين">
                                                         <i class="fas fa-redo"></i>
                                                     </button>
@@ -98,9 +99,9 @@
                                     </td>
                                 </tr>
                                 <% }); %>
-                                    <% } %>
-                </tbody>
-            </table>
+                        </tbody>
+                    </table>
+                    <% } %>
         </div>
     </div>
 
@@ -120,6 +121,11 @@
             gap: 0.75rem;
         }
 
+        .text-muted {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
         .btn-secondary {
             background: white;
             border: 1px solid #e5e7eb;
@@ -130,51 +136,188 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: 0.2s;
+            transition: all 0.2s;
+            font-weight: 600;
         }
 
         .btn-secondary:hover {
             background: #f9fafb;
+            border-color: #d1d5db;
         }
 
         .content-card {
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
         }
 
-        .btn-action {
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sessions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .sessions-table thead {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .sessions-table th {
+            padding: 1rem 1.25rem;
+            text-align: right;
+            font-weight: 700;
+            color: #475569;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sessions-table th i {
+            margin-left: 0.5rem;
+            color: #94a3b8;
+        }
+
+        .session-row {
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        .session-row:hover {
+            background: #f8fafc;
+        }
+
+        .sessions-table td {
+            padding: 1.25rem 1.25rem;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        .session-index {
+            font-weight: 700;
+            color: #3b82f6;
+            font-size: 1.1rem;
+        }
+
+        .session-name {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .session-duration {
+            color: #64748b;
+        }
+
+        .session-date {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-inactive {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-active {
+            background: #fff7ed;
+            color: #ea580c;
+            border: 1px solid #fed7aa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .action-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.5rem;
-            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             transition: all 0.2s;
             text-decoration: none;
-            min-width: 32px;
-            height: 32px;
+            font-size: 0.9rem;
         }
 
-        .btn-action.btn-info {
-            background: #3b82f6;
-            color: white;
+        .view-btn {
+            background: #dbeafe;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
         }
 
-        .btn-action.btn-info:hover {
+        .view-btn:hover {
             background: #2563eb;
-            transform: scale(1.05);
-        }
-
-        .btn-action.btn-warning {
-            background: #f59e0b;
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
         }
 
-        .btn-action.btn-warning:hover {
+        .reset-btn {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .reset-btn:hover {
             background: #d97706;
-            transform: scale(1.05);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .page-container-clean {
+                padding: 1rem;
+            }
+
+            .page-header-clean {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .sessions-table {
+                font-size: 0.85rem;
+            }
+
+            .sessions-table th,
+            .sessions-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .action-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 
