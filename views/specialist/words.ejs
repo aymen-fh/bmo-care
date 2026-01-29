@@ -326,8 +326,7 @@
             </div>
 
 
-            <script>
-                <!-- Hidden Data Container for Safe Transfer -->
+            <!-- Hidden Data Container for Safe Transfer -->
             <div id="serverSessionData"
                 data-words="<%= (typeof words !== 'undefined' && words) ? JSON.stringify(words) : '[]' %>"
                 data-letters="<%= (typeof letters !== 'undefined' && letters) ? JSON.stringify(letters) : '[]' %>"
@@ -335,35 +334,35 @@
             </div>
 
             <script>
-                    // Initialize from Server Data - DOM ATTRIBUTE METHOD (SAFEST)
-                    let addedWords = [];
-                    let addedLetters = [];
-                    
-                    try {
-                        const dataDiv = document.getElementById('serverSessionData');
-                        if (dataDiv) {
-                            const rawWords = dataDiv.getAttribute('data-words');
-                            const rawLetters = dataDiv.getAttribute('data-letters');
-                            
-                            const serverWords = JSON.parse(rawWords || '[]');
-                            const serverLetters = JSON.parse(rawLetters || '[]');
-                            
-                            console.log('DEBUG: DOM Parsed Words:', serverWords);
-                            console.log('DEBUG: DOM Parsed Letters:', serverLetters);
+                // Initialize from Server Data - DOM ATTRIBUTE METHOD (SAFEST)
+                let addedWords = [];
+                let addedLetters = [];
 
-                            if (Array.isArray(serverWords)) {
-                                addedWords = serverWords.map(w => (typeof w === 'object' && w.text) ? w.text : w).filter(w => w);
-                            }
-                            if (Array.isArray(serverLetters)) {
-                                addedLetters = serverLetters.map(l => (typeof l === 'object' && l.text) ? l.text : l).filter(l => l);
-                            }
+                try {
+                    const dataDiv = document.getElementById('serverSessionData');
+                    if (dataDiv) {
+                        const rawWords = dataDiv.getAttribute('data-words');
+                        const rawLetters = dataDiv.getAttribute('data-letters');
+
+                        const serverWords = JSON.parse(rawWords || '[]');
+                        const serverLetters = JSON.parse(rawLetters || '[]');
+
+                        console.log('DEBUG: DOM Parsed Words:', serverWords);
+                        console.log('DEBUG: DOM Parsed Letters:', serverLetters);
+
+                        if (Array.isArray(serverWords)) {
+                            addedWords = serverWords.map(w => (typeof w === 'object' && w.text) ? w.text : w).filter(w => w);
                         }
-                    } catch (e) {
-                        console.error('Error initializing session data:', e);
+                        if (Array.isArray(serverLetters)) {
+                            addedLetters = serverLetters.map(l => (typeof l === 'object' && l.text) ? l.text : l).filter(l => l);
+                        }
                     }
-                    
-                    // Alert removed
-                
+                } catch (e) {
+                    console.error('Error initializing session data:', e);
+                }
+
+                // Alert removed
+
 
 
                 // Suggestions Data
