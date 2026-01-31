@@ -191,136 +191,149 @@
                 </div>
 
                 <!-- محتوى الجلسة -->
-                <div class="content-card">
-                    <div class="form-group">
-                        <label>اسم الجلسة</label>
-                        <input class="form-control" type="text" readonly
-                            value="<% if (selectedSessionId) { %><%= sessions.find(s => s._id.toString() === selectedSessionId).sessionName %><% } else { %>مكتبة الطفل (عام)<% } %>">
-                    </div>
-
-                    <div class="form-row"
-                        style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                <% const selectedSession=(selectedSessionId && sessions) ? sessions.find(s=> s._id.toString() ===
+                    selectedSessionId) : null; %>
+                    <form method="POST"
+                        action="/specialist/words/child/<%= child._id %>/sessions/<%= selectedSessionId %>/update"
+                        class="content-card">
                         <div class="form-group">
-                            <label>مدة الجلسة كاملة (دقيقة)</label>
-                            <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30">
-                        </div>
-                        <div class="form-group">
-                            <label>مدة اللعب كل مرة (دقيقة)</label>
-                            <input class="form-control" type="number" name="playDuration" min="1" placeholder="10">
-                        </div>
-                    </div>
-
-                    <div class="form-row"
-                        style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
-                        <div class="form-group">
-                            <label>مدة الراحة (دقيقة)</label>
-                            <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5">
-                        </div>
-                        <div class="form-group">
-                            <label>عدد المحاولات إجمالاً</label>
-                            <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20">
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 0.75rem;">
-                        <label>أيام السماح للجلسة</label>
-                        <% const daysSession=[ { v: 0, t: 'الأحد' }, { v: 1, t: 'الإثنين' }, { v: 2, t: 'الثلاثاء' }, {
-                            v: 3, t: 'الأربعاء' }, { v: 4, t: 'الخميس' }, { v: 5, t: 'الجمعة' }, { v: 6, t: 'السبت' },
-                            ]; %>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
-                                <% daysSession.forEach(d=> { %>
-                                    <label style="display:flex; align-items:center; gap:0.35rem;">
-                                        <input type="checkbox" name="allowedDays" value="<%=d.v %>" />
-                                        <span>
-                                            <%=d.t %>
-                                        </span>
-                                    </label>
-                                    <% }); %>
-                            </div>
-                            <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار أيام،
-                                سيتم السماح بكل الأيام.</div>
-                    </div>
-
-                    <div class="content-card" style="margin-top: 1rem;">
-                        <h3 style="margin:0 0 0.75rem 0;">الكلمات والحروف الخاصة بالجلسة</h3>
-
-                        <div class="content-type-toggle">
-                            <input type="radio" name="sessionItemType" id="type-word" value="word" checked>
-                            <label for="type-word" class="toggle-btn word-toggle">
-                                <i class="fas fa-font"></i> كلمات
-                            </label>
-
-                            <input type="radio" name="sessionItemType" id="type-letter" value="letter">
-                            <label for="type-letter" class="toggle-btn letter-toggle">
-                                <i class="fas fa-abc"></i> حروف
-                            </label>
+                            <label>اسم الجلسة</label>
+                            <input class="form-control" type="text" readonly
+                                value="<%= selectedSession ? selectedSession.sessionName : 'مكتبة الطفل (عام)' %>">
                         </div>
 
                         <div class="form-row"
-                            style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top:1rem;">
-                            <div class="form-col">
-                                <label id="sessionInputLabel"
-                                    style="display:block; margin-bottom:0.5rem; font-weight:700;">إضافة كلمة</label>
-                                <div class="input-with-vowels">
-                                    <div class="input-row">
-                                        <input type="text" id="sessionItemInput" class="form-control"
-                                            placeholder="أدخل كلمة أو حرف">
-                                        <button type="button" class="clear-btn" id="sessionClearBtn"
-                                            style="display:none;" title="مسح النص">
-                                            <i class="fas fa-times"></i>
+                            style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                            <div class="form-group">
+                                <label>مدة الجلسة كاملة (دقيقة)</label>
+                                <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30"
+                                    value="<%= (selectedSession && selectedSession.targetDuration) ? selectedSession.targetDuration : '' %>">
+                            </div>
+                            <div class="form-group">
+                                <label>مدة اللعب كل مرة (دقيقة)</label>
+                                <input class="form-control" type="number" name="playDuration" min="1" placeholder="10"
+                                    value="<%= (selectedSession && selectedSession.sessionStructure && selectedSession.sessionStructure.playDuration) ? selectedSession.sessionStructure.playDuration : '' %>">
+                            </div>
+                        </div>
+
+                        <div class="form-row"
+                            style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                            <div class="form-group">
+                                <label>مدة الراحة (دقيقة)</label>
+                                <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5"
+                                    value="<%= (selectedSession && selectedSession.sessionStructure && selectedSession.sessionStructure.breakDuration) ? selectedSession.sessionStructure.breakDuration : ((selectedSession && selectedSession.breakDuration) ? selectedSession.breakDuration : '') %>">
+                            </div>
+                            <div class="form-group">
+                                <label>عدد المحاولات إجمالاً</label>
+                                <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20"
+                                    value="<%= (selectedSession && selectedSession.sessionStructure && selectedSession.sessionStructure.maxAttempts) ? selectedSession.sessionStructure.maxAttempts : ((selectedSession && selectedSession.maxAttempts) ? selectedSession.maxAttempts : '') %>">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 0.75rem;">
+                            <label>أيام السماح للجلسة</label>
+                            <% const daysSession=[ { v: 0, t: 'الأحد' }, { v: 1, t: 'الإثنين' }, { v: 2, t: 'الثلاثاء'
+                                }, { v: 3, t: 'الأربعاء' }, { v: 4, t: 'الخميس' }, { v: 5, t: 'الجمعة' }, { v: 6,
+                                t: 'السبت' }, ]; const allowedDays=(selectedSession && selectedSession.playSchedule &&
+                                selectedSession.playSchedule.allowedDays) ? selectedSession.playSchedule.allowedDays :
+                                []; %>
+                                <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+                                    <% daysSession.forEach(d=> { %>
+                                        <label style="display:flex; align-items:center; gap:0.35rem;">
+                                            <input type="checkbox" name="allowedDays" value="<%=d.v %>"
+                                                <%=allowedDays.includes(d.v) ? 'checked' : '' %> />
+                                            <span>
+                                                <%=d.t %>
+                                            </span>
+                                        </label>
+                                        <% }); %>
+                                </div>
+                                <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">إذا لم يتم اختيار
+                                    أيام،
+                                    سيتم السماح بكل الأيام.</div>
+                        </div>
+
+                        <div class="content-card" style="margin-top: 1rem; border: none; box-shadow: none; padding: 0;">
+                            <h3 style="margin:0 0 0.75rem 0;">الكلمات والحروف الخاصة بالجلسة</h3>
+
+                            <div class="content-type-toggle">
+                                <input type="radio" name="sessionItemType" id="type-word" value="word" checked>
+                                <label for="type-word" class="toggle-btn word-toggle">
+                                    <i class="fas fa-font"></i> كلمات
+                                </label>
+
+                                <input type="radio" name="sessionItemType" id="type-letter" value="letter">
+                                <label for="type-letter" class="toggle-btn letter-toggle">
+                                    <i class="fas fa-abc"></i> حروف
+                                </label>
+                            </div>
+
+                            <div class="form-row"
+                                style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top:1rem;">
+                                <div class="form-col">
+                                    <label id="sessionInputLabel"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:700;">إضافة كلمة</label>
+                                    <div class="input-with-vowels">
+                                        <div class="input-row">
+                                            <input type="text" id="sessionItemInput" class="form-control"
+                                                placeholder="أدخل كلمة أو حرف"
+                                                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); document.getElementById('addSessionItemBtn').click(); }">
+                                            <button type="button" class="clear-btn" id="sessionClearBtn"
+                                                style="display:none;" title="مسح النص">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="vowel-buttons" id="sessionVowelButtons" style="display:none;">
+                                            <button type="button" class="vowel-btn" data-vowel="َ">َ</button>
+                                            <button type="button" class="vowel-btn" data-vowel="ِ">ِ</button>
+                                            <button type="button" class="vowel-btn" data-vowel="ُ">ُ</button>
+                                            <button type="button" class="vowel-btn" data-vowel="ْ">ْ</button>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+                                        <button type="button" class="btn btn-primary" id="addSessionItemBtn"
+                                            style="flex:1;">
+                                            <i class="fas fa-plus"></i> إضافة
+                                        </button>
+                                        <button type="button" class="btn-secondary" id="clearSessionListBtn"
+                                            style="flex:1;">
+                                            مسح القائمة
                                         </button>
                                     </div>
-                                    <div class="vowel-buttons" id="sessionVowelButtons" style="display:none;">
-                                        <button type="button" class="vowel-btn" data-vowel="َ">َ</button>
-                                        <button type="button" class="vowel-btn" data-vowel="ِ">ِ</button>
-                                        <button type="button" class="vowel-btn" data-vowel="ُ">ُ</button>
-                                        <button type="button" class="vowel-btn" data-vowel="ْ">ْ</button>
-                                    </div>
                                 </div>
-                                <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                                    <button type="button" class="btn btn-primary" id="addSessionItemBtn"
-                                        style="flex:1;">
-                                        <i class="fas fa-plus"></i> إضافة
-                                    </button>
-                                    <button type="button" class="btn-secondary" id="clearSessionListBtn"
-                                        style="flex:1;">
-                                        مسح القائمة
-                                    </button>
+
+                                <div class="form-col">
+                                    <label id="sessionSuggestionsLabel"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:700; color:#334155;">
+                                        <i class="fas fa-lightbulb" style="color:#fbbf24; margin-left:5px;"></i>
+                                        كلمات مقترحة
+                                    </label>
+                                    <div class="suggestions-grid" id="sessionSuggestionsGrid"></div>
                                 </div>
                             </div>
 
-                            <div class="form-col">
-                                <label id="sessionSuggestionsLabel"
-                                    style="display:block; margin-bottom:0.5rem; font-weight:700; color:#334155;">
-                                    <i class="fas fa-lightbulb" style="color:#fbbf24; margin-left:5px;"></i>
-                                    كلمات مقترحة
-                                </label>
-                                <div class="suggestions-grid" id="sessionSuggestionsGrid"></div>
+                            <div class="form-row"
+                                style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top:1rem;">
+                                <div class="form-group">
+                                    <label>قائمة الحروف</label>
+                                    <div class="chips-container" id="lettersChips"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>قائمة الكلمات</label>
+                                    <div class="chips-container" id="wordsChips"></div>
+                                </div>
                             </div>
+
+                            <textarea name="lettersText" id="lettersText" style="display:none;"></textarea>
+                            <textarea name="wordsText" id="wordsText" style="display:none;"></textarea>
                         </div>
 
-                        <div class="form-row"
-                            style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top:1rem;">
-                            <div class="form-group">
-                                <label>قائمة الحروف</label>
-                                <div class="chips-container" id="lettersChips"></div>
-                            </div>
-                            <div class="form-group">
-                                <label>قائمة الكلمات</label>
-                                <div class="chips-container" id="wordsChips"></div>
-                            </div>
-                        </div>
+                        <button class="btn btn-primary" type="submit" style="margin-top: 1rem; width: 100%;">حفظ
+                            التغييرات</button>
+                    </form>
 
-                        <textarea name="lettersText" id="lettersText" style="display:none;"></textarea>
-                        <textarea name="wordsText" id="wordsText" style="display:none;"></textarea>
-                    </div>
-
-                    <button class="btn btn-primary" type="submit" style="margin-top: 1rem; width: 100%;">حفظ
-                        التغييرات</button>
-                </div>
-
-                <!-- نماذج الإضافة القديمة (مخفية) -->
-                <!-- End of Content Management Section -->
+                    <!-- نماذج الإضافة القديمة (مخفية) -->
+                    <!-- End of Content Management Section -->
             </div>
             </div>
             </div>

@@ -5,9 +5,15 @@ const isRailway = !!(
     process.env.RAILWAY_SERVICE_ID
 );
 
-if (!isRailway && process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+const dotenv = require('dotenv');
+// Force load .env file
+const envResult = dotenv.config({ path: __dirname + '/.env' });
+if (envResult.error) {
+    console.log('⚠️ .env file not found or error loading it');
+} else {
+    console.log('✅ .env file loaded successfully');
 }
+
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
@@ -15,8 +21,16 @@ const flash = require('connect-flash');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const expressLayouts = require('express-ejs-layouts');
+const i18n = require('i18n');
 
 const app = express();
+
+// Force Localhost for Development Debugging if not set correctly
+// if (!process.env.BACKEND_URL || process.env.BACKEND_URL.includes('digitalocean')) {
+//     console.log('⚠️ Forced Override to Localhost for Debugging');
+//     process.env.BACKEND_URL = 'http://localhost:5000';
+// }
 
 if (isRailway) {
     // Required so secure cookies/session work correctly behind Railway's proxy.
@@ -120,41 +134,16 @@ const sessionOptions = {
 };
 
 // Production-ready session store (optional)
-// Set one of: SESSION_MONGO_URL, MONGO_URI, MONGODB_URI
-const sessionMongoUrl = process.env.SESSION_MONGO_URL || process.env.MONGO_URI || process.env.MONGODB_URI;
-if (sessionMongoUrl) {
-    app.set('trust proxy', 1); // required on many hosted platforms when behind a proxy
-    try {
-        // connect-mongo has had multiple APIs across versions and CJS/ESM.
-        // This tries the modern API first, then falls back to the legacy factory API.
-        // If anything fails, we log and continue with MemoryStore (so the container stays up).
-        const connectMongo = require('connect-mongo');
-        const MongoStore = connectMongo?.default || connectMongo;
-
-        if (MongoStore && typeof MongoStore.create === 'function') {
-            sessionOptions.store = MongoStore.create({
-                mongoUrl: sessionMongoUrl,
-                ttl: 14 * 24 * 60 * 60 // 14 days
-            });
-        } else if (typeof MongoStore === 'function') {
-            // Legacy API: require('connect-mongo')(session)
-            const MongoStoreClass = MongoStore(session);
-            sessionOptions.store = new MongoStoreClass({
-                mongoUrl: sessionMongoUrl,
-                ttl: 14 * 24 * 60 * 60
-            });
-        } else {
-            console.error('⚠️ SESSION_MONGO_URL provided but connect-mongo API was not recognized; using MemoryStore');
-        }
-    } catch (err) {
-        console.error('⚠️ Failed to initialize Mongo session store; using MemoryStore:', err.message);
-    }
-}
+// WE REMOVE DIRECT MONGO ACCESS per user request. 
+// Portal must rely completely on Backend. 
+// For sessions, we use MemoryStore (default) or we could use Redis if provided.
+// Since no Redis config is present, we stick to MemoryStore which is fine for single-instance deployments.
+console.log('ℹ️ Using MemoryStore for sessions (Database access removed)');
 
 app.use(session(sessionOptions));
 
 console.log('NODE_ENV =', process.env.NODE_ENV);
-console.log('SESSION_STORE =', sessionMongoUrl ? 'mongo' : 'memory');
+console.log('SESSION_STORE = memory (Portal depends on Backend API only)');
 
 // Passport
 require('./config/passport')(passport);
@@ -184,7 +173,7 @@ const buildUploadUrl = (value) => {
     cleaned = cleaned.replace(/^\/+/, '');
     // Remove leading 'uploads/' if present
     cleaned = cleaned.replace(/^uploads\//, '');
-    
+
     return `${BACKEND_URL}/uploads/${cleaned}`;
 };
 

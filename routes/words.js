@@ -153,7 +153,19 @@ router.get('/', async (req, res) => {
                             _id: plan._id,
                             sessionName: plan.sessionName || `Session ${plan.sessionIndex || ''}`,
                             sessionIndex: plan.sessionIndex,
-                            active: plan.active !== false
+                            active: plan.active !== false,
+                            targetDuration: plan.targetDuration,
+                            // Ensure structure matches view expectations
+                            sessionStructure: {
+                                playDuration: plan.playDuration,
+                                breakDuration: plan.breakDuration,
+                                maxAttempts: plan.maxAttempts
+                            },
+                            playSchedule: {
+                                allowedDays: plan.allowedDays || (plan.playSchedule ? plan.playSchedule.allowedDays : []) || []
+                            },
+                            breakDuration: plan.breakDuration, // Fallback
+                            maxAttempts: plan.maxAttempts // Fallback
                         }))
                     : [];
             } catch (planError) {
@@ -198,6 +210,10 @@ router.get('/', async (req, res) => {
 
     } catch (error) {
         console.error('Words View Error:', error.message);
+        if (error.response) {
+            console.error('Backend Error Details:', JSON.stringify(error.response.data, null, 2));
+            console.error('Backend Status:', error.response.status);
+        }
         req.flash('error_msg', 'Error loading page');
         res.redirect('/specialist');
     }
@@ -310,6 +326,53 @@ router.post('/child/:childId/sessions/:sessionId/reset', async (req, res) => {
         console.error('Reset Session Error:', error?.response?.data || error.message);
         req.flash('error_msg', 'حدث خطأ أثناء إعادة تعيين الجلسة');
         res.redirect(`/specialist/words/child/${req.params.childId}/sessions`);
+    }
+});
+
+// Update Session (Settings + Content)
+router.post('/child/:childId/sessions/:sessionId/update', async (req, res) => {
+    try {
+        const { childId, sessionId } = req.params;
+        const {
+            totalDuration, playDuration, breakDuration, maxAttempts,
+            allowedDays, lettersText, wordsText
+        } = req.body;
+
+        const letters = lettersText ? JSON.parse(lettersText) : [];
+        const words = wordsText ? JSON.parse(wordsText) : [];
+
+        // Helper to safely parse integers (returns undefined for empty strings/invalid)
+        const safeInt = (val) => {
+            if (val === '' || val === undefined || val === null) return undefined;
+            const n = Number(val);
+            return isNaN(n) ? undefined : n;
+        };
+
+        // Payload for Backend
+        const payload = {
+            targetDuration: safeInt(totalDuration),
+            playDuration: safeInt(playDuration),
+            breakDuration: safeInt(breakDuration),
+            maxAttempts: safeInt(maxAttempts),
+            letters,
+            words,
+            // Backend expects allowedDays at root
+            allowedDays: Array.isArray(allowedDays) ? allowedDays.map(Number) : (allowedDays ? [Number(allowedDays)] : [])
+        };
+
+        const response = await apiClient.authPut(req, `/exercises/${sessionId}`, payload);
+
+        if (response.data.success) {
+            req.flash('success_msg', 'تم تحديث الجلسة بنجاح');
+        } else {
+            req.flash('error_msg', response.data.message || 'فشل التحديث');
+        }
+
+        res.redirect(`/specialist/words?childId=${childId}&sessionId=${sessionId}`);
+    } catch (error) {
+        console.error('Update Session Error:', error.message);
+        req.flash('error_msg', 'خطأ في تحديث الجلسة');
+        res.redirect(`/specialist/words?childId=${req.params.childId}&sessionId=${req.params.sessionId}`);
     }
 });
 

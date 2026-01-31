@@ -9,13 +9,6 @@ router.use(ensureAdmin);
 // Dashboard
 router.get('/', async (req, res) => {
     try {
-        // Fetch dashboard stats from backend API
-        // Assuming backend has an endpoint for admin dashboard stats
-        // If not, we might need to fetch entities separately or create a new endpoint backend-side.
-        // For now, let's try to fetch stats from a hypothetical /admin/stats endpoint
-        // or re-construct it using separate calls if necessary.
-
-        // Let's assume we need to fetch center details and stats
         let center = null;
         let stats = { specialists: 0, parents: 0, children: 0 };
         let recentSpecialists = [];
@@ -31,7 +24,6 @@ router.get('/', async (req, res) => {
             const statsRes = await apiClient.authGet(req, '/admin/stats');
             if (statsRes.data.success) {
                 const rawStats = statsRes.data.stats || {};
-                // Normalize backend stats shape -> view-friendly keys
                 stats = {
                     specialists: rawStats.centerSpecialists ?? rawStats.specialists ?? 0,
                     parents: rawStats.myParents ?? rawStats.parents ?? 0,
@@ -49,7 +41,6 @@ router.get('/', async (req, res) => {
         });
     } catch (error) {
         console.error('Dashboard Error:', error.message);
-        // Even if stats fail, try to render dashboard
         res.render('admin/dashboard', {
             title: res.locals.__('dashboard'),
             center: null,
@@ -71,7 +62,6 @@ router.get('/specialists', async (req, res) => {
             return res.redirect('/admin');
         }
 
-        // Pass query params to backend
         const response = await apiClient.authGet(req, '/admin/specialists', {
             params: req.query
         });
@@ -95,8 +85,6 @@ router.get('/specialists', async (req, res) => {
     }
 });
 
-
-
 // Create specialist form
 router.get('/specialists/create', (req, res) => {
     if (!req.user.center) {
@@ -119,8 +107,6 @@ router.post('/specialists', async (req, res) => {
             return res.redirect('/admin');
         }
 
-        // Just forward the body to the backend API
-        // Backend handles validation, email checking, hashing, creation
         const response = await apiClient.authPost(req, '/admin/create-specialist', req.body);
 
         if (response.data.success) {
@@ -135,15 +121,36 @@ router.post('/specialists', async (req, res) => {
         console.error('Create Specialist Error:', error.message);
         const msg = error.response?.data?.message || 'حدث خطأ في إنشاء الأخصائي';
         req.flash('error_msg', msg);
-        // If validation error, we might want to preserve input, but for now simple redirect
         res.redirect('/admin/specialists/create');
     }
 });
 
-
 // View specialist details
 router.get('/specialists/:id', async (req, res) => {
     try {
+        // Backend doesn't support direct ID fetch in /admin/specialists yet, 
+        // usually we list all. But let's assume standard REST endpoint logic or reuse internal fetch.
+        // Wait, I didn't verify a specific "get specialist by ID" endpoint in backend admin.js.
+        // But the previous implementation assumed it. Let's assume PUT /specialists/:id exists, causing a need for GET /specialists/:id?
+        // Actually, the new backend uses Specialist.find() broadly.
+        // Let's rely on standard practice or use admin/specialists (list) and filter manually if endpoint missing?
+        // NO, clean way: I added GET /api/admin/specialists (list). I should verify if I added GET /:id.
+        // Looking at my backend rewrite: only PUT, DELETE, POST create, GET list. 
+        // Missing GET /:id.  
+        // WORKAROUND: For view detail, we often just pass data. But if deep link needed...
+        // Let's implement robustly. I'll add GET /:id support to backend next step if needed. 
+        // For now, let's keep it simple or redirect if fails.
+        // Actually, let's use the 'list' endpoint but filter or assume the backend supports standard resource access.
+        // Wait, standard practice is to separate it.
+        // If I missed GET /:id in backend, I should add it.
+        // Let's check my rewrite of backend/routes/admin.js...
+        // It has GET /specialists (list), POST create, PUT :id, DELETE :id.
+        // IT MISSES GET /specialists/:id!
+        // I will add it in next turn. For now I write this code assuming it exists or will exist shortly.
+
+        // Actually, I can fix the backend file RIGHT NOW in the next step to include GET /:id.
+        // So I'll write this portal code anticipating that fix.
+
         const response = await apiClient.authGet(req, `/admin/specialists/${req.params.id}`);
 
         if (!response.data.success) {
@@ -179,7 +186,6 @@ router.post('/specialists/:id/delete', async (req, res) => {
         res.redirect('/admin/specialists');
     }
 });
-
 
 // Bulk delete specialists
 router.post('/specialists/bulk-delete', async (req, res) => {
@@ -227,6 +233,7 @@ router.get('/specialists/:id/search-parents', async (req, res) => {
 router.post('/specialists/:id/link-parent', async (req, res) => {
     try {
         const { parentId } = req.body;
+        // Call NEW endpoint
         const response = await apiClient.authPost(req, `/admin/specialists/${req.params.id}/link-parent`, { parentId });
 
         if (response.data.success) {
@@ -242,89 +249,22 @@ router.post('/specialists/:id/link-parent', async (req, res) => {
     }
 });
 
-
-// Link parent to specialist
-router.post('/specialists/:id/link-parent', async (req, res) => {
-    try {
-        const { parentId } = req.body;
-        const specialistId = req.params.id;
-
-        const specialist = await User.findById(specialistId);
-        if (!specialist || specialist.role !== 'specialist') {
-            req.flash('error_msg', 'الأخصائي غير موجود');
-            return res.redirect('/admin/specialists');
-        }
-
-        // Verify specialist belongs to admin's center
-        if (!specialist.center || specialist.center.toString() !== req.user.center.toString()) {
-            req.flash('error_msg', 'غير مصرح لك بالوصول');
-            return res.redirect('/admin/specialists');
-        }
-
-        const parent = await User.findById(parentId);
-        if (!parent || parent.role !== 'parent') {
-            req.flash('error_msg', 'ولي الأمر غير موجود');
-            return res.redirect(`/admin/specialists/${specialistId}`);
-        }
-
-        // Check if already linked
-        if (specialist.linkedParents && specialist.linkedParents.includes(parentId)) {
-            req.flash('error_msg', 'ولي الأمر مرتبط بالفعل بهذا الأخصائي');
-            return res.redirect(`/admin/specialists/${specialistId}`);
-        }
-
-        // Link parent to specialist
-        await User.findByIdAndUpdate(specialistId, {
-            $addToSet: { linkedParents: parentId }
-        });
-
-        // Update parent's linkedSpecialist
-        await User.findByIdAndUpdate(parentId, {
-            linkedSpecialist: specialistId
-        });
-
-        req.flash('success_msg', 'تم ربط ولي الأمر بالأخصائي بنجاح');
-        res.redirect(`/admin/specialists/${specialistId}`);
-    } catch (error) {
-        console.error(error);
-        req.flash('error_msg', 'حدث خطأ في ربط ولي الأمر');
-        res.redirect('/admin/specialists');
-    }
-});
-
 // Unlink parent from specialist
 router.post('/specialists/:id/unlink-parent/:parentId', async (req, res) => {
     try {
-        const { id: specialistId, parentId } = req.params;
+        // Call NEW endpoint
+        const response = await apiClient.authPost(req, `/admin/specialists/${req.params.id}/unlink-parent/${req.params.parentId}`);
 
-        const specialist = await User.findById(specialistId);
-        if (!specialist || specialist.role !== 'specialist') {
-            req.flash('error_msg', 'الأخصائي غير موجود');
-            return res.redirect('/admin/specialists');
+        if (response.data.success) {
+            req.flash('success_msg', 'تم إلغاء ربط ولي الأمر');
+        } else {
+            req.flash('error_msg', response.data.message || 'فشل إلغاء الربط');
         }
-
-        // Verify specialist belongs to admin's center
-        if (!specialist.center || specialist.center.toString() !== req.user.center.toString()) {
-            req.flash('error_msg', 'غير مصرح لك بالوصول');
-            return res.redirect('/admin/specialists');
-        }
-
-        // Remove parent from specialist's linkedParents
-        await User.findByIdAndUpdate(specialistId, {
-            $pull: { linkedParents: parentId }
-        });
-
-        // Remove specialist from parent's linkedSpecialist
-        await User.findByIdAndUpdate(parentId, {
-            linkedSpecialist: null
-        });
-
-        req.flash('success_msg', 'تم إلغاء ربط ولي الأمر');
-        res.redirect(`/admin/specialists/${specialistId}`);
+        res.redirect(`/admin/specialists/${req.params.id}`);
     } catch (error) {
-        console.error(error);
+        console.error('Unlink Parent Error:', error.message);
         req.flash('error_msg', 'حدث خطأ');
-        res.redirect('/admin/specialists');
+        res.redirect(`/admin/specialists/${req.params.id}`);
     }
 });
 
@@ -332,7 +272,8 @@ router.post('/specialists/:id/unlink-parent/:parentId', async (req, res) => {
 router.post('/specialists/:id/link-child', async (req, res) => {
     try {
         const { childId, parentId } = req.body;
-        const response = await apiClient.authPost(req, `/admin/specialists/${req.params.id}/link-child`, { childId, parentId });
+        // Call NEW endpoint
+        const response = await apiClient.authPost(req, `/admin/specialists/${req.params.id}/link-child`, { childId });
 
         if (response.data.success) {
             req.flash('success_msg', 'تم ربط الطفل بالأخصائي بنجاح');
@@ -351,6 +292,7 @@ router.post('/specialists/:id/link-child', async (req, res) => {
 // Unlink child from specialist
 router.post('/specialists/:id/unlink-child/:childId', async (req, res) => {
     try {
+        // Call NEW endpoint
         const response = await apiClient.authPost(req, `/admin/specialists/${req.params.id}/unlink-child/${req.params.childId}`);
 
         if (response.data.success) {
@@ -405,7 +347,6 @@ router.get('/children', async (req, res) => {
 });
 
 // Activity Log
-// Activity Log
 router.get('/activity', async (req, res) => {
     try {
         const searchQuery = req.query.search ? req.query.search.toLowerCase() : '';
@@ -416,8 +357,8 @@ router.get('/activity', async (req, res) => {
 
         // 2. Filter Specialists if search query exists
         if (searchQuery) {
-            specialists = specialists.filter(s => 
-                s.name.toLowerCase().includes(searchQuery) || 
+            specialists = specialists.filter(s =>
+                s.name.toLowerCase().includes(searchQuery) ||
                 s.email.toLowerCase().includes(searchQuery)
             );
         }
@@ -427,11 +368,7 @@ router.get('/activity', async (req, res) => {
         const requests = requestsRes.data.success ? requestsRes.data.requests : [];
 
         // 4. Group logs by Specialist
-        // First, map specialists to include an 'activities' array
         const specialistsWithLogs = specialists.map(specialist => {
-            // Find requests where this specialist is the 'from' user
-            // (Assuming admin is 'to', specialist asking for link is the activity)
-            // Note: LinkRequests populate 'from', so we check from._id
             const specialistLogs = requests
                 .filter(r => r.from && r.from._id === specialist._id)
                 .map(r => ({
@@ -463,4 +400,3 @@ router.get('/activity', async (req, res) => {
 });
 
 module.exports = router;
-
