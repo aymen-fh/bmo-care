@@ -70,6 +70,60 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Logout Confirmation Modal
+    const logoutLinks = document.querySelectorAll('[data-logout-confirm]');
+    const logoutModal = document.getElementById('logoutModal');
+    const logoutCancel = document.getElementById('logoutCancel');
+    const logoutConfirm = document.getElementById('logoutConfirm');
+    let logoutTarget = null;
+
+    const openLogoutModal = (href) => {
+        if (!logoutModal) return;
+        logoutTarget = href;
+        logoutModal.classList.add('show');
+        logoutModal.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeLogoutModal = () => {
+        if (!logoutModal) return;
+        logoutModal.classList.remove('show');
+        logoutModal.setAttribute('aria-hidden', 'true');
+        logoutTarget = null;
+    };
+
+    logoutLinks.forEach((link) => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            openLogoutModal(link.getAttribute('href'));
+        });
+    });
+
+    if (logoutCancel) {
+        logoutCancel.addEventListener('click', closeLogoutModal);
+    }
+
+    if (logoutConfirm) {
+        logoutConfirm.addEventListener('click', () => {
+            if (logoutTarget) {
+                window.location.href = logoutTarget;
+            }
+        });
+    }
+
+    if (logoutModal) {
+        logoutModal.addEventListener('click', (e) => {
+            if (e.target === logoutModal) {
+                closeLogoutModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeLogoutModal();
+        }
+    });
     // Theme Management
     const themeToggle = document.getElementById('themeToggle');
     const html = document.documentElement;

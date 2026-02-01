@@ -31,6 +31,17 @@ router.get('/', async (req, res) => {
                 };
                 recentSpecialists = statsRes.data.recentSpecialists || [];
             }
+
+            // Ensure children count reflects children assigned to specialists in this center
+            try {
+                const childrenRes = await apiClient.authGet(req, '/admin/my-children');
+                if (childrenRes.data.success) {
+                    const list = Array.isArray(childrenRes.data.children) ? childrenRes.data.children : [];
+                    stats.children = list.length;
+                }
+            } catch (childError) {
+                console.warn('Admin dashboard children fetch failed:', childError?.message || childError);
+            }
         }
 
         res.render('admin/dashboard', {
@@ -47,6 +58,67 @@ router.get('/', async (req, res) => {
             stats: { specialists: 0, parents: 0, children: 0 },
             recentSpecialists: []
         });
+    }
+});
+
+// Center Profile (Admin only)
+router.get('/center-profile', async (req, res) => {
+    try {
+        if (!req.user.center) {
+            req.flash('error_msg', 'لا يوجد مركز مرتبط بحسابك');
+            return res.redirect('/admin');
+        }
+
+        const response = await apiClient.authGet(req, '/admin/center');
+        const center = response.data.success ? response.data.center : null;
+
+        if (!center) {
+            req.flash('error_msg', 'تعذر تحميل بيانات المركز');
+            return res.redirect('/admin');
+        }
+
+        res.render('admin/center-profile', {
+            title: res.locals.__('centerProfile') || 'ملف المركز',
+            center
+        });
+    } catch (error) {
+        console.error('Center Profile Error:', error.message);
+        req.flash('error_msg', 'حدث خطأ في تحميل بيانات المركز');
+        res.redirect('/admin');
+    }
+});
+
+// Update Center Profile (Admin only)
+router.post('/center-profile', async (req, res) => {
+    try {
+        if (!req.user.center) {
+            req.flash('error_msg', 'لا يوجد مركز مرتبط بحسابك');
+            return res.redirect('/admin');
+        }
+
+        const payload = {
+            name: req.body.name,
+            nameEn: req.body.nameEn,
+            address: req.body.address,
+            phone: req.body.phone,
+            email: req.body.email,
+            description: req.body.description
+        };
+
+        const response = await apiClient.authPost(req, '/admin/center', payload);
+
+        if (response.data.success) {
+            req.flash('success_msg', res.locals.__('updatedSuccessfully') || 'تم التحديث بنجاح');
+        } else {
+            req.flash('error_msg', response.data.message || 'فشل التحديث');
+        }
+
+        res.redirect('/admin/center-profile');
+    } catch (error) {
+        const backendMessage = error.response?.data?.message;
+        console.error('Center Profile Update Error:', backendMessage || error.message);
+        req.flash('error_msg', backendMessage || 'حدث خطأ أثناء تحديث بيانات المركز');
+        res.redirect('/admin/center-profile');
     }
 });
 
@@ -309,12 +381,50 @@ router.get('/parents', async (req, res) => {
 // My children
 router.get('/children', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/admin/my-children');
-        const children = response.data.success ? response.data.children : [];
+        const [childrenRes, specialistsRes] = await Promise.all([
+            apiClient.authGet(req, '/admin/my-children'),
+            apiClient.authGet(req, '/admin/specialists')
+        ]);
+
+        const children = childrenRes.data.success ? childrenRes.data.children : [];
+        const specialists = specialistsRes.data.success ? specialistsRes.data.specialists : [];
+        const specialistById = new Map(
+            (specialists || []).map(s => [String(s._id), s])
+        );
+
+        const enrichedChildren = (children || []).map(child => {
+            const assigned = child.assignedSpecialist;
+            const linked = child.parent && child.parent.linkedSpecialist;
+
+            const assignedId = assigned && typeof assigned === 'object'
+                ? (assigned._id || assigned.id)
+                : assigned;
+            const linkedId = linked && typeof linked === 'object'
+                ? (linked._id || linked.id)
+                : linked;
+
+            const assignedName = (assigned && assigned.name)
+                ? assigned.name
+                : (assignedId && specialistById.get(String(assignedId))
+                    ? specialistById.get(String(assignedId)).name
+                    : null);
+
+            const linkedName = (linked && linked.name)
+                ? linked.name
+                : (linkedId && specialistById.get(String(linkedId))
+                    ? specialistById.get(String(linkedId)).name
+                    : null);
+
+            return {
+                ...child,
+                assignedSpecialistName: assignedName,
+                linkedSpecialistName: linkedName
+            };
+        });
 
         res.render('admin/children', {
             title: res.locals.__('myChildren'),
-            children
+            children: enrichedChildren
         });
     } catch (error) {
         console.error('My Children Error:', error.message);

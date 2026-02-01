@@ -36,6 +36,13 @@
                         <%= __('dashboard') %>
                     </span>
                 </a>
+                <a href="/admin/center-profile"
+                    class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'center-profile' ? 'active' : '' %>">
+                    <i class="fas fa-building"></i>
+                    <span>
+                        <%= __('centerProfile') || 'ملف المركز' %>
+                    </span>
+                </a>
                 <a href="/admin/specialists"
                     class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'specialists' ? 'active' : '' %>">
                     <i class="fas fa-user-md"></i>
@@ -52,17 +59,6 @@
                     </span>
                 </a>
 
-                <div class="nav-divider"></div>
-                <span class="nav-label">
-                    <%= __('specialistFunctions') %>
-                </span>
-                <a href="/admin/parents"
-                    class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'parents' ? 'active' : '' %>">
-                    <i class="fas fa-users"></i>
-                    <span>
-                        <%= __('parents') %>
-                    </span>
-                </a>
                 <a href="/admin/children"
                     class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'children' ? 'active' : '' %>">
                     <i class="fas fa-child"></i>
@@ -165,7 +161,7 @@
                 </span>
             </div>
         </div>
-        <a href="/auth/logout" class="logout-btn">
+        <a href="/auth/logout" class="logout-btn" data-logout-confirm>
             <i class="fas fa-sign-out-alt"></i>
         </a>
     </div>

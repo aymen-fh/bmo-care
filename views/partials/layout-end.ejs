@@ -1,6 +1,66 @@
-</div>
-</main>
-</div>
+					</div>
+			</main>
+	</div>
+
+	<!-- Logout Confirmation Modal -->
+	<div id="logoutModal" class="modal-overlay" aria-hidden="true">
+		<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle">
+			<h3 id="logoutModalTitle">تأكيد تسجيل الخروج</h3>
+			<p>هل أنت متأكد أنك تريد تسجيل الخروج؟</p>
+			<div class="modal-actions">
+				<button type="button" id="logoutCancel" class="btn btn-secondary">إلغاء</button>
+				<button type="button" id="logoutConfirm" class="btn btn-danger">تسجيل الخروج</button>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.modal-overlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.45);
+			display: none;
+			align-items: center;
+			justify-content: center;
+			z-index: 9999;
+			padding: 1rem;
+		}
+
+		.modal-overlay.show {
+			display: flex;
+		}
+
+		.modal-card {
+			background: var(--bg-card, #fff);
+			color: var(--text-primary, #111827);
+			padding: 1.5rem;
+			border-radius: 16px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			width: 100%;
+			max-width: 420px;
+		}
+
+		.modal-card h3 {
+			margin: 0 0 0.5rem;
+			font-weight: 800;
+		}
+
+		.modal-card p {
+			margin: 0 0 1.25rem;
+			color: var(--text-secondary, #6b7280);
+		}
+
+		.modal-actions {
+			display: flex;
+			gap: 0.75rem;
+			justify-content: flex-end;
+		}
+
+		.btn.btn-danger {
+			background: #ef4444;
+			color: #fff;
+		}
+	</style>
 
 <script src="/js/main.js"></script>
 

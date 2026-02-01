@@ -38,6 +38,16 @@
                             </span>
                         </div>
 
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem;">
+                            <span style="color: var(--text-secondary);"><%= __('specialist') %></span>
+                            <span style="font-weight: 600; color: var(--text-primary);">
+                                <%= child.assignedSpecialistName
+                                    || child.linkedSpecialistName
+                                    || ((child.assignedSpecialist && child.assignedSpecialist.name) ? child.assignedSpecialist.name : null)
+                                    || ((child.parent && child.parent.linkedSpecialist && child.parent.linkedSpecialist.name) ? child.parent.linkedSpecialist.name : '-') %>
+                            </span>
+                        </div>
+
                          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem;">
                             <span style="color: var(--text-secondary);"><%= __('level') %></span>
                             <span class="badge" style="

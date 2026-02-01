@@ -1,0 +1,90 @@
+<%- include('../partials/layout-start', { title: title, activePage: 'center-profile' }) %>
+
+<div class="page-container-clean">
+    <div class="section-header-clean" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-building" style="color: #3b82f6;"></i>
+            <%= title %>
+        </h2>
+        <p class="text-muted" style="margin: 0.5rem 0 0;">
+            <%= __('centerProfileDesc') || 'إدارة بيانات المركز الأساسية' %>
+        </p>
+    </div>
+
+    <% if (center) { %>
+        <div class="settings-container glass p-4">
+            <form action="/admin/center-profile" method="POST">
+                <div class="form-section mb-4">
+                    <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-building"></i> <%= __('general') || 'عام' %></h3>
+                    <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label><%= __('centerName') || 'اسم المركز' %></label>
+                            <input class="form-control" type="text" name="name" value="<%= center.name || '' %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label><%= __('centerNameEn') || 'اسم المركز (EN)' %></label>
+                            <input class="form-control" type="text" name="nameEn" value="<%= center.nameEn || '' %>">
+                        </div>
+                        <div class="form-group">
+                            <label><%= __('address') || 'العنوان' %></label>
+                            <input class="form-control" type="text" name="address" value="<%= center.address || '' %>">
+                        </div>
+                        <div class="form-group">
+                            <label><%= __('phone') || 'الهاتف' %></label>
+                            <input class="form-control" type="text" name="phone" value="<%= center.phone || '' %>">
+                        </div>
+                        <div class="form-group">
+                            <label><%= __('email') || 'البريد الإلكتروني' %></label>
+                            <input class="form-control" type="email" name="email" value="<%= center.email || '' %>">
+                        </div>
+                        <div class="form-group">
+                            <label><%= __('status') || 'الحالة' %></label>
+                            <input class="form-control" type="text" value="<%= center.isActive === false ? (__('inactive') || 'غير نشط') : (__('active') || 'نشط') %>" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section mb-4">
+                    <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-align-left"></i> <%= __('description') || 'الوصف' %></h3>
+                    <div class="form-group">
+                        <textarea class="form-control" name="description" rows="4"><%= center.description || '' %></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section mb-4">
+                    <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-user-tie"></i> <%= __('summary') || 'ملخص' %></h3>
+                    <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
+                        <div class="stat-card-clean">
+                            <div class="stat-content-clean">
+                                <h2><%= (center.admin && center.admin.name) ? center.admin.name : '-' %></h2>
+                                <p><%= __('admin') || 'المدير' %></p>
+                            </div>
+                            <div class="stat-icon-clean icon-blue"><i class="fas fa-user-tie"></i></div>
+                        </div>
+                        <div class="stat-card-clean">
+                            <div class="stat-content-clean">
+                                <h2><%= center.specialists ? center.specialists.length : 0 %></h2>
+                                <p><%= __('specialists') || 'الأخصائيون' %></p>
+                            </div>
+                            <div class="stat-icon-clean icon-green"><i class="fas fa-user-md"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions mt-4 text-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i>
+                        <%= __('saveChanges') || 'حفظ التغييرات' %>
+                    </button>
+                </div>
+            </form>
+        </div>
+    <% } else { %>
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <%= __('noCenterAssigned') %>
+        </div>
+    <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>
