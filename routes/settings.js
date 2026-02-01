@@ -6,10 +6,7 @@ const { ensureAdmin } = require('../middleware/auth');
 // Get Settings Page
 router.get('/', ensureAdmin, async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/admin/settings');
-        const settings = response.data.success ? response.data.settings : {};
-
-        // Default values
+        // Backend no longer exposes /admin/settings. Use safe defaults.
         const defaults = {
             appName: 'Portal',
             appEmail: 'admin@portal.com',
@@ -20,7 +17,7 @@ router.get('/', ensureAdmin, async (req, res) => {
 
         res.render('admin/settings', {
             title: 'Settings',
-            settings: { ...defaults, ...settings },
+            settings: { ...defaults },
             activePage: 'settings'
         });
     } catch (error) {
@@ -33,19 +30,8 @@ router.get('/', ensureAdmin, async (req, res) => {
 // Update Settings
 router.post('/', ensureAdmin, async (req, res) => {
     try {
-        const updates = req.body;
-
-        // Handle checkbox (maintenanceMode)
-        if (!updates.maintenanceMode) updates.maintenanceMode = false;
-        else updates.maintenanceMode = true;
-
-        const response = await apiClient.authPost(req, '/admin/settings', updates);
-
-        if (response.data.success) {
-            req.flash('success_msg', 'Settings updated successfully');
-        } else {
-            req.flash('error_msg', response.data.message || 'Error updating settings');
-        }
+        // Backend no longer supports settings updates.
+        req.flash('error_msg', 'Settings updates are not supported in the current backend.');
         res.redirect('/settings');
     } catch (error) {
         console.error('Settings Update Error:', error.message);

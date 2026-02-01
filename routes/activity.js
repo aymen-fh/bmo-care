@@ -6,19 +6,43 @@ const { ensureAdmin } = require('../middleware/auth');
 // View Activity Log
 router.get('/', ensureAdmin, async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const response = await apiClient.authGet(req, '/admin/activity-log', {
-            params: { page }
-        });
+        const searchQuery = req.query.search ? req.query.search.toLowerCase() : '';
 
-        const { logs, pages, currentPage } = response.data.success ? response.data : { logs: [], pages: 1, currentPage: 1 };
+        const [specialistsRes, requestsRes] = await Promise.all([
+            apiClient.authGet(req, '/admin/specialists'),
+            apiClient.authGet(req, '/admin/link-requests')
+        ]);
+
+        let specialists = specialistsRes.data.success ? specialistsRes.data.specialists : [];
+        const requests = requestsRes.data.success ? requestsRes.data.requests : [];
+
+        if (searchQuery) {
+            specialists = specialists.filter(s =>
+                (s.name || '').toLowerCase().includes(searchQuery) ||
+                (s.email || '').toLowerCase().includes(searchQuery)
+            );
+        }
+
+        const specialistsWithLogs = specialists.map(specialist => {
+            const specialistLogs = requests
+                .filter(r => r.from && r.from._id === specialist._id)
+                .map(r => ({
+                    action: `Link Request (${r.status})`,
+                    createdAt: r.createdAt,
+                    details: `Status: ${r.status}`,
+                    type: r.status === 'pending' ? 'update' : (r.status === 'approved' ? 'create' : 'delete')
+                }));
+
+            return {
+                ...specialist,
+                activities: specialistLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            };
+        });
 
         res.render('admin/activity-log', {
             title: res.locals.__('activityLog') || 'سجل النشاطات',
-            logs: logs || [],
-            currentPage: currentPage || page,
-            pages: pages || 1,
-            activePage: 'activity'
+            specialists: specialistsWithLogs,
+            searchQuery: req.query.search || ''
         });
     } catch (error) {
         console.error('Activity Log Error:', error.message);

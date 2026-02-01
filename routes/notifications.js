@@ -6,7 +6,11 @@ const { ensureAuthenticated } = require('../middleware/auth');
 // Get all notifications for current user
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/notifications');
+        if (req.user?.role !== 'parent') {
+            return res.json({ success: true, count: 0, notifications: [] });
+        }
+
+        const response = await apiClient.authGet(req, '/parents/notifications');
         res.json(response.data);
     } catch (error) {
         console.error('Notifications Error:', error.message);
@@ -17,7 +21,11 @@ router.get('/', ensureAuthenticated, async (req, res) => {
 // Get unread count
 router.get('/unread-count', ensureAuthenticated, async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/notifications/unread-count');
+        if (req.user?.role !== 'parent') {
+            return res.json({ success: true, count: 0 });
+        }
+
+        const response = await apiClient.authGet(req, '/parents/notifications/unread/count');
         res.json(response.data);
     } catch (error) {
         console.error('Unread Count Error:', error.message);
@@ -28,7 +36,11 @@ router.get('/unread-count', ensureAuthenticated, async (req, res) => {
 // Mark single notification as read
 router.post('/:id/read', ensureAuthenticated, async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, `/notifications/${req.params.id}/read`);
+        if (req.user?.role !== 'parent') {
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+
+        const response = await apiClient.authPut(req, `/parents/notifications/${req.params.id}/read`);
         res.json(response.data);
     } catch (error) {
         console.error('Mark Read Error:', error.message);
@@ -39,8 +51,8 @@ router.post('/:id/read', ensureAuthenticated, async (req, res) => {
 // Mark all as read
 router.post('/read-all', ensureAuthenticated, async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, '/notifications/read-all');
-        res.json(response.data);
+        // Backend does not provide a read-all endpoint.
+        res.status(400).json({ success: false, message: 'Not supported' });
     } catch (error) {
         console.error('Read All Error:', error.message);
         res.status(500).json({ success: false });

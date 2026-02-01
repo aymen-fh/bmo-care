@@ -9,15 +9,19 @@ router.use(ensureSuperAdmin);
 // Dashboard
 router.get('/', async (req, res) => {
     try {
-        const response = await apiClient.authGet(req, '/superadmin/dashboard');
+        const [statsRes, centersRes] = await Promise.all([
+            apiClient.authGet(req, '/superadmin/stats'),
+            apiClient.authGet(req, '/superadmin/centers')
+        ]);
 
-        const { stats, chartData, recentCenters } = response.data.success ? response.data : { stats: {}, chartData: {}, recentCenters: [] };
+        const stats = statsRes.data.success ? statsRes.data.stats : {};
+        const centers = centersRes.data.success ? centersRes.data.centers : [];
 
         res.render('superadmin/dashboard', {
             title: res.locals.__('dashboard'),
             stats: stats || {},
-            chartData: chartData || {},
-            recentCenters: recentCenters || []
+            chartData: {},
+            recentCenters: centers.slice(0, 5)
         });
     } catch (error) {
         console.error('SuperAdmin Dashboard Error:', error.message);
@@ -160,11 +164,15 @@ router.get('/admins', async (req, res) => {
     try {
         const { search } = req.query;
 
-        const response = await apiClient.authGet(req, '/superadmin/admins', {
-            params: { search }
-        });
+        const [adminsRes, centersRes] = await Promise.all([
+            apiClient.authGet(req, '/superadmin/admins', {
+                params: { search }
+            }),
+            apiClient.authGet(req, '/superadmin/centers')
+        ]);
 
-        const { admins, availableCenters } = response.data.success ? response.data : { admins: [], availableCenters: [] };
+        const admins = adminsRes.data.success ? adminsRes.data.admins : [];
+        const availableCenters = centersRes.data.success ? centersRes.data.centers : [];
 
         res.render('superadmin/admins', {
             title: res.locals.__('admins'),
@@ -202,7 +210,7 @@ router.get('/admins/create', async (req, res) => {
 // Create admin POST
 router.post('/admins', async (req, res) => {
     try {
-        const response = await apiClient.authPost(req, '/superadmin/admins', req.body);
+        const response = await apiClient.authPost(req, '/superadmin/create-admin', req.body);
 
         if (response.data.success) {
             req.flash('success_msg', 'تم إنشاء حساب المدير بنجاح');

@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
         if (req.user.center) {
             // Get Center details with stats
-            const centerRes = await apiClient.authGet(req, `/centers/${req.user.center}`);
+            const centerRes = await apiClient.authGet(req, '/admin/center');
             if (centerRes.data.success) {
                 center = centerRes.data.center;
             }
@@ -128,29 +128,6 @@ router.post('/specialists', async (req, res) => {
 // View specialist details
 router.get('/specialists/:id', async (req, res) => {
     try {
-        // Backend doesn't support direct ID fetch in /admin/specialists yet, 
-        // usually we list all. But let's assume standard REST endpoint logic or reuse internal fetch.
-        // Wait, I didn't verify a specific "get specialist by ID" endpoint in backend admin.js.
-        // But the previous implementation assumed it. Let's assume PUT /specialists/:id exists, causing a need for GET /specialists/:id?
-        // Actually, the new backend uses Specialist.find() broadly.
-        // Let's rely on standard practice or use admin/specialists (list) and filter manually if endpoint missing?
-        // NO, clean way: I added GET /api/admin/specialists (list). I should verify if I added GET /:id.
-        // Looking at my backend rewrite: only PUT, DELETE, POST create, GET list. 
-        // Missing GET /:id.  
-        // WORKAROUND: For view detail, we often just pass data. But if deep link needed...
-        // Let's implement robustly. I'll add GET /:id support to backend next step if needed. 
-        // For now, let's keep it simple or redirect if fails.
-        // Actually, let's use the 'list' endpoint but filter or assume the backend supports standard resource access.
-        // Wait, standard practice is to separate it.
-        // If I missed GET /:id in backend, I should add it.
-        // Let's check my rewrite of backend/routes/admin.js...
-        // It has GET /specialists (list), POST create, PUT :id, DELETE :id.
-        // IT MISSES GET /specialists/:id!
-        // I will add it in next turn. For now I write this code assuming it exists or will exist shortly.
-
-        // Actually, I can fix the backend file RIGHT NOW in the next step to include GET /:id.
-        // So I'll write this portal code anticipating that fix.
-
         const response = await apiClient.authGet(req, `/admin/specialists/${req.params.id}`);
 
         if (!response.data.success) {
