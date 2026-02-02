@@ -153,14 +153,15 @@
                                                 <% } %>
                                     </td>
                                     <td>
-                                        <% if (childObj && childObj._id) { %>
-                                            <a href="/specialist/child/<%= childObj._id %>" class="btn btn-sm btn-info"
+                                        <% const planId = session.planExerciseId || session.sessionId; %>
+                                        <% if (childObj && childObj._id && planId) { %>
+                                            <a href="/specialist/sessions/<%= planId %>/view?childId=<%= childObj._id %>" class="btn btn-sm btn-info"
                                                 title="<%= __('view') %>">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <% } else { %>
+                                        <% } else { %>
                                                 <span class="sessions-muted">-</span>
-                                                <% } %>
+                                        <% } %>
                                     </td>
                                 </tr>
                                 <% }) %>

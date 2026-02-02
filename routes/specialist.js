@@ -214,6 +214,52 @@ router.get('/children/:id', async (req, res) => {
 // LINK REQUESTS
 // ========================================
 
+// Pending child assignment requests (API proxy)
+router.get('/api/pending-requests', async (req, res) => {
+    try {
+        const response = await apiClient.authGet(req, '/specialists/pending-requests');
+        res.json({
+            success: true,
+            children: response.data.success ? response.data.children : [],
+            count: response.data.count || 0
+        });
+    } catch (error) {
+        console.error('Pending Requests API Error:', error.message);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Accept child assignment (API proxy)
+router.post('/api/accept-child/:childId', async (req, res) => {
+    try {
+        const response = await apiClient.authPost(req, `/specialists/accept-child/${req.params.childId}`);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Accept Child API Error:', error.message);
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || error.message
+        });
+    }
+});
+
+// Reject child assignment (API proxy)
+router.post('/api/reject-child/:childId', async (req, res) => {
+    try {
+        const response = await apiClient.authPost(req, `/specialists/reject-child/${req.params.childId}`);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Reject Child API Error:', error.message);
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || error.message
+        });
+    }
+});
+
 // List link requests
 router.get('/requests', async (req, res) => {
     try {
@@ -260,6 +306,23 @@ router.post('/requests/:id/accept', async (req, res) => {
     }
 });
 
+// Pending link requests count (badge) - API proxy
+router.get('/api/pending-link-requests-count', async (req, res) => {
+    try {
+        const response = await apiClient.authGet(req, '/specialists/pending-link-requests-count');
+        res.json({
+            success: true,
+            count: response.data.count || 0
+        });
+    } catch (error) {
+        console.error('Pending Link Requests Count API Error:', error.message);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
 // Reject request
 router.post('/requests/:id/reject', async (req, res) => {
     try {
@@ -280,92 +343,6 @@ router.post('/requests/:id/reject', async (req, res) => {
 });
 
 
-// ========================================
-// ACCOUNT MANAGEMENT
-// ========================================
-
-// Account management page
-// Account management page
-router.get('/account', async (req, res) => {
-    try {
-        // Fetch both Linked Parents and Available (Unlinked) Parents
-        const [linkedResponse, availableResponse] = await Promise.all([
-            apiClient.authGet(req, '/specialists/parents'),
-            apiClient.authGet(req, '/specialists/search-parent')
-        ]);
-
-        const linkedParents = linkedResponse.data.success ? linkedResponse.data.parents : [];
-        const allParents = availableResponse.data.success ? availableResponse.data.parents : [];
-
-        res.render('specialist/account', {
-            title: res.locals.__('accountManagement'),
-            allParents: allParents, // Available parents to link
-            linkedParents: linkedParents, // Already linked parents
-            currentSpecialistId: req.user.id
-        });
-    } catch (error) {
-        console.error('Account Page Error:', error.message);
-        req.flash('error_msg', res.locals.__('errorOccurred'));
-        res.redirect('/specialist');
-    }
-});
-
-// Search for parents
-router.get('/account/search', async (req, res) => {
-    try {
-        const { query } = req.query;
-
-        // CORRECTED PATH: /specialists/search-parent
-        const response = await apiClient.authGet(req, '/specialists/search-parent', {
-            params: { query }
-        });
-
-        // Backend only returns 'parents' list. It doesn't separate 'linkedParents' in this endpoint.
-        // We might need to fetch linked parents separately to mark them?
-        // Actually /search-parent logic in backend ALREADY EXCLUDES linked parents!
-        // " _id: { $nin: linkedParentIds } // Exclude already linked parents " <-- Found in backend code
-
-        const searchResults = response.data.success ? response.data.parents : [];
-
-        // We also want to show currently linked parents? 
-        // The view probably needs them. Let's fetch them too.
-        const linkedResponse = await apiClient.authGet(req, '/specialists/parents');
-        const linkedParents = linkedResponse.data.success ? linkedResponse.data.parents : [];
-
-        res.render('specialist/account', {
-            title: res.locals.__('accountManagement'),
-            linkedParents: linkedParents,
-            searchQuery: query || '',
-            searchResults: searchResults
-        });
-    } catch (error) {
-        console.error('Account Search Error:', error.message);
-        req.flash('error_msg', res.locals.__('errorOccurred'));
-        res.redirect('/specialist/account');
-    }
-});
-
-// Link a parent
-router.post('/account/link/:parentId', async (req, res) => {
-    try {
-        const { parentId } = req.params;
-
-        // CORRECTED PATH: /specialists/link-parent
-        // Note: Backend expects parentId in BODY
-        const response = await apiClient.authPost(req, `/specialists/link-parent`, { parentId });
-
-        if (response.data.success) {
-            req.flash('success_msg', res.locals.__('updatedSuccessfully'));
-        } else {
-            req.flash('error_msg', response.data.message || res.locals.__('errorOccurred'));
-        }
-        res.redirect('/specialist/account');
-    } catch (error) {
-        console.error('Account Link Error:', error.message);
-        req.flash('error_msg', res.locals.__('errorOccurred'));
-        res.redirect('/specialist/account');
-    }
-});
 
 
 // ===== PROFILE ROUTES =====
@@ -798,61 +775,103 @@ router.post('/child/:id/plan-settings', async (req, res) => {
 });
 
 // Create a new numbered plan session (Session 1/2/3...) with letters/words
+function _buildPlanSessionPayload(req, childId) {
+    const toNumber = (value) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : undefined;
+    };
+
+    const targetDurationInput = toNumber(req.body.targetDuration);
+    const playDuration = toNumber(req.body.playDuration);
+    const breakDuration = toNumber(req.body.breakDuration);
+    const sessionDuration = toNumber(req.body.sessionDuration);
+    const totalDuration = toNumber(req.body.totalDuration);
+    const maxAttempts = toNumber(req.body.maxAttempts);
+    const sessionName = String(req.body.sessionName || '').trim();
+
+    const targetDuration = (typeof targetDurationInput === 'number')
+        ? targetDurationInput
+        : (typeof totalDuration === 'number')
+            ? totalDuration
+            : (typeof sessionDuration === 'number')
+                ? sessionDuration
+                : (typeof playDuration === 'number')
+                    ? playDuration
+                    : undefined;
+
+    let scheduleEnabled = req.body.scheduleEnabled === 'on' || req.body.scheduleEnabled === true;
+    const allowedDays = Array.isArray(req.body.allowedDays)
+        ? req.body.allowedDays.map(Number).filter(x => Number.isFinite(x))
+        : req.body.allowedDays ? [Number(req.body.allowedDays)] : [];
+    if (!scheduleEnabled && allowedDays.length > 0) {
+        scheduleEnabled = true;
+    }
+    const windowStart = req.body.windowStart || '';
+    const windowEnd = req.body.windowEnd || '';
+
+    const parseLines = (s) => String(s || '')
+        .split(/\r?\n|,/g)
+        .map(x => x.trim())
+        .filter(Boolean);
+
+    const letters = parseLines(req.body.lettersText).map(letter => ({ letter }));
+    const words = parseLines(req.body.wordsText).map(word => ({ word }));
+
+    // إعدادات مدى ووقت اللعب للجلسة
+    const playSchedule = {
+        enabled: scheduleEnabled,
+        allowedDays,
+        windows: (windowStart && windowEnd) ? [{ start: windowStart, end: windowEnd }] : [],
+    };
+
+    return {
+        childId,
+        letters,
+        words,
+        ...(typeof targetDuration === 'number' ? { targetDuration } : {}),
+        ...(typeof playDuration === 'number' ? { playDuration } : {}),
+        ...(typeof breakDuration === 'number' ? { breakDuration } : {}),
+        ...(typeof sessionDuration === 'number' ? { sessionDuration } : {}),
+        ...(typeof totalDuration === 'number' ? { totalDuration } : {}),
+        ...(typeof maxAttempts === 'number' ? { maxAttempts } : {}),
+        ...(sessionName ? { sessionName } : {}),
+        playSchedule,
+    };
+}
+
+// Create plan session (API JSON)
+router.post('/api/child/:id/create-plan-session', async (req, res) => {
+    try {
+        const childId = req.params.id;
+        const payload = _buildPlanSessionPayload(req, childId);
+
+        if (typeof payload.targetDuration !== 'number'
+            || typeof payload.breakDuration !== 'number'
+            || typeof payload.maxAttempts !== 'number') {
+            return res.status(400).json({
+                success: false,
+                message: 'يجب تحديد مدة الجلسة ومدة الراحة وعدد المحاولات'
+            });
+        }
+
+        const createResponse = await apiClient.authPost(req, '/exercises', payload);
+        res.status(201).json(createResponse.data);
+    } catch (error) {
+        console.error('Create plan session API failed:', error?.message);
+        res.status(500).json({
+            success: false,
+            message: error?.response?.data?.message || error?.message || 'Failed to create session'
+        });
+    }
+});
+
+// Create plan session (Form POST)
 router.post('/child/:id/create-plan-session', async (req, res) => {
     try {
         const childId = req.params.id;
 
-        const toNumber = (value) => {
-            const n = Number(value);
-            return Number.isFinite(n) ? n : undefined;
-        };
-
-        const targetDuration = toNumber(req.body.targetDuration);
-        const playDuration = toNumber(req.body.playDuration);
-        const breakDuration = toNumber(req.body.breakDuration);
-        const sessionDuration = toNumber(req.body.sessionDuration);
-        const totalDuration = toNumber(req.body.totalDuration);
-        const maxAttempts = toNumber(req.body.maxAttempts);
-        const sessionName = String(req.body.sessionName || '').trim();
-
-        let scheduleEnabled = req.body.scheduleEnabled === 'on' || req.body.scheduleEnabled === true;
-        const allowedDays = Array.isArray(req.body.allowedDays)
-            ? req.body.allowedDays.map(Number).filter(x => Number.isFinite(x))
-            : req.body.allowedDays ? [Number(req.body.allowedDays)] : [];
-        if (!scheduleEnabled && allowedDays.length > 0) {
-            scheduleEnabled = true;
-        }
-        const windowStart = req.body.windowStart || '';
-        const windowEnd = req.body.windowEnd || '';
-
-        const parseLines = (s) => String(s || '')
-            .split(/\r?\n|,/g)
-            .map(x => x.trim())
-            .filter(Boolean);
-
-        const letters = parseLines(req.body.lettersText).map(letter => ({ letter }));
-        const words = parseLines(req.body.wordsText).map(word => ({ word }));
-
-        // إعدادات مدى ووقت اللعب للجلسة
-        const playSchedule = {
-            enabled: scheduleEnabled,
-            allowedDays,
-            windows: (windowStart && windowEnd) ? [{ start: windowStart, end: windowEnd }] : [],
-        };
-
-        await apiClient.authPost(req, '/exercises', {
-            childId,
-            letters,
-            words,
-            ...(typeof targetDuration === 'number' ? { targetDuration } : {}),
-            ...(typeof playDuration === 'number' ? { playDuration } : {}),
-            ...(typeof breakDuration === 'number' ? { breakDuration } : {}),
-            ...(typeof sessionDuration === 'number' ? { sessionDuration } : {}),
-            ...(typeof totalDuration === 'number' ? { totalDuration } : {}),
-            ...(typeof maxAttempts === 'number' ? { maxAttempts } : {}),
-            ...(sessionName ? { sessionName } : {}),
-            playSchedule,
-        });
+        const payload = _buildPlanSessionPayload(req, childId);
+        await apiClient.authPost(req, '/exercises', payload);
 
         req.flash('success_msg', 'تم إنشاء جلسة جديدة للطفل.');
         res.redirect(`/specialist/words/child/${childId}/sessions`);
@@ -1282,6 +1301,95 @@ router.get('/chat/init/:userId', async (req, res) => {
 // ========================================
 // SESSIONS LOG (Progress Reports)
 // ========================================
+router.get('/sessions/:sessionId/view', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const { childId } = req.query;
+
+        if (!childId) {
+            req.flash('error_msg', res.locals.__('errorOccurred'));
+            return res.redirect('/specialist/sessions');
+        }
+
+        const [childrenResponse, plansResponse, progressResponse] = await Promise.all([
+            apiClient.authGet(req, '/specialists/my-children'),
+            apiClient.authGet(req, `/exercises/child/${childId}?includeInactive=1`),
+            apiClient.authGet(req, `/progress/child/${childId}`)
+        ]);
+
+        const children = childrenResponse.data.success ? childrenResponse.data.children : [];
+        const child = children.find(c => c._id && c._id.toString() === childId.toString());
+
+        const plans = (plansResponse.data.success && Array.isArray(plansResponse.data.exercises))
+            ? plansResponse.data.exercises
+            : [];
+        const plan = plans.find(p => p._id && p._id.toString() === sessionId.toString());
+
+        if (!plan) {
+            req.flash('error_msg', res.locals.__('pageNotFound'));
+            return res.redirect('/specialist/sessions');
+        }
+
+        const progress = progressResponse.data.success ? progressResponse.data.progress : null;
+        const progressSessions = Array.isArray(progress?.sessions) ? progress.sessions : [];
+        const matchingSessions = progressSessions.filter(s =>
+            (s.planExerciseId && s.planExerciseId.toString() === sessionId.toString())
+        );
+
+        const attempts = matchingSessions.flatMap(s => Array.isArray(s.attempts) ? s.attempts : []);
+
+        const getAttemptScore = (a) => {
+            if (!a || typeof a !== 'object') return undefined;
+            const p = a.pronunciationScore;
+            if (typeof p === 'number' && Number.isFinite(p)) return p;
+            const s = a.score;
+            if (typeof s === 'number' && Number.isFinite(s)) return s;
+            const acc = a.accuracyScore;
+            const flu = a.fluencyScore;
+            const comp = a.completenessScore;
+            const parts = [acc, flu, comp].filter(v => typeof v === 'number' && Number.isFinite(v));
+            if (parts.length > 0) return parts.reduce((x, y) => x + y, 0) / parts.length;
+            return undefined;
+        };
+
+        const summarizeTargets = (targets, kind) => {
+            const rows = [];
+            for (const t of targets) {
+                const target = kind === 'word' ? t.word : t.letter;
+                if (!target) continue;
+                const relevant = attempts.filter(a => String(a?.[kind] || '').trim() === String(target).trim());
+                const total = relevant.length;
+                const success = relevant.reduce((sum, a) => sum + (a?.success ? 1 : 0), 0);
+                const scores = relevant.map(getAttemptScore).filter(v => typeof v === 'number' && Number.isFinite(v));
+                const avgScore = scores.length ? Math.round(scores.reduce((x, y) => x + y, 0) / scores.length) : null;
+                rows.push({
+                    target,
+                    total,
+                    success,
+                    successRate: total ? Math.round((success / total) * 100) : 0,
+                    avgScore
+                });
+            }
+            return rows;
+        };
+
+        const wordsSummary = summarizeTargets(plan.words || [], 'word');
+        const lettersSummary = summarizeTargets(plan.letters || [], 'letter');
+
+        res.render('specialist/session-details', {
+            title: res.locals.__('sessionsLog') || 'تفاصيل الجلسة',
+            child: child || { _id: childId, name: '-' },
+            plan,
+            wordsSummary,
+            lettersSummary
+        });
+    } catch (error) {
+        console.error('Session Details Error:', error.message);
+        req.flash('error_msg', res.locals.__('errorOccurred'));
+        res.redirect('/specialist/sessions');
+    }
+});
+
 router.get('/sessions', async (req, res) => {
     // Current backend does not seem to have a dedicated "search sessions" endpoint
     // It has /progress/child/:id which returns all sessions inside progress.
@@ -1295,16 +1403,37 @@ router.get('/sessions', async (req, res) => {
     try {
         const { child, childId, dateFrom, dateTo } = req.query;
         let sessions = [];
+        const selectedChildId = childId || child || '';
 
         // Fetch children for dropdown
         const childrenResponse = await apiClient.authGet(req, '/specialists/my-children');
         const children = childrenResponse.data.success ? childrenResponse.data.children : [];
 
-        if (childId) {
-            const progressResponse = await apiClient.authGet(req, `/progress/child/${childId}`);
+        if (selectedChildId) {
+            const progressResponse = await apiClient.authGet(req, `/progress/child/${selectedChildId}`);
             if (progressResponse.data.success && progressResponse.data.progress) {
-                sessions = progressResponse.data.progress.sessions || [];
+                const rawSessions = progressResponse.data.progress.sessions || [];
+                const childObj = children.find(c => c._id && c._id.toString() === selectedChildId.toString());
+                sessions = rawSessions.map(s => ({
+                    ...s,
+                    child: childObj || s.child
+                }));
             }
+        } else if (children.length > 0) {
+            const progressResponses = await Promise.all(children.map(c =>
+                apiClient.authGet(req, `/progress/child/${c._id}`)
+                    .then(r => ({ child: c, data: r.data }))
+                    .catch(() => ({ child: c, data: null }))
+            ));
+
+            sessions = progressResponses.flatMap(({ child: childObj, data }) => {
+                if (!data || !data.success || !data.progress) return [];
+                const raw = data.progress.sessions || [];
+                return raw.map(s => ({
+                    ...s,
+                    child: childObj
+                }));
+            });
         }
 
         // Filter by date locally
@@ -1317,11 +1446,18 @@ router.get('/sessions', async (req, res) => {
             });
         }
 
+        // Sort newest first
+        sessions.sort((a, b) => {
+            const ta = new Date(a.sessionDate || a.date || 0).getTime();
+            const tb = new Date(b.sessionDate || b.date || 0).getTime();
+            return tb - ta;
+        });
+
         res.render('specialist/sessions', {
             title: res.locals.__('sessionsLog') || 'سجل الجلسات',
             sessions: sessions,
             children: children,
-            selectedChild: child || '',
+            selectedChild: selectedChildId || '',
             childIdInput: childId || '',
             dateFrom: dateFrom || '',
             dateTo: dateTo || '',

@@ -202,19 +202,50 @@ router.get('/specialists/:id', async (req, res) => {
     try {
         const response = await apiClient.authGet(req, `/admin/specialists/${req.params.id}`);
 
-        if (!response.data.success) {
-            req.flash('error_msg', 'الأخصائي غير موجود');
-            return res.redirect('/admin/specialists');
+        if (response.data.success && response.data.specialist) {
+            res.set('Cache-Control', 'no-store');
+            return res.render('admin/specialist-details', {
+                title: response.data.specialist.name,
+                specialist: response.data.specialist
+            });
         }
 
-        res.render('admin/specialist-details', {
-            title: response.data.specialist.name,
-            specialist: response.data.specialist
-        });
+        // Fallback: use list data to avoid blank error page
+        const listRes = await apiClient.authGet(req, '/admin/specialists');
+        const list = listRes.data.success ? listRes.data.specialists : [];
+        const fallback = list.find(s => String(s._id) === String(req.params.id));
+
+        if (fallback) {
+            fallback.linkedParents = Array.isArray(fallback.linkedParents) ? fallback.linkedParents : [];
+            fallback.assignedChildren = Array.isArray(fallback.assignedChildren) ? fallback.assignedChildren : [];
+            res.set('Cache-Control', 'no-store');
+            return res.render('admin/specialist-details', {
+                title: fallback.name || res.locals.__('specialists'),
+                specialist: fallback
+            });
+        }
+
+        return res.status(404).render('errors/404');
     } catch (error) {
         console.error('Spec Details Error:', error.message);
-        req.flash('error_msg', 'حدث خطأ في عرض التفاصيل');
-        res.redirect('/admin/specialists');
+        try {
+            const listRes = await apiClient.authGet(req, '/admin/specialists');
+            const list = listRes.data.success ? listRes.data.specialists : [];
+            const fallback = list.find(s => String(s._id) === String(req.params.id));
+            if (fallback) {
+                fallback.linkedParents = Array.isArray(fallback.linkedParents) ? fallback.linkedParents : [];
+                fallback.assignedChildren = Array.isArray(fallback.assignedChildren) ? fallback.assignedChildren : [];
+                res.set('Cache-Control', 'no-store');
+                return res.render('admin/specialist-details', {
+                    title: fallback.name || res.locals.__('specialists'),
+                    specialist: fallback
+                });
+            }
+        } catch (fallbackError) {
+            console.error('Spec Details Fallback Error:', fallbackError.message);
+        }
+
+        return res.status(500).render('errors/500');
     }
 });
 
@@ -461,7 +492,7 @@ router.get('/activity', async (req, res) => {
                 .map(r => ({
                     action: `Link Request (${r.status})`,
                     createdAt: r.createdAt,
-                    details: `Status: ${r.status}`,
+                    details: `Status: ${r.status}${r.child ? ` | Child: ${r.child.name || '-'}` : ''}`,
                     type: r.status === 'pending' ? 'update' : (r.status === 'approved' ? 'create' : 'delete')
                 }));
 

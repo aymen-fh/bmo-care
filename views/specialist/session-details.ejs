@@ -1,0 +1,86 @@
+<%- include('../partials/layout-start', { title: title, activePage: 'sessions' }) %>
+
+<div class="page-container-clean" style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    <div class="page-header" style="margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h2 style="margin:0;">
+                <i class="fas fa-clipboard-check"></i>
+                تفاصيل الجلسة
+            </h2>
+            <p style="margin:0.25rem 0 0; color:#64748b;">
+                <strong><%= child.name %></strong> • <%= plan.sessionName || ('Session ' + (plan.sessionIndex || '')) %>
+            </p>
+        </div>
+        <a href="/specialist/sessions" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة لسجل الجلسات
+        </a>
+    </div>
+
+    <div class="content-card" style="padding: 1.25rem; margin-bottom: 1rem;">
+        <h3 style="margin-top:0;">الكلمات</h3>
+        <% if (wordsSummary && wordsSummary.length > 0) { %>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الكلمة</th>
+                            <th>عدد المحاولات</th>
+                            <th>نسبة النجاح</th>
+                            <th>دقة النطق</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% wordsSummary.forEach(row => { %>
+                            <tr>
+                                <td><%= row.target %></td>
+                                <td><%= row.total %></td>
+                                <td><%= row.successRate %>%</td>
+                                <td><%= row.avgScore !== null ? row.avgScore + '%' : '-' %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state small">
+                <i class="fas fa-font"></i>
+                <p>لا توجد كلمات في هذه الجلسة</p>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="content-card" style="padding: 1.25rem;">
+        <h3 style="margin-top:0;">الحروف</h3>
+        <% if (lettersSummary && lettersSummary.length > 0) { %>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الحرف</th>
+                            <th>عدد المحاولات</th>
+                            <th>نسبة النجاح</th>
+                            <th>دقة النطق</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% lettersSummary.forEach(row => { %>
+                            <tr>
+                                <td><%= row.target %></td>
+                                <td><%= row.total %></td>
+                                <td><%= row.successRate %>%</td>
+                                <td><%= row.avgScore !== null ? row.avgScore + '%' : '-' %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state small">
+                <i class="fas fa-font"></i>
+                <p>لا توجد حروف في هذه الجلسة</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/layout-end') %>

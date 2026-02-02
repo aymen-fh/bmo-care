@@ -29,8 +29,11 @@
                         <!-- Details Row: Age -->
                         <div class="detail-row-clean">
                             <span>
-                                <%= child.age %>
-                                    <%= __('years') %>
+                                <% if (child.birthDate) { %>
+                                    <%= new Date(child.birthDate).toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US') %>
+                                <% } else { %>
+                                    <%= child.age %> <%= __('years') %>
+                                <% } %>
                             </span>
                             <i class="fas fa-birthday-cake icon-secondary"></i>
                         </div>
@@ -96,9 +99,9 @@
                 <div class="row-clean">
                     <div class="form-group-clean half">
                         <label>
-                            <%= __('age') %>
+                            <%= __('birthDate') || 'تاريخ الميلاد' %>
                         </label>
-                        <input type="number" name="age" class="input-clean" min="4" max="15" required>
+                        <input type="date" name="birthDate" class="input-clean" required>
                     </div>
                     <div class="form-group-clean half">
                         <label>
@@ -198,6 +201,16 @@
             const form = event.target;
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+            if (data.birthDate) {
+                const dt = new Date(data.birthDate);
+                if (!Number.isNaN(dt.getTime())) {
+                    const now = new Date();
+                    let years = now.getFullYear() - dt.getFullYear();
+                    const m = now.getMonth() - dt.getMonth();
+                    if (m < 0 || (m === 0 && now.getDate() < dt.getDate())) years -= 1;
+                    data.age = years;
+                }
+            }
 
             try {
                 const response = await fetch('/specialist/api/create-child', {

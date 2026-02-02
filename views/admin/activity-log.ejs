@@ -1,8 +1,8 @@
 <%- include('../partials/layout-start', { title: title, activePage: 'activity' }) %>
 
     <div class="page-header" style="margin-bottom: 2rem;">
-        <h2 style="font-weight: 700; color: var(--primary-color);">
-            <i class="fas fa-history" style="margin-left: 10px; color: var(--secondary-color);"></i>
+        <h2 style="font-weight: 700; color: var(--text-primary);">
+            <i class="fas fa-history" style="margin-left: 10px; color: var(--gray-500);"></i>
             <%= title %>
         </h2>
         <p style="color: var(--text-secondary); margin-top: 0.5rem;">
@@ -57,10 +57,10 @@
                             <div class="card-body-activities">
                                 <% if (specialist.activities && specialist.activities.length> 0) { %>
                                     <div class="mini-timeline">
-                                        <% specialist.activities.forEach(function(activity) { let
-                                            typeColor='var(--primary-color)' ; if (activity.type==='create' )
-                                            typeColor='#4cc9f0' ; if (activity.type==='delete' ) typeColor='#ef233c' ;
-                                            if (activity.type==='update' ) typeColor='#fca311' ; %>
+                                            <% specialist.activities.forEach(function(activity) { let
+                                            typeColor='#64748b' ; if (activity.type==='create' )
+                                            typeColor='#3b82f6' ; if (activity.type==='delete' ) typeColor='#ef4444' ;
+                                            if (activity.type==='update' ) typeColor='#f59e0b' ; %>
                                             <div class="mini-timeline-item">
                                                 <div class="dot" style="background: <%= typeColor %>;"></div>
                                                 <div class="content">
@@ -109,12 +109,12 @@
         }
 
         .specialist-activity-card {
-            background: white;
-            border-radius: 20px;
+            background: #ffffff;
+            border-radius: 18px;
             overflow: hidden;
-            box-shadow: var(--shadow-md);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             opacity: 0;
             animation: fadeInUp 0.5s ease forwards;
             display: flex;
@@ -134,8 +134,8 @@
         }
 
         .specialist-activity-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
         }
 
         .card-header-user {

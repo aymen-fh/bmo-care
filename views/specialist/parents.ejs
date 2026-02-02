@@ -87,12 +87,10 @@
                                                 </button>
                                             </form>
                                             <% } else { %>
-                                                <form action="/specialist/account/link/<%= parent._id %>" method="POST">
-                                                    <button type="submit" class="btn-modern btn-add">
-                                                        <i class="fas fa-user-plus"></i>
-                                                        <%= __('connectParent') %>
-                                                    </button>
-                                                </form>
+                                                <div class="status-badge-modern warning">
+                                                    <i class="fas fa-user-lock"></i>
+                                                    <%= __('notLinked') || 'غير مرتبط' %>
+                                                </div>
                                                 <% } %>
                                     </div>
                 </div>

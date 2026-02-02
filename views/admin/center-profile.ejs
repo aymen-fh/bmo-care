@@ -1,22 +1,29 @@
 <%- include('../partials/layout-start', { title: title, activePage: 'center-profile' }) %>
 
-<div class="page-container-clean">
-    <div class="section-header-clean" style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.5rem; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-building" style="color: #3b82f6;"></i>
-            <%= title %>
-        </h2>
-        <p class="text-muted" style="margin: 0.5rem 0 0;">
-            <%= __('centerProfileDesc') || 'إدارة بيانات المركز الأساسية' %>
-        </p>
+<div class="center-page">
+    <div class="center-hero">
+        <div>
+            <h2><i class="fas fa-building"></i> <%= title %></h2>
+            <p><%= __('centerProfileDesc') || 'إدارة بيانات المركز الأساسية' %></p>
+        </div>
+        <% if (center) { %>
+            <div class="center-hero-chip">
+                <span class="label"><%= __('status') || 'الحالة' %></span>
+                <span class="value <%= center.isActive === false ? 'inactive' : 'active' %>">
+                    <%= center.isActive === false ? (__('inactive') || 'غير نشط') : (__('active') || 'نشط') %>
+                </span>
+            </div>
+        <% } %>
     </div>
 
     <% if (center) { %>
-        <div class="settings-container glass p-4">
-            <form action="/admin/center-profile" method="POST">
-                <div class="form-section mb-4">
-                    <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-building"></i> <%= __('general') || 'عام' %></h3>
-                    <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
+        <div class="center-grid">
+            <div class="center-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-building"></i> <%= __('general') || 'عام' %></h3>
+                </div>
+                <form action="/admin/center-profile" method="POST" class="center-form">
+                    <div class="grid">
                         <div class="form-group">
                             <label><%= __('centerName') || 'اسم المركز' %></label>
                             <input class="form-control" type="text" name="name" value="<%= center.name || '' %>" required>
@@ -42,49 +49,91 @@
                             <input class="form-control" type="text" value="<%= center.isActive === false ? (__('inactive') || 'غير نشط') : (__('active') || 'نشط') %>" disabled>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-section mb-4">
-                    <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-align-left"></i> <%= __('description') || 'الوصف' %></h3>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top:1rem;">
+                        <label><%= __('description') || 'الوصف' %></label>
                         <textarea class="form-control" name="description" rows="4"><%= center.description || '' %></textarea>
                     </div>
-                </div>
 
-                <div class="form-section mb-4">
-                    <h3 class="border-bottom pb-2 mb-3"><i class="fas fa-user-tie"></i> <%= __('summary') || 'ملخص' %></h3>
-                    <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
-                        <div class="stat-card-clean">
-                            <div class="stat-content-clean">
-                                <h2><%= (center.admin && center.admin.name) ? center.admin.name : '-' %></h2>
-                                <p><%= __('admin') || 'المدير' %></p>
-                            </div>
-                            <div class="stat-icon-clean icon-blue"><i class="fas fa-user-tie"></i></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i>
+                            <%= __('saveChanges') || 'حفظ التغييرات' %>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="center-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-user-tie"></i> <%= __('summary') || 'ملخص' %></h3>
+                </div>
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <div>
+                            <div class="summary-label"><%= __('admin') || 'المدير' %></div>
+                            <div class="summary-value"><%= (center.admin && center.admin.name) ? center.admin.name : '-' %></div>
                         </div>
-                        <div class="stat-card-clean">
-                            <div class="stat-content-clean">
-                                <h2><%= center.specialists ? center.specialists.length : 0 %></h2>
-                                <p><%= __('specialists') || 'الأخصائيون' %></p>
-                            </div>
-                            <div class="stat-icon-clean icon-green"><i class="fas fa-user-md"></i></div>
+                        <div class="summary-icon"><i class="fas fa-user-tie"></i></div>
+                    </div>
+                    <div class="summary-item">
+                        <div>
+                            <div class="summary-label"><%= __('specialists') || 'الأخصائيون' %></div>
+                            <div class="summary-value"><%= center.specialists ? center.specialists.length : 0 %></div>
                         </div>
+                        <div class="summary-icon"><i class="fas fa-user-md"></i></div>
                     </div>
                 </div>
-
-                <div class="form-actions mt-4 text-end">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-save"></i>
-                        <%= __('saveChanges') || 'حفظ التغييرات' %>
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     <% } else { %>
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle"></i>
-            <%= __('noCenterAssigned') %>
+        <div class="center-card">
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p><%= __('noCenterAssigned') %></p>
+            </div>
         </div>
     <% } %>
 </div>
+
+<style>
+    .center-page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 0; }
+    .center-hero {
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #3b82f6 100%);
+        border-radius: 20px; padding: 1.75rem 2rem; color: #fff; box-shadow: var(--shadow-lg);
+        margin-bottom: 1.5rem;
+    }
+    .center-hero h2 { margin: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; }
+    .center-hero p { margin: 0.5rem 0 0; opacity: 0.9; }
+    .center-hero-chip {
+        background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 14px; padding: 0.75rem 1rem; text-align: center; min-width: 140px;
+    }
+    .center-hero-chip .label { font-size: 0.85rem; opacity: 0.8; display: block; }
+    .center-hero-chip .value { font-size: 1rem; font-weight: 700; display: block; }
+    .center-hero-chip .active { color: #e0f2fe; }
+    .center-hero-chip .inactive { color: #fee2e2; }
+    .center-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; }
+    .center-card {
+        background: var(--bg-card); border: var(--glass-border); box-shadow: var(--shadow-lg);
+        border-radius: 18px; padding: 1.5rem; backdrop-filter: blur(var(--backdrop-blur));
+    }
+    .card-header h3 { margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .center-form .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .form-group label { font-weight: 600; margin-bottom: 0.5rem; display: inline-block; }
+    .form-control { width: 100%; padding: 0.75rem 0.9rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; }
+    .form-actions { margin-top: 1.25rem; display: flex; justify-content: flex-end; }
+    .summary-list { display: grid; gap: 1rem; }
+    .summary-item {
+        display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;
+        border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0;
+    }
+    .summary-label { color: #64748b; font-size: 0.9rem; }
+    .summary-value { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+    .summary-icon { width: 40px; height: 40px; border-radius: 50%; display:flex; align-items:center; justify-content:center; background:#e0f2fe; color:#2563eb; }
+    .empty-state { text-align: center; color: #64748b; padding: 2rem; }
+    @media (max-width: 992px) { .center-grid { grid-template-columns: 1fr; } }
+</style>
 
 <%- include('../partials/layout-end') %>

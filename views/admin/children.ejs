@@ -8,10 +8,30 @@
         </h2>
     </div>
 
+    <div class="search-section" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
+        <div style="position: relative;">
+            <i class="fas fa-search" style="position: absolute; top: 50%; right: 15px; transform: translateY(-50%); color: var(--gray-400);"></i>
+            <input type="text" id="childrenSearch" placeholder="<%= __('searchByName') || 'ابحث بالاسم' %>"
+                style="width: 100%; padding: 12px 45px 12px 15px; border-radius: 12px; border: 1px solid var(--gray-300); background: white; box-shadow: var(--shadow-sm); outline: none;">
+        </div>
+        <select id="levelFilter" class="form-control" style="border-radius: 12px;">
+            <option value=""><%= __('allLevels') || 'كل المستويات' %></option>
+            <option value="beginner"><%= __('beginner') || 'مبتدئ' %></option>
+            <option value="intermediate"><%= __('intermediate') || 'متوسط' %></option>
+            <option value="advanced"><%= __('advanced') || 'متقدم' %></option>
+        </select>
+        <select id="specialistFilter" class="form-control" style="border-radius: 12px;">
+            <option value=""><%= __('كل الأخصائيين')  %></option>
+        </select>
+    </div>
+
     <div class="cards-grid-modern" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
         <% if (children && children.length > 0) { %>
             <% children.forEach(function(child) { %>
-                <div class="child-card-centered glass" style="padding: 1.5rem; border-radius: 20px; text-align: center; transition: transform 0.2s; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div class="child-card-centered glass" data-name="<%= (child.name || '').toLowerCase() %>"
+                    data-specialist="<%= (child.assignedSpecialistName || child.linkedSpecialistName || (child.assignedSpecialist && child.assignedSpecialist.name) || (child.parent && child.parent.linkedSpecialist && child.parent.linkedSpecialist.name) || '').toLowerCase() %>"
+                    data-level="<%= child.difficultyLevel || '' %>"
+                    style="padding: 1.5rem; border-radius: 20px; text-align: center; transition: transform 0.2s; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <!-- Avatar -->
                     <div class="avatar-large-blue" style="width: 80px; height: 80px; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 2rem; margin-bottom: 1rem; overflow: hidden;">
                         <%- include('../partials/child-avatar', { child: child, sizePx: 80 }) %>
@@ -73,5 +93,51 @@
         <% } %>
     </div>
 </div>
+
+<script>
+    (function () {
+        const searchInput = document.getElementById('childrenSearch');
+        const levelFilter = document.getElementById('levelFilter');
+        const specialistFilter = document.getElementById('specialistFilter');
+        const cards = Array.from(document.querySelectorAll('.child-card-centered'));
+
+        const specialistSet = new Set();
+        cards.forEach(card => {
+            const specialist = card.dataset.specialist || '';
+            if (specialist) specialistSet.add(specialist);
+        });
+
+        const sortedSpecialists = Array.from(specialistSet).sort();
+        sortedSpecialists.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            specialistFilter.appendChild(option);
+        });
+
+        const applyFilters = () => {
+            const query = (searchInput.value || '').trim().toLowerCase();
+            const level = (levelFilter.value || '').trim().toLowerCase();
+            const specialist = (specialistFilter.value || '').trim().toLowerCase();
+
+            cards.forEach(card => {
+                const name = card.dataset.name || '';
+                const spec = card.dataset.specialist || '';
+                const lvl = card.dataset.level || '';
+
+                const matchesQuery = !query || name.includes(query);
+                const matchesLevel = !level || lvl === level;
+                const matchesSpecialist = !specialist || spec === specialist;
+
+                card.style.display = (matchesQuery && matchesLevel && matchesSpecialist) ? '' : 'none';
+            });
+        };
+
+        [searchInput, levelFilter, specialistFilter].forEach(el => {
+            el.addEventListener('input', applyFilters);
+            el.addEventListener('change', applyFilters);
+        });
+    })();
+</script>
 
 <%- include('../partials/layout-end') %>

@@ -29,6 +29,20 @@
                                 <h3>
                                     <%= request.from ? request.from.name : __('unknown') %>
                                 </h3>
+                                <% if (request.child) { %>
+                                    <p><i class="fas fa-child"></i>
+                                        <%= request.child.name || '-' %>
+                                        <% if (typeof request.child.age === 'number') { %>
+                                            <span style="color:#94a3b8;">(
+                                                <%= request.child.age %> <%= __('years') %>
+                                            )</span>
+                                        <% } %>
+                                    </p>
+                                <% } else { %>
+                                    <p style="color:#f97316;"><i class="fas fa-exclamation-triangle"></i>
+                                        <%= __('childNotSpecified') || 'لم يتم تحديد الطفل في الطلب' %>
+                                    </p>
+                                <% } %>
                                 <p><i class="fas fa-envelope"></i>
                                     <%= request.from ? request.from.email : '-' %>
                                 </p>
@@ -53,6 +67,12 @@
                                 </button>
                             </form>
                         </div>
+                        <% if (request.child) { %>
+                            <div style="margin-top:0.5rem; color:#64748b; font-size:0.85rem;">
+                                <i class="fas fa-info-circle"></i>
+                                <%= __('requestChildOnlyNote') || 'سيتم ربط هذا الطفل فقط بالأخصائي' %>
+                            </div>
+                        <% } %>
                     </div>
                     <% }); %>
             </div>
@@ -85,6 +105,9 @@
                             <%= __('email') %>
                         </th>
                         <th>
+                            <%= __('child') || 'الطفل' %>
+                        </th>
+                        <th>
                             <%= __('status') %>
                         </th>
                         <th>
@@ -103,6 +126,18 @@
                                     <%= request.from ? request.from.email : '-' %>
                                 </td>
                                 <td>
+                                    <% if (request.child) { %>
+                                        <%= request.child.name || '-' %>
+                                        <% if (typeof request.child.age === 'number') { %>
+                                            <span style="color:#94a3b8;">(
+                                                <%= request.child.age %> <%= __('years') %>
+                                            )</span>
+                                        <% } %>
+                                    <% } else { %>
+                                        -
+                                    <% } %>
+                                </td>
+                                <td>
                                     <span
                                         class="badge badge-<%= request.status === 'accepted' ? 'success' : 'danger' %>">
                                         <%= request.status==='accepted' ? __('approved') : __('rejected') %>
@@ -116,7 +151,7 @@
                             <% }); %>
                                 <% } else { %>
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted">
+                                        <td colspan="5" class="text-center text-muted">
                                             <%= __('noData') %>
                                         </td>
                                     </tr>

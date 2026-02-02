@@ -338,8 +338,33 @@ router.post('/child/:childId/sessions/:sessionId/update', async (req, res) => {
             allowedDays, lettersText, wordsText
         } = req.body;
 
-        const letters = lettersText ? JSON.parse(lettersText) : [];
-        const words = wordsText ? JSON.parse(wordsText) : [];
+        const lettersRaw = lettersText ? JSON.parse(lettersText) : [];
+        const wordsRaw = wordsText ? JSON.parse(wordsText) : [];
+
+        const normalizeLetters = (arr) => (Array.isArray(arr) ? arr : [])
+            .map(item => {
+                if (typeof item === 'string') return { letter: item };
+                if (item && typeof item === 'object') {
+                    if (item.letter) return { letter: item.letter, difficulty: item.difficulty, image: item.image };
+                    if (item.text) return { letter: item.text, difficulty: item.difficulty, image: item.image };
+                }
+                return null;
+            })
+            .filter(Boolean);
+
+        const normalizeWords = (arr) => (Array.isArray(arr) ? arr : [])
+            .map(item => {
+                if (typeof item === 'string') return { word: item };
+                if (item && typeof item === 'object') {
+                    if (item.word) return { word: item.word, difficulty: item.difficulty, image: item.image };
+                    if (item.text) return { word: item.text, difficulty: item.difficulty, image: item.image };
+                }
+                return null;
+            })
+            .filter(Boolean);
+
+        const letters = normalizeLetters(lettersRaw);
+        const words = normalizeWords(wordsRaw);
 
         // Helper to safely parse integers (returns undefined for empty strings/invalid)
         const safeInt = (val) => {
@@ -349,8 +374,11 @@ router.post('/child/:childId/sessions/:sessionId/update', async (req, res) => {
         };
 
         // Payload for Backend
+        const targetDurationValue = safeInt(totalDuration)
+            ?? safeInt(playDuration);
+
         const payload = {
-            targetDuration: safeInt(totalDuration),
+            targetDuration: targetDurationValue,
             playDuration: safeInt(playDuration),
             breakDuration: safeInt(breakDuration),
             maxAttempts: safeInt(maxAttempts),
@@ -359,6 +387,13 @@ router.post('/child/:childId/sessions/:sessionId/update', async (req, res) => {
             // Backend expects allowedDays at root
             allowedDays: Array.isArray(allowedDays) ? allowedDays.map(Number) : (allowedDays ? [Number(allowedDays)] : [])
         };
+
+        if (typeof payload.targetDuration !== 'number'
+            || typeof payload.breakDuration !== 'number'
+            || typeof payload.maxAttempts !== 'number') {
+            req.flash('error_msg', 'يجب تحديد مدة الجلسة ومدة الراحة وعدد المحاولات');
+            return res.redirect(`/specialist/words?childId=${childId}&sessionId=${sessionId}`);
+        }
 
         const response = await apiClient.authPut(req, `/exercises/${sessionId}`, payload);
 

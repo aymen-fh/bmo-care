@@ -15,7 +15,7 @@
     </div>
 
     <div class="content-card">
-        <form method="POST" action="/specialist/child/<%= child._id %>/create-plan-session">
+        <form id="createPlanSessionForm" method="POST" action="/specialist/child/<%= child._id %>/create-plan-session" data-child-id="<%= child._id %>">
             <div class="form-group">
                 <label>اسم الجلسة (اختياري)</label>
                 <input class="form-control" type="text" name="sessionName" placeholder="Session 1">
@@ -24,7 +24,7 @@
             <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
                 <div class="form-group">
                     <label>مدة الجلسة كاملة (دقيقة)</label>
-                    <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30">
+                    <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30" required>
                 </div>
                 <div class="form-group">
                     <label>مدة اللعب كل مرة (دقيقة)</label>
@@ -35,11 +35,11 @@
             <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
                 <div class="form-group">
                     <label>مدة الراحة (دقيقة)</label>
-                    <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5">
+                    <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5" required>
                 </div>
                 <div class="form-group">
                     <label>عدد المحاولات إجمالاً</label>
-                    <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20">
+                    <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20" required>
                 </div>
             </div>
 
@@ -274,6 +274,47 @@
     typeLetter.addEventListener('change', loadSuggestions);
 
     document.addEventListener('DOMContentLoaded', loadSuggestions);
+
+    // Submit via JSON API to avoid 302 redirects
+    const createForm = document.getElementById('createPlanSessionForm');
+    if (createForm) {
+        createForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const childId = createForm.getAttribute('data-child-id');
+            const formData = new FormData(createForm);
+            const payload = Object.fromEntries(formData.entries());
+
+            // Multi-select checkboxes (allowedDays) need to be arrays
+            payload.allowedDays = formData.getAll('allowedDays');
+
+            const missingRequired = !payload.totalDuration || !payload.breakDuration || !payload.maxAttempts;
+            if (missingRequired) {
+                alert('يجب تحديد مدة الجلسة ومدة الراحة وعدد المحاولات');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/specialist/api/child/${childId}/create-plan-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result && result.success) {
+                    window.location.href = `/specialist/words/child/${childId}/sessions`;
+                } else {
+                    alert(result?.message || 'فشل إنشاء الجلسة');
+                }
+            } catch (err) {
+                console.error('Create plan session error:', err);
+                alert('فشل إنشاء الجلسة');
+            }
+        });
+    }
 </script>
 
 <style>

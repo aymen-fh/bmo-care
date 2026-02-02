@@ -131,9 +131,6 @@
                     <div class="empty-state-clean" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
                         <i class="fas fa-child" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
                         <p style="color: #64748b;">لا يوجد أطفال مرتبطين بحسابك حالياً.</p>
-                        <a href="/specialist/account" class="btn btn-primary" style="margin-top: 1rem;">
-                            <i class="fas fa-link"></i> ربط حساب ولي أمر
-                        </a>
                     </div>
                     <% } else { %>
                         <% children.forEach(function(child) { %>
@@ -206,8 +203,8 @@
                             style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
                             <div class="form-group">
                                 <label>مدة الجلسة كاملة (دقيقة)</label>
-                                <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30"
-                                    value="<%= (selectedSession && selectedSession.targetDuration) ? selectedSession.targetDuration : '' %>">
+                                <input class="form-control" type="number" name="totalDuration" min="1" placeholder="30" required
+                                    value="<%= (selectedSession && typeof selectedSession.totalDuration === 'number') ? selectedSession.totalDuration : ((selectedSession && typeof selectedSession.targetDuration === 'number') ? selectedSession.targetDuration : '') %>">
                             </div>
                             <div class="form-group">
                                 <label>مدة اللعب كل مرة (دقيقة)</label>
@@ -220,12 +217,12 @@
                             style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
                             <div class="form-group">
                                 <label>مدة الراحة (دقيقة)</label>
-                                <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5"
+                                <input class="form-control" type="number" name="breakDuration" min="0" placeholder="5" required
                                     value="<%= (selectedSession && selectedSession.sessionStructure && selectedSession.sessionStructure.breakDuration) ? selectedSession.sessionStructure.breakDuration : ((selectedSession && selectedSession.breakDuration) ? selectedSession.breakDuration : '') %>">
                             </div>
                             <div class="form-group">
                                 <label>عدد المحاولات إجمالاً</label>
-                                <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20"
+                                <input class="form-control" type="number" name="maxAttempts" min="1" placeholder="20" required
                                     value="<%= (selectedSession && selectedSession.sessionStructure && selectedSession.sessionStructure.maxAttempts) ? selectedSession.sessionStructure.maxAttempts : ((selectedSession && selectedSession.maxAttempts) ? selectedSession.maxAttempts : '') %>">
                             </div>
                         </div>
